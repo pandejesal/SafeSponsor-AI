@@ -1,0 +1,6 @@
+{
+  "name": "SafeSponsor AI",
+  "description": "A Brand Safety Influencer Vetting Tool for E-Commerce Brands",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
