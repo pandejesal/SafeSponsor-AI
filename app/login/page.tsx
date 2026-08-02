@@ -1,32 +1,46 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { AuthProvider } from '@/components/AuthProvider';
+import { AuthProvider, useAuth } from '@/components/AuthProvider';
 import { Navbar } from '@/components/Navbar';
 import { useTheme } from '@/components/ThemeProvider';
 import Link from 'next/link';
+
+function goToDashboard(router: ReturnType<typeof useRouter>) {
+  const targetParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("target") : null;
+  router.replace(targetParam ? `/dashboard?target=${encodeURIComponent(targetParam)}` : '/dashboard');
+}
 
 function LoginInner() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { theme } = useTheme();
+  const { user, loading } = useAuth();
 
   const isDark = theme === 'dark';
 
+  // Path 1: Session already restored (e.g. redirect result resolved outside
+  // this page, or a previous popup sign-in). Don't keep the user stuck on /login.
+  useEffect(() => {
+    if (!loading && user) {
+      goToDashboard(router);
+    }
+  }, [loading, user, router]);
+
+  // Path 2: Consume the pending redirect sign-in result after returning from Google.
   useEffect(() => {
     let active = true;
     getRedirectResult(auth!)
       .then((result) => {
         if (!active) return;
         if (result?.user) {
-          const targetParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("target") : null;
-          router.push(targetParam ? `/dashboard?target=${encodeURIComponent(targetParam)}` : '/dashboard');
+          goToDashboard(router);
         }
       })
       .catch((err: any) => {
@@ -41,12 +55,26 @@ function LoginInner() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
+    const provider = new GoogleAuthProvider();
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth!, provider);
+      // Path 3a: Popup (primary) - completes the sign-in without leaving the page.
+      await signInWithPopup(auth!, provider);
+      goToDashboard(router);
     } catch (err: any) {
-      console.error('Authentication error:', err);
-      setError(err?.message || 'An error occurred during authentication.');
+      const code = err?.code || '';
+      // Path 3b: If the popup is blocked (or is in progress), fall back to the
+      // redirect flow, which always works on the main domain.
+      if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request' || code === 'auth/popup-closed-by-user') {
+        try {
+          await signInWithRedirect(auth!, provider);
+        } catch (redirectErr: any) {
+          console.error('Redirect fallback error:', redirectErr);
+          setError(redirectErr?.message || 'Sign-in failed. Please try again.');
+        }
+      } else {
+        console.error('Authentication error:', err);
+        setError(err?.message || 'An error occurred during authentication.');
+      }
     } finally {
       setIsLoading(false);
     }
