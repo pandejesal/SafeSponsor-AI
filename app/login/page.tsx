@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -19,20 +19,33 @@ function LoginInner() {
 
   const isDark = theme === 'dark';
 
+  useEffect(() => {
+    let active = true;
+    getRedirectResult(auth!)
+      .then((result) => {
+        if (!active) return;
+        if (result?.user) {
+          router.push('/dashboard');
+        }
+      })
+      .catch((err: any) => {
+        console.error('Redirect sign-in error:', err);
+        if (active) setError(err?.message || 'Sign-in failed. Please try again.');
+      });
+    return () => {
+      active = false;
+    };
+  }, [router]);
+
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth!, provider);
-      router.push('/dashboard');
+      await signInWithRedirect(auth!, provider);
     } catch (err: any) {
       console.error('Authentication error:', err);
-      let displayError = err.message || 'An error occurred during authentication.';
-      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/popup-blocked') {
-        displayError = 'Sign-in popup was blocked or closed. If you are in the AI Studio preview, please open the app in a new tab to sign in.';
-      }
-      setError(displayError);
+      setError(err?.message || 'An error occurred during authentication.');
     } finally {
       setIsLoading(false);
     }
