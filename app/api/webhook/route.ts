@@ -3,14 +3,25 @@ import { Webhook } from "standardwebhooks";
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+// Dodo Payments real event catalog (https://docs.dodopayments.com):
+// payment.succeeded | refund.succeeded | subscription.active | subscription.renewed
+// | subscription.cancelled | subscription.expired (+ many non-actionable ones)
 const ALLOWED_WEBHOOK_EVENTS = new Set([
   "payment.succeeded",
   "subscription.active",
-  "checkout.completed",
+  "subscription.renewed",
   "subscription.cancelled",
-  "subscription.revoked",
   "subscription.expired",
-  "payment.refunded"
+  "refund.succeeded",
+]);
+
+const REVOCATION_EVENTS = new Set([
+  "subscription.cancelled",
+  "subscription.expired",
+  "refund.succeeded",
 ]);
 
 export async function POST(req: NextRequest) {
@@ -78,18 +89,48 @@ export async function POST(req: NextRequest) {
     console.log(`[PAYMENTS LOG] Valid Dodo Payments Webhook received: ${eventType}`);
 
     const webhookHeaderId = req.headers.get("webhook-id") || req.headers.get("x-webhook-id");
-    const paymentId = data?.payment_id || data?.id || body?.id;
-    const uid = data?.metadata?.uid || data?.customer?.metadata?.uid;
-    const plan = data?.metadata?.plan || "single";
+    const paymentId = data?.payment_id || data?.id || body?.id || null;
+    const subscriptionId = data?.subscription_id || data?.subscription?.id || data?.payment?.subscription_id || null;
+
+    // Resolve plan: renewal/subscription events are always subscription grants,
+    // even when the payment payload lacks the original checkout metadata.
+    let plan = data?.metadata?.plan || "single";
+    if (eventType === "subscription.renewed" || eventType === "subscription.active" || (eventType === "payment.succeeded" && subscriptionId)) {
+      plan = "subscription";
+    }
+
+    // Resolve UID: direct metadata first, then fall back to the stored
+    // subscription->user mapping (renewal and refund payloads may not
+    // carry the original checkout metadata).
+    let uid: string | null = null;
+    const uidCandidates = [
+      data?.metadata?.uid,
+      data?.customer?.metadata?.uid,
+      data?.subscription?.metadata?.uid,
+      data?.subscription?.customer?.metadata?.uid,
+    ];
+    uid = uidCandidates.find((candidate: any) => typeof candidate === "string" && candidate.trim() !== "") || null;
+
+    if (!uid && subscriptionId) {
+      try {
+        const lookup = await adminDb.collection("users").where("lastSubscriptionId", "==", subscriptionId).limit(1).get();
+        if (!lookup.empty) {
+          uid = lookup.docs[0].id;
+          console.log(`[UID RESOLUTION] Resolved uid ${uid} from subscriptionId ${subscriptionId}.`);
+        }
+      } catch (lookupErr: any) {
+        console.warn(`[UID RESOLUTION] Subscription fallback lookup failed for ${subscriptionId}:`, lookupErr?.message || lookupErr);
+      }
+    }
 
     // Enforce strict Idempotency by recording the unique webhook event ID or eventType_paymentId
-    const idempotencyKey = webhookHeaderId 
-      ? `wh_${webhookHeaderId}` 
+    const idempotencyKey = webhookHeaderId
+      ? `wh_${webhookHeaderId}`
       : `${eventType}_${paymentId || Date.now()}`;
 
     if (idempotencyKey) {
       const processedRef = adminDb.collection("processed_webhooks").doc(String(idempotencyKey));
-      
+
       try {
         // Transactionally check if this payment/event has already been processed
         const isAlreadyProcessed = await adminDb.runTransaction(async (tx) => {
@@ -121,12 +162,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const isRevocationEvent = [
-      "subscription.cancelled",
-      "subscription.revoked",
-      "subscription.expired",
-      "payment.refunded"
-    ].includes(eventType);
+    const isRevocationEvent = REVOCATION_EVENTS.has(eventType);
 
     let entitlementUpdate: Record<string, any> = {
       plan: plan,
@@ -134,6 +170,9 @@ export async function POST(req: NextRequest) {
       lastPaymentId: paymentId || null,
       updatedAt: new Date(),
     };
+    if (subscriptionId) {
+      entitlementUpdate.lastSubscriptionId = subscriptionId;
+    }
 
     if (isRevocationEvent) {
       entitlementUpdate.hasSubscription = false;
@@ -144,12 +183,7 @@ export async function POST(req: NextRequest) {
       console.log(`[ENTITLEMENT REVOCATION] Revoking subscription/credits access due to event: ${eventType} for plan: ${plan}`);
     } else if (plan === "subscription") {
       entitlementUpdate.hasSubscription = true;
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 1);
-      entitlementUpdate.subscription = {
-        status: "active",
-        expiresAt: expiresAt.toISOString(),
-      };
+      entitlementUpdate.subscription = { status: "active" };
     } else if (plan === "single") {
       entitlementUpdate.videoCredits = FieldValue.increment(1);
     } else if (plan === "channel") {
@@ -158,32 +192,68 @@ export async function POST(req: NextRequest) {
       entitlementUpdate.videoCredits = FieldValue.increment(1);
     }
 
-    if (uid) {
-      const userRef = adminDb.collection("users").doc(uid);
-      if (isRevocationEvent && (plan === "single" || plan === "channel")) {
-        await adminDb.runTransaction(async (tx) => {
-          const userSnap = await tx.get(userRef);
-          if (!userSnap.exists) {
-            console.log(`[ENTITLEMENT REVOCATION] User doc ${uid} does not exist, skipping credit decrement.`);
-            return;
-          }
-          const userData = userSnap.data() || {};
-          const creditKey = plan === "single" ? "videoCredits" : "channelCredits";
-          const currentVal = typeof userData[creditKey] === "number" ? userData[creditKey] : 0;
-          const clampedVal = Math.max(0, currentVal - 1);
-
-          tx.set(userRef, {
-            ...entitlementUpdate,
-            [creditKey]: clampedVal,
-          }, { merge: true });
-        });
-      } else {
-        await userRef.set(entitlementUpdate, { merge: true });
-      }
-      console.log(`[ENTITLEMENT CONFIRMED] User ${uid} updated for event: ${eventType} (plan: ${plan})`);
-    } else {
-      console.warn(`[SECURITY WARN] Webhook event ${eventType} skipped: Metadata UID missing from payload.`);
+    if (!uid) {
+      console.warn(`[SECURITY WARN] Webhook event ${eventType} skipped: Metadata UID missing from payload and no subscription mapping found.`);
       return NextResponse.json({ received: true, warning: "UID metadata missing" });
+    }
+
+    const userRef = adminDb.collection("users").doc(uid);
+
+    if (isRevocationEvent && (plan === "single" || plan === "channel")) {
+      await adminDb.runTransaction(async (tx) => {
+        const userSnap = await tx.get(userRef);
+        if (!userSnap.exists) {
+          console.log(`[ENTITLEMENT REVOCATION] User doc ${uid} does not exist, skipping credit decrement.`);
+          return;
+        }
+        const userData = userSnap.data() || {};
+        const creditKey = plan === "single" ? "videoCredits" : "channelCredits";
+        const currentVal = typeof userData[creditKey] === "number" ? userData[creditKey] : 0;
+        const clampedVal = Math.max(0, currentVal - 1);
+
+        tx.set(userRef, {
+          ...entitlementUpdate,
+          [creditKey]: clampedVal,
+        }, { merge: true });
+      });
+    } else if (plan === "subscription") {
+      // Subscription grants: extend from the latest expiry, but never double-extend
+      // when payment.succeeded + subscription.active (or subscription.renewed) arrive
+      // for the same billing period.
+      await adminDb.runTransaction(async (tx) => {
+        const userSnap = await tx.get(userRef);
+        const userData = userSnap.exists ? userSnap.data() || {} : {};
+        const nowMs = Date.now();
+
+        const existingSub = userData.subscription && typeof userData.subscription === "object" ? userData.subscription : null;
+        const existingExpiryMs = existingSub?.expiresAt ? new Date(existingSub.expiresAt).getTime() : NaN;
+        const hasValidExpiry = !isNaN(existingExpiryMs) && existingExpiryMs > 0;
+        // Treat subscriptions expiring more than 20 days out as already granted
+        // for the current billing period (fresh grant or renewal already applied).
+        const alreadyActiveForPeriod = existingSub?.status === "active" && hasValidExpiry && existingExpiryMs > nowMs + 20 * 24 * 60 * 60 * 1000;
+
+        let expiresAt: Date;
+        if (alreadyActiveForPeriod) {
+          expiresAt = new Date(existingExpiryMs);
+        } else {
+          const baseMs = hasValidExpiry ? Math.max(existingExpiryMs, nowMs) : nowMs;
+          expiresAt = new Date(baseMs);
+          expiresAt.setMonth(expiresAt.getMonth() + 1);
+        }
+
+        tx.set(userRef, {
+          ...entitlementUpdate,
+          hasSubscription: true,
+          subscription: {
+            status: "active",
+            expiresAt: expiresAt.toISOString(),
+          },
+        }, { merge: true });
+      });
+      console.log(`[ENTITLEMENT CONFIRMED] Subscription granted/extended for user ${uid} via event: ${eventType}`);
+    } else {
+      await userRef.set(entitlementUpdate, { merge: true });
+      console.log(`[ENTITLEMENT CONFIRMED] User ${uid} updated for event: ${eventType} (plan: ${plan})`);
     }
 
     return NextResponse.json({ received: true });

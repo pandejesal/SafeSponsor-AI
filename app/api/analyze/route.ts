@@ -6,6 +6,9 @@ import { getSeededAudit } from "@/lib/seeded_audits";
 import { sanitizeUrl } from "@/lib/utils";
 import { z } from "zod";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 const analyzeSchema = z.object({
   target: z.string().max(500).optional(),
   primary_url: z.string().max(500).optional(),

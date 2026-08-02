@@ -8,6 +8,9 @@ const checkoutSchema = z.object({
   customerName: z.string().max(100).optional().or(z.literal("")),
 });
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const appCheckResult = await verifyAppCheckHeader(req);
