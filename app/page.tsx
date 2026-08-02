@@ -77,6 +77,9 @@ function LandingContent() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else if (!res.ok) {
+        alert(data.error || "Failed to initiate checkout. Please try again.");
+        router.push('/dashboard');
       } else {
         router.push('/dashboard');
       }
@@ -194,7 +197,8 @@ function LandingContent() {
               <div className="flex items-center gap-3 px-4 py-2 flex-1">
                 <Search className={`w-5 h-5 shrink-0 ${isDark ? 'text-cyan-400' : 'text-slate-400'}`} />
                 <input
-                  type="url"
+                  type="text"
+                  inputMode="url"
                   placeholder="Paste YouTube Video URL, Channel, or Instagram Link..."
                   value={heroInputUrl}
                   onChange={(e) => setHeroInputUrl(e.target.value)}

@@ -25,7 +25,8 @@ function LoginInner() {
       .then((result) => {
         if (!active) return;
         if (result?.user) {
-          router.push('/dashboard');
+          const targetParam = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("target") : null;
+          router.push(targetParam ? `/dashboard?target=${encodeURIComponent(targetParam)}` : '/dashboard');
         }
       })
       .catch((err: any) => {

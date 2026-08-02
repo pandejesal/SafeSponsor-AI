@@ -210,7 +210,14 @@ function DashboardInner() {
 
   const handleAnalyze = async (e?: React.FormEvent, isForce: boolean = false) => {
     if (e) e.preventDefault();
-    if (!target || !brandName || !user) return;
+    if (!target || !brandName) {
+      setAnalysisError(!target ? "Please enter a Target Creator handle, video URL, or channel URL." : "Your Brand Name is required to run brand safety analyses.");
+      return;
+    }
+    if (!user) {
+      setAnalysisError("Please sign in to run brand safety analyses.");
+      return;
+    }
 
     setLoadingAnalysis(true);
     setAnalysisError(null);
@@ -311,6 +318,11 @@ youtube.com/@ijustine`
 
     if (rawLines.length === 0) {
       setAnalysisError("Please paste at least one YouTube or Instagram creator URL into the batch queue.");
+      return;
+    }
+
+    if (rawLines.length > 20) {
+      setAnalysisError("Batch queue is limited to 20 creators at a time. The audit engine enforces a rate limit of 10 audits per minute, so run the queue again after it completes.");
       return;
     }
 
@@ -424,9 +436,7 @@ youtube.com/@ijustine`
     }
   };
 
-  const retrySingleBatchItem = async (targetItem: BatchQueueItem) => {
-    if (isBatchProcessing || !user) return;
-
+  const runRetry = async (targetItem: BatchQueueItem) => {
     setBatchItems(prev => prev.map(item =>
       item.id === targetItem.id
         ? { ...item, status: 'processing', error: undefined, progressMessage: 'Retrying creator brand safety audit...' }
@@ -434,7 +444,7 @@ youtube.com/@ijustine`
     ));
 
     try {
-      const token = await user.getIdToken();
+      const token = await user!.getIdToken();
       const appCheckToken = await getAppCheckToken();
 
       const payload = {
@@ -484,16 +494,24 @@ youtube.com/@ijustine`
     }
   };
 
+  const retrySingleBatchItem = async (targetItem: BatchQueueItem) => {
+    if (isBatchProcessing || !user) return;
+    await runRetry(targetItem);
+  };
+
   const retryFailedBatchItems = async () => {
     if (isBatchProcessing || !user) return;
     const failedItems = batchItems.filter(i => i.status === 'failed');
     if (failedItems.length === 0) return;
 
     setIsBatchProcessing(true);
-    for (const item of failedItems) {
-      await retrySingleBatchItem(item);
+    try {
+      for (const item of failedItems) {
+        await runRetry(item);
+      }
+    } finally {
+      setIsBatchProcessing(false);
     }
-    setIsBatchProcessing(false);
   };
 
   const clearCompletedBatchItems = () => {
@@ -2259,7 +2277,7 @@ Report Generated via SafeSponsor AI Research Engine
             )}
             {/* Agency Print PDF Report Footer Watermark */}
             <div className="hidden print:flex items-center justify-between pt-6 border-t-2 border-slate-300 text-[10px] text-slate-600 font-semibold mt-8">
-              <p>Confidential Brand Safety Report • Prepared by SafeSponsor AI (https://safesponsor.ai)</p>
+              <p>Confidential Brand Safety Report • Prepared by SafeSponsor AI (https://safe-sponsor-ai.vercel.app)</p>
               <p>Verified Grounded Research Dossier</p>
             </div>
           </section>

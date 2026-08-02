@@ -285,74 +285,7 @@ export async function POST(req: NextRequest) {
     const audit_focus = inputData.audit_focus || "standard";
     const isChannelAudit = audit_focus === "channel";
     const targetKey = normalizeTargetKey(target);
-
-    // 3. Check User Quota / Entitlements ATOMICALLY via Firestore Transaction
     const userDocRef = adminDb.collection('users').doc(uid);
-    let entitlementType: "subscription" | "channelCredit" | "videoCredit" | "reportCredit" | "free" = "free";
-
-    try {
-      const transactionResult = await adminDb.runTransaction(async (tx) => {
-        const userSnap = await tx.get(userDocRef);
-        const userData = userSnap.exists ? userSnap.data() || {} : {};
-
-        const subObj = userData.subscription && typeof userData.subscription === "object" ? userData.subscription : null;
-        const subExpiresAt = subObj?.expiresAt ? new Date(subObj.expiresAt) : null;
-        const isNotExpired = !subExpiresAt || isNaN(subExpiresAt.getTime()) || subExpiresAt > new Date();
-        const isSubActive = subObj?.status === "active" && isNotExpired;
-        const hasSub = (userData.hasSubscription === true && isNotExpired) || isSubActive;
-        const videoCredits = typeof userData.videoCredits === "number" ? userData.videoCredits : 0;
-        const channelCredits = typeof userData.channelCredits === "number" ? userData.channelCredits : 0;
-        const reportCredits = typeof userData.reportCredits === "number" ? userData.reportCredits : 0;
-        const freeUsed = userData.freeAnalysisUsed === true;
-
-        if (hasSub) {
-          return { allowed: true, type: "subscription" as const };
-        }
-
-        if (isChannelAudit) {
-          if (channelCredits > 0) {
-            tx.set(userDocRef, { channelCredits: channelCredits - 1, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "channelCredit" as const };
-          } else if (!freeUsed) {
-            tx.set(userDocRef, { freeAnalysisUsed: true, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "free" as const };
-          } else {
-            return { allowed: false, type: "none" as const, reason: "Channel Report credit required. Please purchase a Channel Report or Unlimited Pro subscription." };
-          }
-        } else {
-          // Single video audit
-          if (videoCredits > 0) {
-            tx.set(userDocRef, { videoCredits: videoCredits - 1, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "videoCredit" as const };
-          } else if (reportCredits > 0) {
-            tx.set(userDocRef, { reportCredits: reportCredits - 1, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "reportCredit" as const };
-          } else if (channelCredits > 0) {
-            tx.set(userDocRef, { channelCredits: channelCredits - 1, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "channelCredit" as const };
-          } else if (!freeUsed) {
-            tx.set(userDocRef, { freeAnalysisUsed: true, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "free" as const };
-          } else {
-            return { allowed: false, type: "none" as const, reason: "Analysis credit required. Please purchase a Single Report or Unlimited Pro subscription." };
-          }
-        }
-      });
-
-      if (!transactionResult.allowed) {
-        return NextResponse.json(
-          { error: transactionResult.reason || "Quota limit reached. Please purchase credits or upgrade to Unlimited Pro." },
-          { status: 402 }
-        );
-      }
-      entitlementType = transactionResult.type as any;
-    } catch (txErr: any) {
-      console.error("[SECURITY FAILURE] Quota check transaction failed:", txErr?.message || txErr);
-      return NextResponse.json(
-        { error: "Quota verification error. Please try again." },
-        { status: 500 }
-      );
-    }
 
     // Parse competitor_brands (capped at 5 items, max 100 chars each)
     let competitor_brands: string[] = [];
@@ -471,6 +404,71 @@ export async function POST(req: NextRequest) {
       } catch (cacheErr: any) {
         console.warn("Global cache check failed, falling back to live research:", cacheErr.message);
       }
+    }
+
+    // 3. Check User Quota / Entitlements ATOMICALLY via Firestore Transaction
+    // Runs AFTER the cache check so cached/zero-cost audits never consume credits.
+    try {
+      const transactionResult = await adminDb.runTransaction(async (tx) => {
+        const userSnap = await tx.get(userDocRef);
+        const userData = userSnap.exists ? userSnap.data() || {} : {};
+
+        const subObj = userData.subscription && typeof userData.subscription === "object" ? userData.subscription : null;
+        const subExpiresAt = subObj?.expiresAt ? new Date(subObj.expiresAt) : null;
+        const isNotExpired = !subExpiresAt || isNaN(subExpiresAt.getTime()) || subExpiresAt > new Date();
+        const isSubActive = subObj?.status === "active" && isNotExpired;
+        const hasSub = (userData.hasSubscription === true && isNotExpired) || isSubActive;
+        const videoCredits = typeof userData.videoCredits === "number" ? userData.videoCredits : 0;
+        const channelCredits = typeof userData.channelCredits === "number" ? userData.channelCredits : 0;
+        const reportCredits = typeof userData.reportCredits === "number" ? userData.reportCredits : 0;
+        const freeUsed = userData.freeAnalysisUsed === true;
+
+        if (hasSub) {
+          return { allowed: true, type: "subscription" as const };
+        }
+
+        if (isChannelAudit) {
+          if (channelCredits > 0) {
+            tx.set(userDocRef, { channelCredits: channelCredits - 1, updatedAt: new Date() }, { merge: true });
+            return { allowed: true, type: "channelCredit" as const };
+          } else if (!freeUsed) {
+            tx.set(userDocRef, { freeAnalysisUsed: true, updatedAt: new Date() }, { merge: true });
+            return { allowed: true, type: "free" as const };
+          } else {
+            return { allowed: false, type: "none" as const, reason: "Channel Report credit required. Please purchase a Channel Report or Unlimited Pro subscription." };
+          }
+        } else {
+          // Single video audit
+          if (videoCredits > 0) {
+            tx.set(userDocRef, { videoCredits: videoCredits - 1, updatedAt: new Date() }, { merge: true });
+            return { allowed: true, type: "videoCredit" as const };
+          } else if (reportCredits > 0) {
+            tx.set(userDocRef, { reportCredits: reportCredits - 1, updatedAt: new Date() }, { merge: true });
+            return { allowed: true, type: "reportCredit" as const };
+          } else if (channelCredits > 0) {
+            tx.set(userDocRef, { channelCredits: channelCredits - 1, updatedAt: new Date() }, { merge: true });
+            return { allowed: true, type: "channelCredit" as const };
+          } else if (!freeUsed) {
+            tx.set(userDocRef, { freeAnalysisUsed: true, updatedAt: new Date() }, { merge: true });
+            return { allowed: true, type: "free" as const };
+          } else {
+            return { allowed: false, type: "none" as const, reason: "Analysis credit required. Please purchase a Single Report or Unlimited Pro subscription." };
+          }
+        }
+      });
+
+      if (!transactionResult.allowed) {
+        return NextResponse.json(
+          { error: transactionResult.reason || "Quota limit reached. Please purchase credits or upgrade to Unlimited Pro." },
+          { status: 402 }
+        );
+      }
+    } catch (txErr: any) {
+      console.error("[SECURITY FAILURE] Quota check transaction failed:", txErr?.message || txErr);
+      return NextResponse.json(
+        { error: "Quota verification error. Please try again." },
+        { status: 500 }
+      );
     }
 
     if (!target) {
