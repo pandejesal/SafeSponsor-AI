@@ -1,12 +1,12 @@
 {
-  "projectId": "snappy-splice-9pt51",
-  "appId": "1:339967513231:web:5363124710d0870a7e16fa",
-  "apiKey": "AIzaSyBg77lpvwTe-kuA5cpb05IVkAjGeLDYtjs",
-  "authDomain": "snappy-splice-9pt51.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-safesponsorai-e1584e79-9010-49e0-9421-87e9ca537559",
-  "storageBucket": "snappy-splice-9pt51.firebasestorage.app",
-  "messagingSenderId": "339967513231",
-  "measurementId": "",
-  "oAuthClientId": "339967513231-28qkqaiptc8574enusgt22s22cm3lekt.apps.googleusercontent.com",
+  "projectId": "safesponsor-ai-958cd",
+  "appId": "1:426869706267:web:5e2343a401457d670eb2be",
+  "apiKey": "AIzaSyDYHQZuRphVaDvHXS9lB1G4DxcyW_k2w48",
+  "authDomain": "safesponsor-ai-958cd.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "safesponsor-ai-958cd.firebasestorage.app",
+  "messagingSenderId": "426869706267",
+  "measurementId": "G-T8NZPSZRT6",
+  "oAuthClientId": "",
   "recaptchaSiteKey": ""
 }
