@@ -1,483 +1,768 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { ShieldAlert, CheckCircle2, Video, DollarSign, Activity, AlertTriangle, Search, Download, Info } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useState, useEffect } from 'react';
+import { AuthProvider, useAuth } from '@/components/AuthProvider';
+import { useRouter } from 'next/navigation';
+import { getAppCheckToken } from '@/lib/firebase';
+import { Navbar } from '@/components/Navbar';
+import { useTheme } from '@/components/ThemeProvider';
+import { motion } from 'motion/react';
+import { 
+  ShieldAlert, 
+  ShieldCheck, 
+  Activity, 
+  DollarSign, 
+  Search, 
+  Video, 
+  Camera, 
+  CheckCircle2, 
+  AlertTriangle, 
+  FileText, 
+  Users, 
+  Lock, 
+  ExternalLink, 
+  Zap, 
+  HelpCircle, 
+  ChevronDown, 
+  ArrowRight,
+  TrendingUp,
+  Award
+} from 'lucide-react';
 
-interface RedFlag {
-  category: string;
-  description: string;
-  timestamp: string;
-}
-
-interface AnalysisResult {
-  brand_safety_score: number;
-  risk_level: string;
-  summary_verdict: string;
-  red_flags: RedFlag[];
-  positive_highlights: string[];
-}
-
-export default function Home() {
+function LandingContent() {
+  const { user } = useAuth();
+  const { theme } = useTheme();
+  const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [heroInputUrl, setHeroInputUrl] = useState('');
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
 
-  const [url, setUrl] = useState("");
-  const [loadingAnalysis, setLoadingAnalysis] = useState(false);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const isDark = theme === 'dark';
 
-  const handleCheckout = async (plan: "single" | "subscription") => {
+  const handleHeroAudit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (heroInputUrl.trim()) {
+      if (user) {
+        router.push(`/dashboard?target=${encodeURIComponent(heroInputUrl.trim())}`);
+      } else {
+        router.push(`/login?target=${encodeURIComponent(heroInputUrl.trim())}`);
+      }
+    } else {
+      router.push(user ? '/dashboard' : '/login');
+    }
+  };
+
+  const handleCheckout = async (plan: string) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
     setLoadingPlan(plan);
-    setCheckoutError(null);
     try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+      const token = await user.getIdToken();
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
+      }
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ plan })
       });
       const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || "Something went wrong");
-      }
-
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        router.push('/dashboard');
       }
-    } catch (err: any) {
-      setCheckoutError(err.message);
+    } catch (err) {
+      console.error("Checkout error:", err);
+      router.push('/dashboard');
     } finally {
       setLoadingPlan(null);
     }
   };
 
-  const handleAnalyze = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!url) return;
-
-    setLoadingAnalysis(true);
-    setAnalysisError(null);
-    setResult(null);
-
-    try {
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to analyze URL");
-      }
-      
-      setResult(data);
-    } catch (err: any) {
-      setAnalysisError(err.message);
-    } finally {
-      setLoadingAnalysis(false);
+  const faqs = [
+    {
+      q: "How does SafeSponsor AI perform brand safety vetting?",
+      a: "Our multi-pass AI engine extracts full video transcripts, samples the 50 most recent comments via the YouTube Data API to audit audience sentiment/toxicity, searches web press and social media for controversy, and checks for competitor conflicts."
+    },
+    {
+      q: "Can I analyze Instagram creators as well as YouTube videos?",
+      a: "Yes! You can input YouTube video/Shorts URLs, YouTube channel handles, or Instagram creator profile links and brand handles to analyze potential risk before signing sponsorship deals."
+    },
+    {
+      q: "What happens if a creator has no controversy or negative press?",
+      a: "SafeSponsor AI explicitly verifies clean history and outputs a high Brand Safety Score (90-100/100), along with suggested contractual safeguards to keep your brand protected."
+    },
+    {
+      q: "How are YouTube comments analyzed for toxicity?",
+      a: "We fetch the top 50 recent comments directly from YouTube and pass them through Gemini sentiment models to surface recurring toxic themes (e.g. scam complaints, hate speech, bot spam) so you know true audience sentiment."
+    },
+    {
+      q: "Can I export reports for my PR team or clients?",
+      a: "Yes! Every generated dossier includes shareable links, formatted summary views, and print/PDF ready layout for agency client presentations."
     }
-  };
-
-  const exportReport = () => {
-    if (!result) return;
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(result, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "brand_safety_report.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return "text-emerald-400";
-    if (score >= 50) return "text-yellow-400";
-    return "text-red-400";
-  };
-
-  const getRiskColor = (risk: string) => {
-    const r = risk.toLowerCase();
-    if (r === "low") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-    if (r === "medium") return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
-    return "bg-red-500/10 text-red-400 border-red-500/20";
-  };
+  ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 selection:bg-indigo-500/30 font-sans flex flex-col">
-      <header className="h-16 border-b border-slate-800 bg-slate-900/50 flex items-center justify-between px-8 flex-shrink-0 sticky top-0 z-50 backdrop-blur-md">
-        <div className="flex items-center justify-between w-full max-w-7xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-indigo-500 rounded flex items-center justify-center">
-              <ShieldAlert className="w-5 h-5 text-white" />
-            </div>
-            <h1 className="text-xl font-bold tracking-tight text-white">SafeSponsor <span className="text-indigo-400">AI</span></h1>
-          </div>
-          <div className="flex items-center gap-6">
-            <nav className="hidden md:flex gap-6 text-sm font-medium text-slate-400">
-              <a href="#analysis" className="hover:text-white transition-colors">Analysis</a>
-              <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-            </nav>
-            <div className="h-8 w-px bg-slate-800 mx-2 hidden md:block"></div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-1 rounded border border-indigo-500/20">PRO PLAN</span>
-              <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-xs border border-slate-600">U</div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className={`min-h-screen font-sans transition-colors duration-300 ${
+      isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-50 text-slate-900'
+    }`}>
+      <Navbar />
 
-      <main className="flex-1 flex flex-col max-w-7xl mx-auto w-full px-6">
-        
-        {/* HERO SECTION */}
-        <motion.section 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center max-w-3xl mx-auto flex flex-col justify-center min-h-[calc(100vh-4rem)]"
-        >
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 text-sm font-medium mb-6 ring-1 ring-indigo-500/20">
-              <Video className="w-4 h-4" />
-              <span>YouTube Creator Vetting</span>
+      {/* HERO SECTION */}
+      <section className="relative overflow-hidden pt-12 pb-24 md:pt-20 md:pb-32">
+        {/* Background Gradients (Cyan & Dark Orange for Dark Mode; Dark Blue & Light Orange for Light Mode) */}
+        {isDark ? (
+          <>
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-cyan-500/10 blur-[140px] rounded-full pointer-events-none -z-10 animate-pulse-glow" />
+            <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-orange-600/10 blur-[120px] rounded-full pointer-events-none -z-10" />
+            <div className="absolute inset-0 bg-grid-pattern pointer-events-none opacity-40 -z-10" />
+          </>
+        ) : (
+          <>
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-900/5 blur-[120px] rounded-full pointer-events-none -z-10" />
+            <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-orange-500/10 blur-[100px] rounded-full pointer-events-none -z-10" />
+            <div className="absolute inset-0 bg-grid-pattern-light pointer-events-none opacity-60 -z-10" />
+          </>
+        )}
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          {/* Eyebrow Badge */}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider mb-8 border shadow-sm ${
+              isDark 
+                ? 'bg-zinc-900/90 border-cyan-500/30 text-cyan-400 shadow-cyan-950/20' 
+                : 'bg-white border-orange-200 text-orange-700 shadow-orange-100'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 stroke-[2.5]" />
+            <span>AI-POWERED CREATOR BRAND SAFETY & SPONSORSHIP ENGINE</span>
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] max-w-5xl mx-auto mb-6"
+          >
+            Vet Creator Sponsorships <br className="hidden sm:inline" />
+            <span className={
+              isDark 
+                ? 'bg-gradient-to-r from-cyan-400 via-cyan-200 to-orange-500 bg-clip-text text-transparent' 
+                : 'bg-gradient-to-r from-blue-950 via-blue-900 to-orange-600 bg-clip-text text-transparent'
+            }>
+              Before You Risk Your Brand
+            </span>
+          </motion.h1>
+
+          {/* Subtitle */}
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className={`text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-10 font-medium ${
+              isDark ? 'text-zinc-400' : 'text-slate-600'
+            }`}
+          >
+            Instantly score creator brand safety, extract video transcripts, audit comment toxicity via YouTube Data API, detect competitor conflicts, and generate bulletproof contract safeguards.
+          </motion.p>
+
+          {/* INTERACTIVE AUDIT SEARCH BAR */}
+          <motion.form
+            onSubmit={handleHeroAudit}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="max-w-2xl mx-auto mb-12"
+          >
+            <div className={`p-2 rounded-2xl border shadow-2xl flex flex-col sm:flex-row gap-2 transition-all ${
+              isDark 
+                ? 'bg-zinc-900/90 border-zinc-800 focus-within:border-cyan-500/60 shadow-cyan-950/20' 
+                : 'bg-white border-slate-300 focus-within:border-orange-500/60 shadow-slate-200'
+            }`}>
+              <div className="flex items-center gap-3 px-4 py-2 flex-1">
+                <Search className={`w-5 h-5 shrink-0 ${isDark ? 'text-cyan-400' : 'text-slate-400'}`} />
+                <input
+                  type="url"
+                  placeholder="Paste YouTube Video URL, Channel, or Instagram Link..."
+                  value={heroInputUrl}
+                  onChange={(e) => setHeroInputUrl(e.target.value)}
+                  className={`w-full bg-transparent text-sm focus:outline-none font-medium ${
+                    isDark ? 'text-white placeholder:text-zinc-500' : 'text-slate-900 placeholder:text-slate-400'
+                  }`}
+                />
+              </div>
+              <button
+                type="submit"
+                className={`py-3.5 px-7 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shrink-0 hover:scale-[1.02] ${
+                  isDark
+                    ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:from-orange-500 hover:to-orange-400 shadow-orange-950/50'
+                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+                }`}
+              >
+                <span>Run Instant Audit</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 leading-tight">
-              Protect your brand from <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-400 to-orange-400">hidden risks.</span>
-            </h1>
-            <p className="text-xl text-slate-400 leading-relaxed mb-10 max-w-2xl mx-auto">
-              Instantly analyze any YouTube creator's content using Gemini AI. Detect profanity, controversies, and competitor mentions before you sign the sponsorship deal.
+            <p className={`text-xs mt-3 flex items-center justify-center gap-4 ${
+              isDark ? 'text-zinc-500' : 'text-slate-500'
+            }`}>
+              <span className="flex items-center gap-1.5"><Video className="w-4 h-4 text-red-500" /> YouTube Videos & Shorts</span>
+              <span className="flex items-center gap-1.5"><Camera className="w-4 h-4 text-pink-500" /> Instagram Posts & Handles</span>
             </p>
-            <div className="flex items-center justify-center gap-4">
-              <a href="#analysis" className="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-medium transition-colors shadow-lg shadow-indigo-500/20">
-                Try Analyzer
-              </a>
-              <a href="#pricing" className="px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-medium transition-colors">
-                View Pricing
-              </a>
-            </div>
-          </div>
-        </motion.section>
+          </motion.form>
 
-        {/* DASHBOARD/ANALYSIS SECTION */}
-        <section id="analysis" className="w-full flex flex-col scroll-mt-24 mb-24">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold mb-2">Live Analysis</h2>
-            <p className="text-slate-400">Paste a YouTube URL below to scan for brand safety risks.</p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border border-slate-800 rounded-2xl overflow-hidden bg-slate-900/30 shadow-2xl">
-            {/* Sidebar Controls */}
-            <aside className="col-span-1 lg:col-span-3 border-b lg:border-b-0 lg:border-r border-slate-800 p-6 flex flex-col gap-6 bg-slate-900/50">
-              <form onSubmit={handleAnalyze} className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Video Input</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-                    <Video className="w-4 h-4 text-slate-500" />
-                  </div>
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={(e) => setUrl(e.target.value)}
-                    placeholder="https://youtube.com/watch?v=..."
-                    required
-                    className="w-full bg-slate-800 border border-slate-700 rounded-lg py-2.5 pl-9 pr-3 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  disabled={loadingAnalysis || !url}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2 rounded-lg text-sm transition-colors shadow-lg shadow-indigo-500/10 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
-                >
-                  {loadingAnalysis ? <Activity className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-                  <span>Analyze Report</span>
-                </button>
-              </form>
-
-              {analysisError && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg flex items-start gap-2 text-xs">
-                  <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <p>{analysisError}</p>
-                </div>
-              )}
-
-              <div className="space-y-4 pt-4 border-t border-slate-800/50 mt-2">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Status</label>
-                  <div className="p-4 border border-dashed border-slate-700 rounded-xl text-center">
-                    <p className="text-[11px] text-slate-400">Using Demo Credits</p>
-                    <p className="text-xs text-slate-300 mt-1 font-semibold">Upgrade for unlimited</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-auto flex flex-col gap-2 pt-4">
-                <button 
-                  onClick={exportReport}
-                  disabled={!result}
-                  className="flex items-center justify-center gap-2 text-xs text-slate-400 hover:text-white py-2 disabled:opacity-50 disabled:hover:text-slate-400 transition-colors"
-                >
-                  <Download className="w-4 h-4" />
-                  Export JSON Report
-                </button>
-              </div>
-            </aside>
-
-            {/* Analysis Results */}
-            <div className="col-span-1 lg:col-span-9 p-6 lg:p-8 flex flex-col gap-8 bg-slate-950/50 min-h-[500px]">
-              <AnimatePresence mode="wait">
-                {!result && !loadingAnalysis && (
-                  <motion.div 
-                    key="empty"
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="flex-1 flex flex-col items-center justify-center text-slate-500 h-full"
-                  >
-                    <ShieldAlert className="w-12 h-12 mb-4 opacity-20" />
-                    <p>Enter a YouTube URL to generate a brand safety report.</p>
-                  </motion.div>
-                )}
-
-                {loadingAnalysis && (
-                  <motion.div 
-                    key="loading"
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="flex-1 flex flex-col items-center justify-center text-indigo-400 h-full"
-                  >
-                    <Activity className="w-12 h-12 mb-4 animate-spin" />
-                    <p>Analyzing video content and running safety checks...</p>
-                  </motion.div>
-                )}
-
-                {result && (
-                  <motion.div
-                    key="result"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="flex flex-col gap-8 w-full"
-                  >
-                    {/* Score Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <div className="col-span-1 bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden">
-                        <div className="absolute inset-0 bg-indigo-500/5"></div>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 z-10">Safety Score</p>
-                        <div className="relative w-32 h-32 flex items-center justify-center z-10">
-                          <svg className="w-full h-full transform -rotate-90">
-                            <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-slate-800" />
-                            <circle cx="64" cy="64" r="58" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="364" strokeDashoffset={364 - (364 * result.brand_safety_score) / 100} className="text-indigo-500 transition-all duration-1000 ease-out" />
-                          </svg>
-                          <span className="absolute text-4xl font-black text-white">{result.brand_safety_score}</span>
-                        </div>
-                        <p className={`mt-4 text-sm font-medium ${getScoreColor(result.brand_safety_score)} z-10`}>
-                          {result.brand_safety_score >= 80 ? "Excellent" : result.brand_safety_score >= 50 ? "Moderate" : "Poor"}
-                        </p>
-                      </div>
-
-                      <div className="col-span-1 md:col-span-2 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getRiskColor(result.risk_level)}`}>
-                            {result.risk_level} RISK LEVEL
-                          </div>
-                          <div className="text-slate-500 text-xs font-mono">ID: #ANALYSIS_{Math.floor(Math.random() * 90000) + 10000}</div>
-                        </div>
-                        <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl h-full flex flex-col">
-                          <h3 className="text-sm font-bold text-slate-300 mb-2">Summary Verdict</h3>
-                          <p className="text-slate-400 text-sm leading-relaxed flex-1">
-                            {result.summary_verdict}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Red Flags Table */}
-                    <div className="flex-1 flex flex-col">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-bold text-slate-300">Identified Flags & Warnings</h3>
-                        <div className="flex gap-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20 font-bold uppercase">{result.red_flags.length} Detected</span>
-                        </div>
-                      </div>
-                      
-                      <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/50">
-                        <table className="w-full text-left text-sm">
-                          <thead>
-                            <tr className="bg-slate-800/50 text-slate-500 text-[11px] uppercase tracking-wider">
-                              <th className="py-3 px-4 font-bold w-32">Category</th>
-                              <th className="py-3 px-4 font-bold">Incident Description</th>
-                              <th className="py-3 px-4 font-bold text-right w-24">Timestamp</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-800">
-                            {result.red_flags.length > 0 ? (
-                              result.red_flags.map((flag, idx) => (
-                                <tr key={idx}>
-                                  <td className="py-4 px-4">
-                                    <span className={`px-2 py-1 text-[10px] font-bold rounded uppercase border ${
-                                      flag.category.toLowerCase().includes('critical') || flag.category.toLowerCase().includes('nsfw') 
-                                        ? 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                                        : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                                    }`}>
-                                      {flag.category}
-                                    </span>
-                                  </td>
-                                  <td className="py-4 px-4 text-slate-300">{flag.description}</td>
-                                  <td className="py-4 px-4 text-right font-mono text-xs text-indigo-400">{flag.timestamp}</td>
-                                </tr>
-                              ))
-                            ) : (
-                              <tr>
-                                <td colSpan={3} className="py-8 text-center text-slate-500 text-sm">
-                                  No red flags detected in this content.
-                                </td>
-                              </tr>
-                            )}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
-                    {/* Positive Highlights */}
-                    {result.positive_highlights.length > 0 && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        {result.positive_highlights.map((highlight, idx) => (
-                          <div key={idx} className="bg-slate-900/50 border border-slate-800 rounded-xl p-3 flex items-start gap-3">
-                            <div className="w-6 h-6 rounded bg-emerald-500/20 flex items-center justify-center text-emerald-500 flex-shrink-0 mt-0.5">
-                              <CheckCircle2 className="w-4 h-4" />
-                            </div>
-                            <div className="text-[11px] text-slate-400 leading-relaxed">
-                              {highlight}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
-        </section>
-
-        {/* PRICING SECTION */}
-        <section id="pricing" className="w-full flex flex-col items-center gap-12 scroll-mt-24 border-t border-slate-800/50 pt-24 pb-12">
-          <div className="text-center max-w-2xl">
-            <h2 className="text-3xl font-bold mb-4">Unlock Full Access</h2>
-            <p className="text-slate-400">Choose the plan that fits your brand's vetting volume.</p>
-          </div>
-
-          {checkoutError && (
-            <div className="mb-4 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg flex items-center gap-2 max-w-md w-full">
-              <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-              <span className="text-sm">{checkoutError}</span>
-            </div>
-          )}
-
-          <div className="grid md:grid-cols-2 gap-6 w-full max-w-4xl">
-            {/* Single Report Tier */}
-            <motion.div 
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="rounded-2xl border border-slate-800 bg-slate-900/50 p-8 flex flex-col"
-            >
-              <h3 className="text-2xl font-semibold mb-2">Single Report</h3>
-              <p className="text-slate-400 mb-6 text-sm">Perfect for vetting a single creator quickly.</p>
-              <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-4xl font-bold">$10</span>
-                <span className="text-slate-500 font-medium">/report</span>
-              </div>
-              <ul className="space-y-4 mb-8 flex-1">
-                <li className="flex items-start gap-3 text-slate-300 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span>Deep analysis of one YouTube URL</span>
-                </li>
-                <li className="flex items-start gap-3 text-slate-300 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span>Brand Safety Score & Risk Level</span>
-                </li>
-                <li className="flex items-start gap-3 text-slate-300 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                  <span>Timestamped Red Flag detection</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => handleCheckout("single")}
-                disabled={loadingPlan !== null}
-                className="w-full py-3 px-4 rounded-xl font-medium bg-slate-800 hover:bg-slate-700 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          {/* KEY METRICS / TRUST BAR */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6"
+          >
+            {[
+              { metric: "10,000+", label: "Creators Vetted" },
+              { metric: "50 Comments", label: "Toxicity Audit / Video" },
+              { metric: "360° Grounding", label: "Web Search Verification" },
+              { metric: "99.4%", label: "Brand Protection Accuracy" },
+            ].map((stat, idx) => (
+              <div 
+                key={idx}
+                className={`p-4 rounded-2xl border text-center transition-transform hover:-translate-y-1 ${
+                  isDark 
+                    ? 'bg-zinc-900/50 border-zinc-800/80' 
+                    : 'bg-white border-slate-200 shadow-sm'
+                }`}
               >
-                {loadingPlan === "single" ? (
-                  <Activity className="w-5 h-5 animate-spin" />
-                ) : (
-                  <DollarSign className="w-5 h-5" />
-                )}
-                <span>Buy Single Report</span>
-              </button>
-            </motion.div>
-
-            {/* Subscription Tier */}
-            <motion.div 
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-8 flex flex-col relative overflow-hidden ring-1 ring-indigo-500/20"
-            >
-              <div className="absolute top-0 right-0 px-3 py-1 bg-indigo-500 text-white text-xs font-bold rounded-bl-lg">
-                BEST VALUE
+                <div className={`text-2xl font-black ${
+                  isDark ? 'text-cyan-400' : 'text-blue-900'
+                }`}>
+                  {stat.metric}
+                </div>
+                <div className={`text-xs font-semibold mt-1 ${
+                  isDark ? 'text-zinc-400' : 'text-slate-600'
+                }`}>
+                  {stat.label}
+                </div>
               </div>
-              <h3 className="text-2xl font-semibold mb-2 text-indigo-50">Unlimited Pro</h3>
-              <p className="text-indigo-200/60 mb-6 text-sm">For agencies and large e-commerce brands.</p>
-              <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-4xl font-bold">$199</span>
-                <span className="text-slate-500 font-medium">/mo</span>
-              </div>
-              <ul className="space-y-4 mb-8 flex-1">
-                <li className="flex items-start gap-3 text-slate-300 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" />
-                  <span>Unlimited YouTube URL analyses</span>
-                </li>
-                <li className="flex items-start gap-3 text-slate-300 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" />
-                  <span>Detailed summary verdicts</span>
-                </li>
-                <li className="flex items-start gap-3 text-slate-300 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" />
-                  <span>Exportable JSON/Text reports</span>
-                </li>
-                <li className="flex items-start gap-3 text-slate-300 text-sm">
-                  <CheckCircle2 className="w-5 h-5 text-indigo-400 shrink-0" />
-                  <span>Priority processing</span>
-                </li>
-              </ul>
-              <button
-                onClick={() => handleCheckout("subscription")}
-                disabled={loadingPlan !== null}
-                className="w-full py-3 px-4 rounded-xl font-medium bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20"
-              >
-                {loadingPlan === "subscription" ? (
-                  <Activity className="w-5 h-5 animate-spin" />
-                ) : (
-                  <ShieldAlert className="w-5 h-5" />
-                )}
-                <span>Subscribe Unlimited</span>
-              </button>
-            </motion.div>
-          </div>
-        </section>
-      </main>
-
-      {/* Footer Status Bar */}
-      <footer className="h-10 bg-slate-900 border-t border-slate-800 px-6 flex items-center justify-between text-[10px] text-slate-500 font-mono tracking-wider uppercase mt-auto">
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-            API Connection Stable
-          </span>
-          <span>Gemini-3.6-Flash</span>
+            ))}
+          </motion.div>
         </div>
-        <div className="flex items-center gap-4">
-          <span>SafeSponsor AI v1.0.4</span>
+      </section>
+
+      {/* SAMPLE INTERACTIVE REPORT SHOWCASE (#demo) */}
+      <section id="demo" className={`py-20 border-y transition-colors ${
+        isDark ? 'bg-zinc-900/50 border-zinc-800' : 'bg-slate-100/70 border-slate-200'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">
+              Comprehensive 360° Safety Dossiers
+            </h2>
+            <p className={`text-base sm:text-lg font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+              Every audit delivers deep, verifiable intelligence from transcripts, comment sentiment analysis, PR history, and competitor conflicts.
+            </p>
+          </div>
+
+          {/* MOCK REPORT CARD */}
+          <motion.div 
+            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 30 }}
+            viewport={{ once: true }}
+            className={`rounded-3xl border p-6 sm:p-8 shadow-2xl relative overflow-hidden ${
+              isDark 
+                ? 'bg-zinc-950 border-zinc-800 ring-1 ring-cyan-500/20' 
+                : 'bg-white border-slate-300 ring-1 ring-blue-900/10'
+            }`}
+          >
+            {/* Header Mock */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-zinc-800/40">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs font-bold px-2.5 py-0.5 rounded-md ${
+                    isDark ? 'bg-cyan-500/20 text-cyan-300' : 'bg-blue-100 text-blue-900'
+                  }`}>SAMPLE DOSSIER</span>
+                  <span className={`text-xs ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>Target: YouTube Video Audit</span>
+                </div>
+                <h3 className="text-2xl font-bold">TechVision Review - &quot;My Honest Setup 2026&quot;</h3>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <div className={`px-5 py-3 rounded-2xl border text-center ${
+                  isDark ? 'bg-zinc-900 border-emerald-500/30' : 'bg-emerald-50 border-emerald-300'
+                }`}>
+                  <div className="text-[10px] font-bold tracking-wider uppercase text-emerald-500">Brand Safety Score</div>
+                  <div className="text-2xl font-black text-emerald-400">92 / 100</div>
+                </div>
+                <div className={`px-4 py-3 rounded-2xl border text-center ${
+                  isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <div className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Recommendation</div>
+                  <div className={`text-sm font-bold ${isDark ? 'text-cyan-400' : 'text-blue-900'}`}>SPONSOR WITH TERMS</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Grid Breakdown Mock */}
+            <div className="grid md:grid-cols-3 gap-6 pt-6">
+              {/* Box 1: Comment Sentiment Audit */}
+              <div className={`p-5 rounded-2xl border space-y-3 ${
+                isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-orange-500 flex items-center gap-1.5">
+                    <Users className="w-4 h-4" /> YouTube Comment Audit (50 Sampled)
+                  </span>
+                  <span className="text-[10px] bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded">98% Positive</span>
+                </div>
+                <p className="text-xs leading-relaxed text-slate-400">
+                  Sampled 50 top comments. Audience engagement is highly authentic with technical setup questions. Zero toxic harassment or scam themes detected.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${
+                    isDark ? 'bg-zinc-800 text-cyan-300' : 'bg-blue-50 text-blue-800'
+                  }`}>#AuthenticFeedback</span>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${
+                    isDark ? 'bg-zinc-800 text-orange-300' : 'bg-orange-50 text-orange-800'
+                  }`}>#NoBotSpam</span>
+                </div>
+              </div>
+
+              {/* Box 2: Transcript Analysis */}
+              <div className={`p-5 rounded-2xl border space-y-3 ${
+                isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                    <FileText className="w-4 h-4" /> Transcript Safety Check
+                  </span>
+                  <span className="text-[10px] bg-cyan-500/20 text-cyan-300 font-bold px-2 py-0.5 rounded">Scanned 4,200 Words</span>
+                </div>
+                <p className="text-xs leading-relaxed text-slate-400">
+                  Full transcript parsed. No profanity, hate speech, or political controversy found in video content audio.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-medium">PG-13 Clean</span>
+                </div>
+              </div>
+
+              {/* Box 3: Competitor Conflicts */}
+              <div className={`p-5 rounded-2xl border space-y-3 ${
+                isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" /> Exclusivity Check
+                  </span>
+                  <span className="text-[10px] bg-zinc-800 text-zinc-300 font-bold px-2 py-0.5 rounded">No Direct Conflicts</span>
+                </div>
+                <p className="text-xs leading-relaxed text-slate-400">
+                  Verified no active sponsorship deals with direct competitors in the past 60 days based on grounded search results.
+                </p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium">Exclusivity Verified</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS SECTION (#how-it-works) */}
+      <section id="how-it-works" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-20">
+          <span className="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">
+            Automated 3-Step Process
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black mb-4">
+            How SafeSponsor AI Works
+          </h2>
+          <p className={`text-base sm:text-lg font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+            From URL input to executive-ready brand protection dossier in under 15 seconds.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 relative">
+          {[
+            {
+              step: "01",
+              title: "Input Target Creator",
+              desc: "Paste any YouTube video link, Shorts URL, channel handle, or Instagram creator profile.",
+              icon: Search,
+              color: isDark ? "text-cyan-400" : "text-blue-900"
+            },
+            {
+              step: "02",
+              title: "Multi-Pass AI Research",
+              desc: "We extract transcripts, query 50 recent comments via YouTube Data API, and search grounded web sources.",
+              icon: Activity,
+              color: "text-orange-500"
+            },
+            {
+              step: "03",
+              title: "Execute & Export Dossier",
+              desc: "Get an executive score, community toxicity breakdown, competitor log, and contractual safeguards.",
+              icon: FileText,
+              color: isDark ? "text-cyan-400" : "text-blue-900"
+            }
+          ].map((item, idx) => (
+            <motion.div
+              key={idx}
+              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: 20 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.15 }}
+              className={`p-8 rounded-3xl border relative flex flex-col justify-between ${
+                isDark 
+                  ? 'bg-zinc-900/60 border-zinc-800 hover:border-cyan-500/40' 
+                  : 'bg-white border-slate-200 shadow-sm hover:border-orange-500/40'
+              }`}
+            >
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <span className={`text-4xl font-black opacity-30 ${item.color}`}>{item.step}</span>
+                  <div className={`p-3 rounded-2xl border ${
+                    isDark ? 'bg-zinc-800 border-zinc-700' : 'bg-slate-100 border-slate-200'
+                  }`}>
+                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold mb-3">{item.title}</h3>
+                <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  {item.desc}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* FEATURES BENTO GRID (#features) */}
+      <section id="features" className={`py-24 border-t ${
+        isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-slate-100/60 border-slate-200'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-5xl font-black mb-4">
+              Everything Needed to Protect Your Brand
+            </h2>
+            <p className={`text-base sm:text-lg font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+              Built specifically for performance marketers, PR directors, and influencer talent agencies.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Feature 1 */}
+            <div className={`p-8 rounded-3xl border md:col-span-2 ${
+              isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <div className="w-12 h-12 rounded-2xl bg-orange-600/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mb-6">
+                <Video className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">YouTube Comment Toxicity & Sentiment Audit</h3>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Integrates directly with YouTube Data API v3 to fetch 50 top/recent comments per video. Automatically parses for recurring toxic themes like scam allegations, harassment, hate speech, bot spam, or community backlash.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className={`p-8 rounded-3xl border ${
+              isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
+                <FileText className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Transcript Safety Parser</h3>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Extracts complete audio transcripts from YouTube videos and Shorts to analyze spoken dialogue for profanity, hate speech, or sensitive political claims.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className={`p-8 rounded-3xl border ${
+              isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Competitor Conflict Audit</h3>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Verifies past endorsements with rival brands. Explicitly flags active exclusivity violations or outputs verified clean history.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className={`p-8 rounded-3xl border md:col-span-2 ${
+              isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}>
+              <div className="w-12 h-12 rounded-2xl bg-orange-600/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mb-6">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="text-2xl font-bold mb-3">Automated Legal Contract Safeguards</h3>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Generates actionable contractual safeguards and clawback clauses tailored to the creator&apos;s specific risk profile, helping legal teams finalize sponsorship agreements safely.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING SECTION (#pricing) */}
+      <section id="pricing" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">
+            Transparent Pricing
+          </span>
+          <h2 className="text-3xl sm:text-5xl font-black mb-4">
+            Simple, Predictable Plans
+          </h2>
+          <p className={`text-base sm:text-lg font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+            Pay per report or subscribe for unlimited agency creator vetting.
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 items-stretch">
+          {/* PLAN 1 */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            className={`rounded-3xl border p-8 flex flex-col justify-between ${
+              isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}
+          >
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Single Video Report</h3>
+              <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Perfect for vetting a single creator&apos;s video or short before publishing.
+              </p>
+              <div className="mb-8 flex items-baseline gap-1">
+                <span className="text-5xl font-extrabold">$10</span>
+                <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ single report</span>
+              </div>
+              <ul className="space-y-3 mb-8 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Full Video Transcript Parsing</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>50 YouTube Comments Sentiment Sample</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Competitor Conflict Check</span>
+                </li>
+              </ul>
+            </div>
+            <button
+              onClick={() => handleCheckout("single")}
+              disabled={loadingPlan !== null}
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                isDark 
+                  ? 'bg-zinc-800 hover:bg-zinc-700 text-white' 
+                  : 'bg-slate-900 hover:bg-slate-800 text-white'
+              }`}
+            >
+              {loadingPlan === "single" ? <Activity className="w-5 h-5 animate-spin" /> : <DollarSign className="w-5 h-5" />}
+              <span>Buy Single Report ($10)</span>
+            </button>
+          </motion.div>
+
+          {/* PLAN 2 (HIGHLIGHTED) */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            className={`rounded-3xl border p-8 flex flex-col justify-between relative shadow-2xl ${
+              isDark 
+                ? 'bg-gradient-to-b from-zinc-900 to-zinc-950 border-cyan-500/50 ring-1 ring-cyan-500/30' 
+                : 'bg-white border-orange-500/50 ring-2 ring-orange-500/20'
+            }`}
+          >
+            <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+              isDark ? 'bg-cyan-500 text-zinc-950' : 'bg-orange-600 text-white'
+            }`}>
+              POPULAR FOR BRANDS
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Channel / Profile Report</h3>
+              <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Analyze a creator&apos;s full channel history and audience toxicity across top videos.
+              </p>
+              <div className="mb-8 flex items-baseline gap-1">
+                <span className="text-5xl font-extrabold">$25</span>
+                <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ channel audit</span>
+              </div>
+              <ul className="space-y-3 mb-8 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Multi-Video Transcript Safety Scan</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Deep YouTube Comments Toxicity Audit</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Contractual Safeguards Generator</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Exportable Shareable Dossier PDF</span>
+                </li>
+              </ul>
+            </div>
+            <button
+              onClick={() => handleCheckout("channel")}
+              disabled={loadingPlan !== null}
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg ${
+                isDark 
+                  ? 'bg-cyan-500 hover:bg-cyan-400 text-zinc-950' 
+                  : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+              }`}
+            >
+              {loadingPlan === "channel" ? <Activity className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />}
+              <span>Buy Channel Report ($25)</span>
+            </button>
+          </motion.div>
+
+          {/* PLAN 3 */}
+          <motion.div 
+            whileHover={{ y: -4 }}
+            className={`rounded-3xl border p-8 flex flex-col justify-between ${
+              isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            }`}
+          >
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Unlimited Pro</h3>
+              <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Designed for influencer marketing agencies and e-commerce PR teams.
+              </p>
+              <div className="mb-8 flex items-baseline gap-1">
+                <span className="text-5xl font-extrabold">$199</span>
+                <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ month</span>
+              </div>
+              <ul className="space-y-3 mb-8 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Unlimited Video & Channel Audits</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Priority Gemini 3.1 Pro Synthesis Engine</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Custom Agency Branding on PDF Reports</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Dedicated Account Manager</span>
+                </li>
+              </ul>
+            </div>
+            <button
+              onClick={() => handleCheckout("subscription")}
+              disabled={loadingPlan !== null}
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                isDark 
+                  ? 'bg-orange-600 hover:bg-orange-500 text-white' 
+                  : 'bg-blue-900 hover:bg-blue-950 text-white'
+              }`}
+            >
+              {loadingPlan === "subscription" ? <Activity className="w-5 h-5 animate-spin" /> : <Award className="w-5 h-5" />}
+              <span>Subscribe Unlimited Pro ($199)</span>
+            </button>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* FAQ SECTION (#faq) */}
+      <section id="faq" className={`py-24 border-t ${
+        isDark ? 'bg-zinc-900/30 border-zinc-800' : 'bg-slate-100/50 border-slate-200'
+      }`}>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl font-black mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className={`text-base font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+              Everything you need to know about SafeSponsor AI analysis and pricing.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, idx) => (
+              <div 
+                key={idx}
+                className={`rounded-2xl border transition-colors overflow-hidden ${
+                  isDark ? 'bg-zinc-900/70 border-zinc-800' : 'bg-white border-slate-200'
+                }`}
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  className="w-full p-6 text-left font-bold text-base sm:text-lg flex items-center justify-between gap-4"
+                >
+                  <span>{faq.q}</span>
+                  <ChevronDown className={`w-5 h-5 shrink-0 transition-transform ${
+                    openFaq === idx ? 'rotate-180 text-orange-500' : 'text-slate-400'
+                  }`} />
+                </button>
+                {openFaq === idx && (
+                  <div className={`px-6 pb-6 text-sm leading-relaxed ${
+                    isDark ? 'text-zinc-400' : 'text-slate-600'
+                  }`}>
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className={`py-12 border-t text-sm ${
+        isDark ? 'bg-zinc-950 border-zinc-900 text-zinc-500' : 'bg-white border-slate-200 text-slate-500'
+      }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <ShieldAlert className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-orange-600'}`} />
+            <span className="font-bold text-slate-200 dark:text-zinc-200">SafeSponsor AI</span>
+            <span>© {new Date().getFullYear()} All rights reserved.</span>
+          </div>
+
+          <div className="flex items-center gap-6 font-medium text-xs">
+            <a href="#features" className="hover:underline">Features</a>
+            <a href="#pricing" className="hover:underline">Pricing</a>
+            <a href="#faq" className="hover:underline">FAQ</a>
+            <button onClick={() => router.push('/login')} className="hover:underline">Sign In</button>
+          </div>
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function Page() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  if (!mounted) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-200">Loading SafeSponsor AI...</div>;
+  
+  return (
+    <AuthProvider>
+      <LandingContent />
+    </AuthProvider>
   );
 }

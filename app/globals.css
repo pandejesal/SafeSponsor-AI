@@ -1,1 +1,146 @@
 @import "tailwindcss";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  /* CUSTOM SCROLLBAR FOR DARK MODE */
+  html.dark ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  html.dark ::-webkit-scrollbar-track {
+    background: #09090b;
+  }
+  html.dark ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #06b6d4 0%, #ea580c 100%);
+    border-radius: 9999px;
+    border: 2px solid #09090b;
+  }
+  html.dark ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #22d3ee 0%, #f97316 100%);
+  }
+
+  /* CUSTOM SCROLLBAR FOR LIGHT MODE */
+  html.light ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  html.light ::-webkit-scrollbar-track {
+    background: #f8fafc;
+  }
+  html.light ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #1e3a8a 0%, #ea580c 100%);
+    border-radius: 9999px;
+    border: 2px solid #f8fafc;
+  }
+  html.light ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #1d4ed8 0%, #f97316 100%);
+  }
+
+  /* Selection styling */
+  html.dark ::selection {
+    background-color: rgba(6, 182, 212, 0.3);
+    color: #38bdf8;
+  }
+  html.light ::selection {
+    background-color: rgba(234, 88, 12, 0.2);
+    color: #1e3a8a;
+  }
+}
+
+/* Custom glow and mesh background utilities */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+}
+
+.bg-grid-pattern-light {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 6s ease-in-out infinite;
+}
+
+/* PRINT TO PDF AGENCY REPORT STYLING */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 12mm 15mm;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10.5pt !important;
+    line-height: 1.5 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide UI elements during print */
+  .no-print,
+  .print\:hidden,
+  header,
+  footer,
+  nav,
+  button,
+  form {
+    display: none !important;
+  }
+
+  /* Ensure printable dossier is visible and clean */
+  .printable-dossier {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Ensure headers, cards, and sections do not break mid-card */
+  .printable-card,
+  .printable-section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    border-color: #cbd5e1 !important;
+    background-color: #f8fafc !important;
+  }
+
+  /* Ensure primary brand color contrast for PDF headers */
+  .print-header-brand {
+    color: #0284c7 !important; /* Cyan-600 / Primary Brand Accent */
+  }
+
+  .print-text-dark {
+    color: #0f172a !important;
+  }
+
+  a {
+    text-decoration: none !important;
+    color: #0284c7 !important;
+  }
+}
+

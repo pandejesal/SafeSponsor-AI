@@ -1,0 +1,52 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isNotTouchingSensitiveFields() {
+      let sensitiveFields = ['email', 'hasSubscription', 'subscription', 'freeAnalysisUsed', 'reportCredits', 'videoCredits', 'channelCredits', 'plan', 'paymentProvider', 'lastPaymentId', 'role', 'admin', 'credits'];
+      return resource == null
+        ? !request.resource.data.keys().hasAny(sensitiveFields)
+        : !request.resource.data.diff(resource.data).affectedKeys().hasAny(sensitiveFields);
+    }
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // User collection rules
+    match /users/{userId} {
+      // Allow user to read their own document
+      allow read: if isOwner(userId);
+
+      // Allow owner to create or update their user document ONLY for non-sensitive fields
+      // Sensitive privilege/entitlement fields (hasSubscription, freeAnalysisUsed, reportCredits, plan, paymentProvider, lastPaymentId)
+      // are strictly protected and can ONLY be modified by the server-side Admin SDK.
+      allow create: if isOwner(userId) && isNotTouchingSensitiveFields();
+      allow update: if isOwner(userId) && isNotTouchingSensitiveFields();
+      allow delete: if false;
+
+      // User history subcollection - generated server-side by Admin SDK
+      match /history/{historyId} {
+        allow read: if isOwner(userId);
+        allow write: if false;
+      }
+    }
+
+    // Global audits cache collection - readable by signed-in users, writable only by Admin SDK
+    match /global_audits/{auditId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+  }
+}

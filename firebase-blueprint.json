@@ -1,0 +1,59 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with entitlements managed exclusively by Admin SDK",
+      "type": "object",
+      "properties": {
+        "hasSubscription": { "type": "boolean" },
+        "subscription": {
+          "type": "object",
+          "properties": {
+            "status": { "type": "string" },
+            "expiresAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "freeAnalysisUsed": { "type": "boolean" },
+        "videoCredits": { "type": "number" },
+        "channelCredits": { "type": "number" },
+        "reportCredits": { "type": "number" },
+        "plan": { "type": "string" },
+        "paymentProvider": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "AnalysisHistory": {
+      "title": "AnalysisHistory",
+      "description": "Audit history records generated server-side",
+      "type": "object",
+      "properties": {
+        "target": { "type": "string" },
+        "analysis": { "type": "object" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "GlobalAudit": {
+      "title": "GlobalAudit",
+      "description": "Cached public audit reports",
+      "type": "object",
+      "properties": {
+        "channel_name": { "type": "string" },
+        "brand_safety_score": { "type": "number" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User state and entitlements"
+    },
+    "/users/{userId}/history/{historyId}": {
+      "schema": { "$ref": "#/entities/AnalysisHistory" },
+      "description": "Subcollection for user analysis history"
+    },
+    "/global_audits/{auditId}": {
+      "schema": { "$ref": "#/entities/GlobalAudit" },
+      "description": "Publicly cached creator risk audits"
+    }
+  }
+}

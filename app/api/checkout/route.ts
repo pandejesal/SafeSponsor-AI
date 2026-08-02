@@ -1,76 +1,147 @@
 import { NextRequest, NextResponse } from "next/server";
-import Stripe from "stripe";
+import { verifyAuthHeader, verifyAppCheckHeader } from "@/lib/firebase-admin";
+import { z } from "zod";
 
-let stripeClient: Stripe | null = null;
-
-function getStripe() {
-  if (!stripeClient) {
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) {
-      throw new Error("STRIPE_SECRET_KEY environment variable is missing");
-    }
-    stripeClient = new Stripe(key, {
-      apiVersion: "2025-01-27.acacia" as any, // latest stable version or fallback
-    });
-  }
-  return stripeClient;
-}
+const checkoutSchema = z.object({
+  plan: z.enum(["single", "channel", "subscription"]),
+  customerEmail: z.string().email().max(255).optional().or(z.literal("")),
+  customerName: z.string().max(100).optional().or(z.literal("")),
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const { plan } = await req.json();
+    const appCheckResult = await verifyAppCheckHeader(req);
+    if (!appCheckResult.valid) {
+      return NextResponse.json(
+        { error: "Unauthorized client request (App Check failed)." },
+        { status: 401 }
+      );
+    }
+
+    const uid = await verifyAuthHeader(req);
+    if (!uid) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please log in to request checkout." },
+        { status: 401 }
+      );
+    }
+
+    let rawBody: unknown;
+    try {
+      const rawText = await req.text();
+      if (rawText.length > 1024 * 1024) {
+        return NextResponse.json({ error: "Payload too large. Maximum allowed request size is 1MB." }, { status: 413 });
+      }
+      rawBody = JSON.parse(rawText);
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
+    const parseResult = checkoutSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Validation failed: " + parseResult.error.issues.map(e => e.message).join(", ") },
+        { status: 400 }
+      );
+    }
+
+    const { plan, customerEmail, customerName } = parseResult.data;
     const appUrl = process.env.APP_URL || "http://localhost:3000";
+    const apiKey = process.env.DODO_PAYMENTS_API_KEY;
 
-    // Allow mock checkout if Stripe key is missing
-    if (!process.env.STRIPE_SECRET_KEY) {
-       console.warn("STRIPE_SECRET_KEY is missing. Using mock checkout flow.");
-       return NextResponse.json({ url: `${appUrl}/dashboard?mock_success=true` });
+    if (!apiKey) {
+      if (process.env.NODE_ENV === "production") {
+        console.error("[SECURITY ERROR] Checkout requested but DODO_PAYMENTS_API_KEY is missing in production.");
+        return NextResponse.json(
+          { error: "Payment gateway is currently unconfigured. Please contact support." },
+          { status: 500 }
+        );
+      }
+      
+      console.warn("[DEV MODE] DODO_PAYMENTS_API_KEY is missing. Redirecting to dev success simulation.");
+      return NextResponse.json({ 
+        url: `${appUrl}/dashboard?dev_checkout_sim=true&plan=${plan || 'subscription'}` 
+      });
     }
 
-    const stripe = getStripe();
-
-    let priceData: any = {};
+    let productId = "";
     if (plan === "single") {
-      priceData = {
-        currency: "usd",
-        product_data: {
-          name: "Single Report",
-          description: "One-time brand safety analysis",
-        },
-        unit_amount: 1000, // $10.00
-      };
+      productId = process.env.DODO_PAYMENTS_PRODUCT_ID_SINGLE || "";
+    } else if (plan === "channel") {
+      productId = process.env.DODO_PAYMENTS_PRODUCT_ID_CHANNEL || "";
     } else if (plan === "subscription") {
-      priceData = {
-        currency: "usd",
-        product_data: {
-          name: "Unlimited Subscription",
-          description: "Unlimited brand safety reports",
-        },
-        unit_amount: 19900, // $199.00
-        recurring: {
-          interval: "month",
-        },
-      };
+      productId = process.env.DODO_PAYMENTS_PRODUCT_ID_SUBSCRIPTION || "";
     } else {
-      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid plan type specified" }, { status: 400 });
     }
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: priceData,
-          quantity: 1,
+    if (!productId) {
+      if (process.env.NODE_ENV === "production") {
+        console.error(`[SECURITY ERROR] Missing required Dodo product ID environment variable for '${plan}' plan in production.`);
+        return NextResponse.json(
+          { error: `Payment gateway product ID unconfigured for ${plan} plan. Please contact support.` },
+          { status: 500 }
+        );
+      }
+      // Dev mode fallback
+      productId = plan === "single" ? "p_single_report" : plan === "channel" ? "p_channel_report" : "p_unlimited_sub";
+    }
+
+    const isLive = process.env.DODO_PAYMENTS_MODE === "live" || process.env.DODO_PAYMENTS_MODE === "live_mode";
+    const baseUrl = isLive ? "https://live.dodopayments.com" : "https://test.dodopayments.com";
+
+    const response = await fetch(`${baseUrl}/payments`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        billing: {
+          country: "US",
         },
-      ],
-      mode: plan === "subscription" ? "subscription" : "payment",
-      success_url: `${appUrl}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${appUrl}/?canceled=true`,
+        customer: {
+          email: customerEmail || "customer@safesponsor.ai",
+          name: customerName || "SafeSponsor Customer",
+        },
+        product_cart: [
+          {
+            product_id: productId,
+            quantity: 1,
+          }
+        ],
+        payment_link: true,
+        return_url: `${appUrl}/dashboard?dodo_success=true&plan=${plan}`,
+        metadata: {
+          uid,
+          plan,
+        }
+      })
     });
 
-    return NextResponse.json({ url: session.url });
+    if (!response.ok) {
+      const errText = await response.text();
+      console.error("[PAYMENT GATEWAY FAILURE] Dodo Payments API creation failed:", response.status, errText);
+      return NextResponse.json(
+        { error: "Failed to initialize payment session with gateway. Please try again." },
+        { status: 502 }
+      );
+    }
+
+    const data = await response.json();
+    const checkoutUrl = data.payment_link || data.checkout_url || data.url;
+
+    if (!checkoutUrl) {
+      console.error("[PAYMENT GATEWAY ERROR] Dodo Payments response missing checkout URL:", data);
+      return NextResponse.json(
+        { error: "Payment gateway returned invalid checkout URL." },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({ url: checkoutUrl });
   } catch (error: any) {
-    console.error("Stripe error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[SYSTEM ERROR] Checkout endpoint error:", error);
+    return NextResponse.json({ error: "Internal checkout error" }, { status: 500 });
   }
 }
