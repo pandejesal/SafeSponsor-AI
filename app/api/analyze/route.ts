@@ -82,8 +82,14 @@ async function generateWithModelFallback(params: {
 }
 
 async function fetchYouTubeComments(videoId: string): Promise<string[]> {
-  const apiKey = process.env.YOUTUBE_API_KEY || process.env.GEMINI_API_KEY;
-  if (!apiKey) return [];
+  // Only the dedicated YouTube Data API key is valid here. The Gemini key was
+  // previously used as a fallback, but it is not a valid YouTube API credential
+  // and only produced 403s while hiding the misconfiguration.
+  const apiKey = process.env.YOUTUBE_API_KEY;
+  if (!apiKey) {
+    console.warn("[YOUTUBE API] YOUTUBE_API_KEY is not configured; skipping live comment analysis.");
+    return [];
+  }
   try {
     // 1. Attempt to fetch 50 most recent comments (order=time)
     const res = await fetch(
@@ -831,16 +837,6 @@ CRITICAL REQUIREMENTS:
 
     if (Array.isArray(result.competitor_and_sponsorship_history)) {
       result.competitor_and_sponsorship_history = result.competitor_and_sponsorship_history.map((c: any) => {
-        if (c && c.source_url && c.source_url !== "N/A") {
-          const san = sanitizeUrl(c.source_url);
-          c.source_url = san !== "#" ? san : "N/A";
-        }
-        return c;
-      });
-    }
-
-    if (Array.isArray(result.controversy_and_pr_history)) {
-      result.controversy_and_pr_history = result.controversy_and_pr_history.map((c: any) => {
         if (c && c.source_url && c.source_url !== "N/A") {
           const san = sanitizeUrl(c.source_url);
           c.source_url = san !== "#" ? san : "N/A";

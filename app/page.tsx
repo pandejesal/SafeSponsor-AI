@@ -110,7 +110,7 @@ function LandingContent() {
     },
     {
       q: "Can I export reports for my PR team or clients?",
-      a: "Yes! Every generated dossier includes shareable links, formatted summary views, and print/PDF ready layout for agency client presentations."
+      a: "Yes! Every generated dossier includes a formatted summary dashboard, a print/PDF-ready layout, and JSON/CSV export for agency client presentations."
     }
   ];
 
@@ -235,10 +235,10 @@ function LandingContent() {
             className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6"
           >
             {[
-              { metric: "10,000+", label: "Creators Vetted" },
+              { metric: "7-Day Cache", label: "Zero-Cost Repeat Audits" },
               { metric: "50 Comments", label: "Toxicity Audit / Video" },
               { metric: "360° Grounding", label: "Web Search Verification" },
-              { metric: "99.4%", label: "Brand Protection Accuracy" },
+              { metric: "60-Second", label: "Executive Dossier Turnaround" },
             ].map((stat, idx) => (
               <div 
                 key={idx}
@@ -392,7 +392,7 @@ function LandingContent() {
             How SafeSponsor AI Works
           </h2>
           <p className={`text-base sm:text-lg font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
-            From URL input to executive-ready brand protection dossier in under 15 seconds.
+            From URL input to executive-ready brand protection dossier in under a minute.
           </p>
         </div>
 
@@ -661,15 +661,15 @@ function LandingContent() {
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Priority Gemini 3.1 Pro Synthesis Engine</span>
+                  <span>Gemini + Groq Multi-Model Research Engine</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Custom Agency Branding on PDF Reports</span>
+                  <span>Print-Ready Executive PDF Dossiers</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span>Dedicated Account Manager</span>
+                  <span>Batch Multi-URL Queue Auditing</span>
                 </li>
               </ul>
             </div>

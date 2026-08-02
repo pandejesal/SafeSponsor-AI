@@ -92,10 +92,17 @@ export async function POST(req: NextRequest) {
     const paymentId = data?.payment_id || data?.id || body?.id || null;
     const subscriptionId = data?.subscription_id || data?.subscription?.id || data?.payment?.subscription_id || null;
 
-    // Resolve plan: renewal/subscription events are always subscription grants,
-    // even when the payment payload lacks the original checkout metadata.
+    // Resolve plan: any subscription-scoped event or a payment/refund that
+    // carries a subscription id is always a subscription grant or revocation,
+    // even when the payload lacks the original checkout metadata. This prevents
+    // a subscription.cancelled/refund from being misread as a "single" plan
+    // and wrongly decrementing a video credit.
     let plan = data?.metadata?.plan || "single";
-    if (eventType === "subscription.renewed" || eventType === "subscription.active" || (eventType === "payment.succeeded" && subscriptionId)) {
+    const isSubscriptionContextEvent =
+      eventType.startsWith("subscription.") ||
+      (eventType === "payment.succeeded" && subscriptionId) ||
+      (eventType === "refund.succeeded" && subscriptionId);
+    if (isSubscriptionContextEvent) {
       plan = "subscription";
     }
 
@@ -128,7 +135,9 @@ export async function POST(req: NextRequest) {
       ? `wh_${webhookHeaderId}`
       : `${eventType}_${paymentId || Date.now()}`;
 
+    let idempotencyRefPath: string | null = null;
     if (idempotencyKey) {
+      idempotencyRefPath = `processed_webhooks/${String(idempotencyKey)}`;
       const processedRef = adminDb.collection("processed_webhooks").doc(String(idempotencyKey));
 
       try {
@@ -199,6 +208,7 @@ export async function POST(req: NextRequest) {
 
     const userRef = adminDb.collection("users").doc(uid);
 
+    try {
     if (isRevocationEvent && (plan === "single" || plan === "channel")) {
       await adminDb.runTransaction(async (tx) => {
         const userSnap = await tx.get(userRef);
@@ -254,6 +264,21 @@ export async function POST(req: NextRequest) {
     } else {
       await userRef.set(entitlementUpdate, { merge: true });
       console.log(`[ENTITLEMENT CONFIRMED] User ${uid} updated for event: ${eventType} (plan: ${plan})`);
+    }
+    } catch (grantErr: any) {
+      // If the entitlement write fails AFTER the idempotency record was created,
+      // delete the record so Dodo's retry re-processes the event. Without this,
+      // the event would be skipped forever and the customer never gets their
+      // credits/subscription.
+      console.error(`[ENTITLEMENT WRITE FAILURE] Grant failed for user ${uid} (${eventType}); clearing idempotency record so a retry can reprocess.`, grantErr?.message || grantErr);
+      if (idempotencyRefPath) {
+        try {
+          await adminDb.doc(idempotencyRefPath).delete();
+        } catch (cleanupErr: any) {
+          console.warn("[ENTITLEMENT WRITE FAILURE] Failed to clear idempotency record; a retry may skip this event.", cleanupErr?.message || cleanupErr);
+        }
+      }
+      throw grantErr;
     }
 
     return NextResponse.json({ received: true });

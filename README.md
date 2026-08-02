@@ -33,7 +33,7 @@ and every request is guarded by authentication, rate limiting, and atomic entitl
 - **Comment toxicity audit** — sentiment sampling of the 50 most recent/top comments per video.
 - **Competitor conflict detection** — explicit per-brand sponsorship checks with verification status.
 - **Multi-provider AI fallback** — Gemini models with automatic fallthrough and a Groq backup.
-- **Global report cache** — repeat audits are served instantly at zero API cost (with anti-poisoning guard).
+- **Global report cache** — repeat audits are served instantly at zero API cost and consume no user credits (with anti-poisoning guard).
 - **Billing via Dodo Payments** — one-time Single/Channel reports and Unlimited Pro subscription.
 - **Hardened security** — Firebase Auth + App Check, signed webhooks, atomic quota, strict Firestore rules.
 
