@@ -12,6 +12,9 @@
     "lint": "eslint .",
     "clean": "next clean"
   },
+  "overrides": {
+    "jose": "5.9.6"
+  },
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@hookform/resolvers": "^5.2.1",
