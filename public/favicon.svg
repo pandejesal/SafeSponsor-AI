@@ -10,5 +10,5 @@
     <circle cx="60" cy="50" r="32" fill="none" stroke="#f97316" stroke-width="3" opacity="0.9"/>
   </g>
   <path d="M50 8 L85 28 L85 72 L50 92 L15 72 L15 28 Z" fill="none" stroke="#06b6d4" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M42 34 C42 34 58 34 58 42 C58 48 44 50 42 52 C40 54 58 56 58 66" fill="none" stroke="#fafafa" stroke-width="4" stroke-linecap="round"/>
+  <text x="50" y="60" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="38" font-weight="900" fill="#fafafa">S</text>
 </svg>
