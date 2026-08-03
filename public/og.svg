@@ -1,7 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="1200 630 1200 630">
-  <rect width="1200" height="630" rx="0" fill="#09090b"/>
-  <path d="M600 140 L920 320 L920 620 L600 800 L280 620 L280 320 Z" fill="none" stroke="#06b6d4" stroke-width="6" opacity="0.3"/>
-  <text x="600" y="380" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="900" fill="#fafafa">SafeSponsor AI</text>
-  <text x="600" y="450" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#a1a1aa">Creator Brand Safety &amp; Sponsorship Vetting</text>
-  <rect x="420" y="500" width="360" height="4" rx="2" fill="#f97316"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <defs>
+    <clipPath id="hex">
+      <path d="M600 80 L850 230 L850 430 L600 580 L350 430 L350 230 Z"/>
+    </clipPath>
+  </defs>
+  <rect width="1200" height="630" fill="#09090b"/>
+  <g clip-path="url(#hex)" opacity="0.15">
+    <circle cx="510" cy="330" r="220" fill="none" stroke="#06b6d4" stroke-width="5"/>
+    <circle cx="690" cy="330" r="220" fill="none" stroke="#f97316" stroke-width="5"/>
+  </g>
+  <path d="M600 80 L850 230 L850 430 L600 580 L350 430 L350 230 Z" fill="none" stroke="#06b6d4" stroke-width="4" stroke-linejoin="round" opacity="0.2"/>
+  <text x="600" y="370" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="900" fill="#fafafa">SafeSponsor AI</text>
+  <text x="600" y="440" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#a1a1aa">Creator Brand Safety &amp; Sponsorship Vetting</text>
+  <rect x="420" y="490" width="360" height="4" rx="2" fill="#f97316"/>
 </svg>
