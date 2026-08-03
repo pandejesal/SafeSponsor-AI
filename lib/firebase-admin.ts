@@ -1,4 +1,4 @@
-import { getApps, getApp, initializeApp } from 'firebase-admin/app';
+import { getApps, getApp, initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { getAppCheck } from 'firebase-admin/app-check';
@@ -6,9 +6,23 @@ import { NextRequest } from 'next/server';
 import config from '../firebase-applet-config.json';
 
 if (!getApps().length) {
-  initializeApp({
-    projectId: config.projectId,
-  });
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+  if (serviceAccountJson) {
+    try {
+      const serviceAccount = JSON.parse(serviceAccountJson);
+      initializeApp({
+        credential: cert(serviceAccount),
+        projectId: serviceAccount.projectId || config.projectId,
+      });
+    } catch (parseErr) {
+      console.error("[FATAL] Failed to parse FIREBASE_SERVICE_ACCOUNT JSON:", parseErr);
+      initializeApp({ projectId: config.projectId });
+    }
+  } else {
+    console.warn("[WARN] FIREBASE_SERVICE_ACCOUNT not set. Falling back to project ID only — Firestore writes will fail in production.");
+    initializeApp({ projectId: config.projectId });
+  }
 }
 
 const adminApp = getApp();
