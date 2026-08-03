@@ -10,5 +10,5 @@
     <circle cx="60" cy="50" r="32" fill="none" stroke="#f97316" stroke-width="3" opacity="0.9"/>
   </g>
   <path d="M50 8 L85 28 L85 72 L50 92 L15 72 L15 28 Z" fill="none" stroke="#06b6d4" stroke-width="3" stroke-linejoin="round"/>
-  <path d="M58 34 C58 34 62 38 62 42 C62 46 56 48 50 50 C44 52 38 54 38 58 C38 62 42 66 48 66" fill="none" stroke="#fafafa" stroke-width="4" stroke-linecap="round"/>
+  <path d="M42 34 C42 34 58 34 58 42 C58 48 44 50 42 52 C40 54 58 56 58 66" fill="none" stroke="#fafafa" stroke-width="4" stroke-linecap="round"/>
 </svg>
