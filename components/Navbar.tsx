@@ -145,6 +145,7 @@ export function Navbar() {
 
               <button
                 onClick={handleSignOut}
+                aria-label="Sign out"
                 className={`p-2.5 rounded-xl border text-sm font-semibold transition-all ${
                   isDark 
                     ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800' 
@@ -194,6 +195,8 @@ export function Navbar() {
           
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileMenuOpen}
             className={`p-2 rounded-lg border ${
               isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-300' : 'bg-slate-100 border-slate-300 text-slate-800'
             }`}

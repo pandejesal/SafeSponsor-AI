@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+
+Sitemap: https://safe-sponsor-ai.vercel.app/sitemap.xml

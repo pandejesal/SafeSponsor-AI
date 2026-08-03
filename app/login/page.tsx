@@ -6,7 +6,7 @@ import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
-import { AuthProvider, useAuth } from '@/components/AuthProvider';
+import { useAuth } from '@/components/AuthProvider';
 import { Navbar } from '@/components/Navbar';
 import { useTheme } from '@/components/ThemeProvider';
 import Link from 'next/link';
@@ -191,8 +191,6 @@ export default function LoginPage() {
   if (!mounted) return <div className="min-h-screen dark:bg-zinc-950 bg-slate-50 dark:text-zinc-200 text-slate-900 flex items-center justify-center">Loading...</div>;
   
   return (
-    <AuthProvider>
-      <LoginInner />
-    </AuthProvider>
+    <LoginInner />
   );
 }

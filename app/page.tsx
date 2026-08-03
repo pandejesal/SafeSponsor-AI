@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from '@/components/AuthProvider';
+import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { getAppCheckToken } from '@/lib/firebase';
 import { Navbar } from '@/components/Navbar';
@@ -110,6 +110,18 @@ function LandingContent() {
     {
       q: "Can I export reports for my PR team or clients?",
       a: "Yes! Every generated dossier includes a formatted summary dashboard, a print/PDF-ready layout, and JSON/CSV export for agency client presentations."
+    },
+    {
+      q: "Is there a free trial?",
+      a: "You can run a free demo audit on select seeded creator profiles before purchasing. Each paid plan includes credits to analyze real creators."
+    },
+    {
+      q: "Can I cancel my subscription anytime?",
+      a: "Yes. Cancel anytime from your dashboard. Your access continues until the end of your current billing period."
+    },
+    {
+      q: "What payment methods do you accept?",
+      a: "We accept all major credit and debit cards through our secure payment provider, Dodo Payments."
     }
   ];
 
@@ -181,6 +193,7 @@ function LandingContent() {
                 <input
                   type="text"
                   inputMode="url"
+                  aria-label="Enter YouTube video, channel, or Instagram creator URL"
                   placeholder="Paste YouTube Video URL, Channel, or Instagram Link..."
                   value={heroInputUrl}
                   onChange={(e) => setHeroInputUrl(e.target.value)}
@@ -201,6 +214,15 @@ function LandingContent() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+            <button
+              type="button"
+              onClick={() => router.push(user ? '/dashboard' : '/login')}
+              className={`text-sm font-medium underline underline-offset-4 ${
+                isDark ? 'text-zinc-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              or explore the dashboard
+            </button>
             <p className={`text-xs mt-3 flex items-center justify-center gap-4 ${
               isDark ? 'text-zinc-500' : 'text-slate-500'
             }`}>
@@ -515,6 +537,9 @@ function LandingContent() {
           <p className={`text-base sm:text-lg font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
             Pay per report or subscribe for unlimited agency creator vetting.
           </p>
+          <p className={`text-xs font-medium mt-2 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
+            Secure payment via Dodo Payments. Cancel anytime.
+          </p>
         </div>
 
         {checkoutError && (
@@ -703,6 +728,8 @@ function LandingContent() {
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
+                  aria-expanded={openFaq === idx}
+                  aria-controls={`faq-answer-${idx}`}
                   className="w-full p-6 text-left font-bold text-base sm:text-lg flex items-center justify-between gap-4"
                 >
                   <span>{faq.q}</span>
@@ -711,9 +738,13 @@ function LandingContent() {
                   }`} />
                 </button>
                 {openFaq === idx && (
-                  <div className={`px-6 pb-6 text-sm leading-relaxed ${
-                    isDark ? 'text-zinc-400' : 'text-slate-600'
-                  }`}>
+                  <div
+                    id={`faq-answer-${idx}`}
+                    role="region"
+                    className={`px-6 pb-6 text-sm leading-relaxed ${
+                      isDark ? 'text-zinc-400' : 'text-slate-600'
+                    }`}
+                  >
                     {faq.a}
                   </div>
                 )}
@@ -738,6 +769,8 @@ function LandingContent() {
             <a href="#features" className="hover:underline">Features</a>
             <a href="#pricing" className="hover:underline">Pricing</a>
             <a href="#faq" className="hover:underline">FAQ</a>
+            <a href="/privacy" className="hover:underline">Privacy</a>
+            <a href="/terms" className="hover:underline">Terms</a>
             <button onClick={() => router.push('/login')} className="hover:underline">Sign In</button>
           </div>
         </div>
@@ -755,8 +788,6 @@ export default function Page() {
   if (!mounted) return <div className="min-h-screen dark:bg-zinc-950 bg-slate-50 dark:text-zinc-200 text-slate-900 flex items-center justify-center">Loading SafeSponsor AI...</div>;
   
   return (
-    <AuthProvider>
-      <LandingContent />
-    </AuthProvider>
+    <LandingContent />
   );
 }
