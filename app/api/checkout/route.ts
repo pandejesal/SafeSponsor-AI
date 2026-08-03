@@ -93,27 +93,19 @@ export async function POST(req: NextRequest) {
     const isLive = process.env.DODO_PAYMENTS_MODE === "live" || process.env.DODO_PAYMENTS_MODE === "live_mode";
     const baseUrl = isLive ? "https://live.dodopayments.com" : "https://test.dodopayments.com";
 
-    const response = await fetch(`${baseUrl}/payments`, {
+    const response = await fetch(`${baseUrl}/checkouts`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        billing: {
-          country: "US",
-        },
-        customer: {
-          email: customerEmail || "customer@safesponsor.ai",
-          name: customerName || "SafeSponsor Customer",
-        },
         product_cart: [
           {
             product_id: productId,
             quantity: 1,
           }
         ],
-        payment_link: true,
         return_url: `${appUrl}/dashboard?dodo_success=true&plan=${plan}`,
         metadata: {
           uid,
@@ -132,7 +124,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await response.json();
-    const checkoutUrl = data.payment_link || data.checkout_url || data.url;
+    const checkoutUrl = data.checkout_url || data.payment_link || data.url;
 
     if (!checkoutUrl) {
       console.error("[PAYMENT GATEWAY ERROR] Dodo Payments response missing checkout URL:", data);
