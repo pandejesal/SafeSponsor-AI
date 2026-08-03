@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db, auth, getAppCheckToken } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
 import { Navbar } from "@/components/Navbar";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
@@ -126,6 +126,14 @@ function DashboardInner() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
+  // User credits / subscription state
+  const [userCredits, setUserCredits] = useState<{
+    videoCredits: number;
+    channelCredits: number;
+    hasSubscription: boolean;
+    subscriptionExpiresAt: string | null;
+  }>({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
+
   // Filter, Tab & Search states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<'all' | 'sponsor' | 'caution' | 'blacklist' | 'cached'>('all');
@@ -172,6 +180,32 @@ function DashboardInner() {
       console.error("Firestore history snapshot error:", error);
       setLoadingHistory(false);
     });
+    return () => unsubscribe();
+  }, [user]);
+
+  // Listen to user document for credits & subscription status
+  useEffect(() => {
+    if (!user || !db) {
+      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
+      return;
+    }
+    const userDocRef = doc(db, "users", user.uid);
+    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
+      if (!docSnap.exists()) {
+        setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
+        return;
+      }
+      const data = docSnap.data();
+      const sub = data.subscription && typeof data.subscription === "object" ? data.subscription : null;
+      const expiresAt = sub?.expiresAt || null;
+      const isSubActive = data.hasSubscription === true && expiresAt && new Date(expiresAt).getTime() > Date.now();
+      setUserCredits({
+        videoCredits: typeof data.videoCredits === "number" ? data.videoCredits : 0,
+        channelCredits: typeof data.channelCredits === "number" ? data.channelCredits : 0,
+        hasSubscription: isSubActive,
+        subscriptionExpiresAt: expiresAt,
+      });
+    }, () => {});
     return () => unsubscribe();
   }, [user]);
 
@@ -762,16 +796,40 @@ Report Generated via SafeSponsor AI Research Engine
           </div>
 
           <div className={`p-5 rounded-3xl border transition-all ${
-            isDark ? 'bg-zinc-900/80 border-cyan-500/20' : 'bg-white border-blue-200 shadow-sm'
+            isDark ? 'bg-zinc-900/80 border-cyan-500/20' : 'bg-white border-cyan-200 shadow-sm'
           }`}>
             <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-cyan-500">DB Cache Hits</span>
-              <Database className="w-4 h-4 text-cyan-400" />
+              <span className="text-xs font-bold uppercase tracking-wider">Your Plan</span>
+              <Zap className="w-4 h-4 text-cyan-500" />
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-cyan-400">{cachedHitCount}</div>
-            <p className={`text-[11px] mt-1 ${isDark ? 'text-cyan-300/80' : 'text-blue-900'}`}>
-              Instant zero-cost audits
-            </p>
+            {userCredits.hasSubscription ? (
+              <>
+                <div className="text-2xl sm:text-3xl font-black text-cyan-400">Pro</div>
+                <p className={`text-[11px] mt-1 ${isDark ? 'text-cyan-300/80' : 'text-cyan-900'}`}>
+                  Unlimited audits
+                  {userCredits.subscriptionExpiresAt && (
+                    <> &middot; renews {new Date(userCredits.subscriptionExpiresAt).toLocaleDateString()}</>
+                  )}
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="text-center">
+                    <div className="text-xl font-black text-cyan-400">{userCredits.videoCredits}</div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Video</div>
+                  </div>
+                  <div className={`w-px h-8 ${isDark ? 'bg-zinc-800' : 'bg-slate-200'}`} />
+                  <div className="text-center">
+                    <div className="text-xl font-black text-orange-400">{userCredits.channelCredits}</div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Channel</div>
+                  </div>
+                </div>
+                <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
+                  Credits remaining
+                </p>
+              </>
+            )}
           </div>
         </div>
 
@@ -1806,6 +1864,93 @@ Report Generated via SafeSponsor AI Research Engine
             </div>
           )}
         </section>
+
+        {/* Always-Visible Pricing & Upgrade Section */}
+        {!userCredits.hasSubscription && (
+          <section className={`p-6 sm:p-8 rounded-3xl border space-y-5 print:hidden ${
+            isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <DollarSign className={`w-5 h-5 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
+                  Upgrade Your Research Capacity
+                </h2>
+                <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                  {userCredits.videoCredits === 0 && userCredits.channelCredits === 0
+                    ? "You have no credits remaining. Purchase a plan to continue generating dossiers."
+                    : `${userCredits.videoCredits} video + ${userCredits.channelCredits} channel credits remaining.`}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-3 gap-4">
+              <button 
+                onClick={() => handleCheckout("single")}
+                disabled={loadingPlan !== null}
+                className={`p-5 rounded-2xl text-left border transition-all flex flex-col justify-between space-y-4 ${
+                  isDark 
+                    ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 hover:border-zinc-600' 
+                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className={`text-2xl font-black ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>$10</div>
+                  <h4 className="font-bold text-sm">Single Video Report</h4>
+                  <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                    One-time purchase. Analyze a single YouTube video or creator profile with a full 360° brand safety dossier.
+                  </p>
+                </div>
+                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-cyan-400' : 'text-blue-900'}`}>
+                  Purchase Report <ChevronRight className="w-3 h-3" />
+                </span>
+              </button>
+
+              <button 
+                onClick={() => handleCheckout("channel")}
+                disabled={loadingPlan !== null}
+                className={`p-5 rounded-2xl text-left border transition-all flex flex-col justify-between space-y-4 ${
+                  isDark 
+                    ? 'bg-zinc-800/90 hover:bg-zinc-800 border-cyan-500/30 hover:border-cyan-500/50' 
+                    : 'bg-orange-50 hover:bg-orange-100 border-orange-200 hover:border-orange-300'
+                }`}
+              >
+                <div className="space-y-1">
+                  <div className={`text-2xl font-black ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>$25</div>
+                  <h4 className="font-bold text-sm">Channel Audit</h4>
+                  <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                    One-time purchase. Deep channel-level brand safety analysis covering audience, competitors, and content history.
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-orange-500 flex items-center gap-1">
+                  Purchase Channel Report <ChevronRight className="w-3 h-3" />
+                </span>
+              </button>
+
+              <button 
+                onClick={() => handleCheckout("subscription")}
+                disabled={loadingPlan !== null}
+                className={`p-5 rounded-2xl text-left border transition-all flex flex-col justify-between space-y-4 relative overflow-hidden ${
+                  isDark 
+                    ? 'bg-orange-950/40 hover:bg-orange-950/60 border-orange-500/40 hover:border-orange-500/60' 
+                    : 'bg-blue-900 text-white hover:bg-blue-950 border-blue-800'
+                }`}
+              >
+                <div className="absolute top-0 right-0 bg-orange-600 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-bl-xl">BEST VALUE</div>
+                <div className="space-y-1">
+                  <div className={`text-2xl font-black ${isDark ? 'text-orange-300' : 'text-white'}`}>$199<small className="text-sm font-medium">/mo</small></div>
+                  <h4 className="font-bold text-sm">Unlimited Pro</h4>
+                  <p className={`text-xs ${isDark ? 'text-orange-200/60' : 'text-blue-200'}`}>
+                    Monthly subscription. Unlimited creator audits, batch processing, priority analysis, and full export capabilities.
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-orange-400 flex items-center gap-1">
+                  Subscribe Unlimited <ChevronRight className="w-3 h-3" />
+                </span>
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* Executive Dossier Results View */}
         {result && (
