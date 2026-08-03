@@ -152,6 +152,35 @@ function DashboardInner() {
     }
   }, [searchParams]);
 
+  // Handle payment verification on checkout return
+  const [paymentVerified, setPaymentVerified] = useState<boolean | null>(null);
+  useEffect(() => {
+    const dodoSuccess = searchParams.get('dodo_success');
+    const plan = searchParams.get('plan');
+    if (dodoSuccess === 'true' && plan && user) {
+      const verifyPayment = async () => {
+        try {
+          const token = await user.getIdToken();
+          const res = await fetch('/api/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ plan }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            setPaymentVerified(true);
+          } else {
+            setPaymentVerified(false);
+          }
+        } catch (err) {
+          console.error('Payment verification error:', err);
+          setPaymentVerified(false);
+        }
+      };
+      verifyPayment();
+    }
+  }, [searchParams, user]);
+
   useEffect(() => {
     if (!authLoading && !user) {
       router.push('/login');
@@ -765,6 +794,21 @@ Report Generated via SafeSponsor AI Research Engine
       isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-50 text-slate-900'
     }`}>
       <Navbar />
+
+      {/* Payment verification banner */}
+      {paymentVerified !== null && (
+        <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4`}>
+          <div className={`p-4 rounded-xl border text-sm font-medium ${
+            paymentVerified
+              ? isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+              : isDark ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700'
+          }`}>
+            {paymentVerified
+              ? 'Payment verified! Your credits have been applied.'
+              : 'Payment received. Credits will appear shortly — if not, contact support.'}
+          </div>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         

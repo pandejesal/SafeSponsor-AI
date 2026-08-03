@@ -87,6 +87,13 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`[PAYMENTS LOG] Valid Dodo Payments Webhook received: ${eventType}`);
+    console.log(`[PAYMENTS LOG] Headers:`, {
+      "webhook-id": req.headers.get("webhook-id") || req.headers.get("x-webhook-id") || "MISSING",
+      "webhook-signature": (req.headers.get("webhook-signature") || req.headers.get("x-dodo-signature") || "MISSING").substring(0, 30) + "...",
+      "body-keys": Object.keys(body || {}),
+      "data-keys": Object.keys(data || {}),
+      "metadata": data?.metadata || body?.metadata || "MISSING",
+    });
 
     const webhookHeaderId = req.headers.get("webhook-id") || req.headers.get("x-webhook-id");
     const paymentId = data?.payment_id || data?.id || body?.id || null;
