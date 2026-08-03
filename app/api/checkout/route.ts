@@ -106,6 +106,7 @@ export async function POST(req: NextRequest) {
             quantity: 1,
           }
         ],
+        ...(customerEmail ? { customer: { email: customerEmail, ...(customerName ? { name: customerName } : {}) } } : {}),
         return_url: `${appUrl}/dashboard?dodo_success=true&plan=${plan}`,
         metadata: {
           uid,

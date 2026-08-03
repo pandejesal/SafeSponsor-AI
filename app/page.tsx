@@ -34,6 +34,7 @@ function LandingContent() {
   const { theme } = useTheme();
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [heroInputUrl, setHeroInputUrl] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
@@ -58,6 +59,7 @@ function LandingContent() {
       return;
     }
     setLoadingPlan(plan);
+    setCheckoutError(null);
     try {
       const token = await user.getIdToken();
       const appCheckToken = await getAppCheckToken();
@@ -77,15 +79,12 @@ function LandingContent() {
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
-      } else if (!res.ok) {
-        alert(data.error || "Failed to initiate checkout. Please try again.");
-        router.push('/dashboard');
       } else {
-        router.push('/dashboard');
+        setCheckoutError(data.error || "Failed to initiate checkout. Please try again.");
       }
     } catch (err) {
       console.error("Checkout error:", err);
-      router.push('/dashboard');
+      setCheckoutError("Failed to connect to checkout service.");
     } finally {
       setLoadingPlan(null);
     }
@@ -122,20 +121,7 @@ function LandingContent() {
 
       {/* HERO SECTION */}
       <section className="relative overflow-hidden pt-12 pb-24 md:pt-20 md:pb-32">
-        {/* Background Gradients (Cyan & Dark Orange for Dark Mode; Dark Blue & Light Orange for Light Mode) */}
-        {isDark ? (
-          <>
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-cyan-500/10 blur-[140px] rounded-full pointer-events-none -z-10 animate-pulse-glow" />
-            <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-orange-600/10 blur-[120px] rounded-full pointer-events-none -z-10" />
-            <div className="absolute inset-0 bg-grid-pattern pointer-events-none opacity-40 -z-10" />
-          </>
-        ) : (
-          <>
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-blue-900/5 blur-[120px] rounded-full pointer-events-none -z-10" />
-            <div className="absolute top-1/3 right-10 w-[400px] h-[400px] bg-orange-500/10 blur-[100px] rounded-full pointer-events-none -z-10" />
-            <div className="absolute inset-0 bg-grid-pattern-light pointer-events-none opacity-60 -z-10" />
-          </>
-        )}
+        {/* Background decoration removed for clean design */}
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           {/* Eyebrow Badge */}
@@ -160,11 +146,7 @@ function LandingContent() {
             className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.1] max-w-5xl mx-auto mb-6"
           >
             Vet Creator Sponsorships <br className="hidden sm:inline" />
-            <span className={
-              isDark 
-                ? 'bg-gradient-to-r from-cyan-400 via-cyan-200 to-orange-500 bg-clip-text text-transparent' 
-                : 'bg-gradient-to-r from-blue-950 via-blue-900 to-orange-600 bg-clip-text text-transparent'
-            }>
+            <span className="text-orange-500">
               Before You Risk Your Brand
             </span>
           </motion.h1>
@@ -189,7 +171,7 @@ function LandingContent() {
             transition={{ delay: 0.3 }}
             className="max-w-2xl mx-auto mb-12"
           >
-            <div className={`p-2 rounded-2xl border shadow-2xl flex flex-col sm:flex-row gap-2 transition-all ${
+            <div className={`p-2 rounded-lg border shadow-2xl flex flex-col sm:flex-row gap-2 transition-all ${
               isDark 
                 ? 'bg-zinc-900/90 border-zinc-800 focus-within:border-cyan-500/60 shadow-cyan-950/20' 
                 : 'bg-white border-slate-300 focus-within:border-orange-500/60 shadow-slate-200'
@@ -242,7 +224,7 @@ function LandingContent() {
             ].map((stat, idx) => (
               <div 
                 key={idx}
-                className={`p-4 rounded-2xl border text-center transition-transform hover:-translate-y-1 ${
+                className={`p-4 rounded-lg border text-center transition-transform hover:-translate-y-1 ${
                   isDark 
                     ? 'bg-zinc-900/50 border-zinc-800/80' 
                     : 'bg-white border-slate-200 shadow-sm'
@@ -283,7 +265,7 @@ function LandingContent() {
             whileInView={{ opacity: 1, y: 0 }}
             initial={{ opacity: 0, y: 30 }}
             viewport={{ once: true }}
-            className={`rounded-3xl border p-6 sm:p-8 shadow-2xl relative overflow-hidden ${
+            className={`rounded-xl border p-6 sm:p-8 shadow-2xl relative overflow-hidden ${
               isDark 
                 ? 'bg-zinc-950 border-zinc-800 ring-1 ring-cyan-500/20' 
                 : 'bg-white border-slate-300 ring-1 ring-blue-900/10'
@@ -302,13 +284,13 @@ function LandingContent() {
               </div>
 
               <div className="flex items-center gap-4">
-                <div className={`px-5 py-3 rounded-2xl border text-center ${
+                <div className={`px-5 py-3 rounded-lg border text-center ${
                   isDark ? 'bg-zinc-900 border-emerald-500/30' : 'bg-emerald-50 border-emerald-300'
                 }`}>
                   <div className="text-[10px] font-bold tracking-wider uppercase text-emerald-500">Brand Safety Score</div>
                   <div className="text-2xl font-black text-emerald-400">92 / 100</div>
                 </div>
-                <div className={`px-4 py-3 rounded-2xl border text-center ${
+                <div className={`px-4 py-3 rounded-lg border text-center ${
                   isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Recommendation</div>
@@ -320,7 +302,7 @@ function LandingContent() {
             {/* Grid Breakdown Mock */}
             <div className="grid md:grid-cols-3 gap-6 pt-6">
               {/* Box 1: Comment Sentiment Audit */}
-              <div className={`p-5 rounded-2xl border space-y-3 ${
+              <div className={`p-5 rounded-lg border space-y-3 ${
                 isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-slate-50 border-slate-200'
               }`}>
                 <div className="flex items-center justify-between">
@@ -343,7 +325,7 @@ function LandingContent() {
               </div>
 
               {/* Box 2: Transcript Analysis */}
-              <div className={`p-5 rounded-2xl border space-y-3 ${
+              <div className={`p-5 rounded-lg border space-y-3 ${
                 isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-slate-50 border-slate-200'
               }`}>
                 <div className="flex items-center justify-between">
@@ -361,7 +343,7 @@ function LandingContent() {
               </div>
 
               {/* Box 3: Competitor Conflicts */}
-              <div className={`p-5 rounded-2xl border space-y-3 ${
+              <div className={`p-5 rounded-lg border space-y-3 ${
                 isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-slate-50 border-slate-200'
               }`}>
                 <div className="flex items-center justify-between">
@@ -383,7 +365,7 @@ function LandingContent() {
       </section>
 
       {/* HOW IT WORKS SECTION (#how-it-works) */}
-      <section id="how-it-works" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="how-it-works" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-20">
           <span className="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">
             Automated 3-Step Process
@@ -426,7 +408,7 @@ function LandingContent() {
               initial={{ opacity: 0, y: 20 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.15 }}
-              className={`p-8 rounded-3xl border relative flex flex-col justify-between ${
+              className={`p-8 rounded-xl border relative flex flex-col justify-between ${
                 isDark 
                   ? 'bg-zinc-900/60 border-zinc-800 hover:border-cyan-500/40' 
                   : 'bg-white border-slate-200 shadow-sm hover:border-orange-500/40'
@@ -435,7 +417,7 @@ function LandingContent() {
               <div>
                 <div className="flex items-center justify-between mb-6">
                   <span className={`text-4xl font-black opacity-30 ${item.color}`}>{item.step}</span>
-                  <div className={`p-3 rounded-2xl border ${
+                  <div className={`p-3 rounded-lg border ${
                     isDark ? 'bg-zinc-800 border-zinc-700' : 'bg-slate-100 border-slate-200'
                   }`}>
                     <item.icon className={`w-6 h-6 ${item.color}`} />
@@ -452,7 +434,7 @@ function LandingContent() {
       </section>
 
       {/* FEATURES BENTO GRID (#features) */}
-      <section id="features" className={`py-24 border-t ${
+      <section id="features" className={`py-16 border-t ${
         isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-slate-100/60 border-slate-200'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -467,10 +449,10 @@ function LandingContent() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Feature 1 */}
-            <div className={`p-8 rounded-3xl border md:col-span-2 ${
+            <div className={`p-8 rounded-xl border md:col-span-2 ${
               isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
-              <div className="w-12 h-12 rounded-2xl bg-orange-600/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mb-6">
+              <div className="w-12 h-12 rounded-lg bg-orange-600/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mb-6">
                 <Video className="w-6 h-6" />
               </div>
               <h3 className="text-2xl font-bold mb-3">YouTube Comment Toxicity & Sentiment Audit</h3>
@@ -480,10 +462,10 @@ function LandingContent() {
             </div>
 
             {/* Feature 2 */}
-            <div className={`p-8 rounded-3xl border ${
+            <div className={`p-8 rounded-xl border ${
               isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
+              <div className="w-12 h-12 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
                 <FileText className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">Transcript Safety Parser</h3>
@@ -493,10 +475,10 @@ function LandingContent() {
             </div>
 
             {/* Feature 3 */}
-            <div className={`p-8 rounded-3xl border ${
+            <div className={`p-8 rounded-xl border ${
               isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
-              <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
+              <div className="w-12 h-12 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-6">
                 <ShieldAlert className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold mb-3">Competitor Conflict Audit</h3>
@@ -506,10 +488,10 @@ function LandingContent() {
             </div>
 
             {/* Feature 4 */}
-            <div className={`p-8 rounded-3xl border md:col-span-2 ${
+            <div className={`p-8 rounded-xl border md:col-span-2 ${
               isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
             }`}>
-              <div className="w-12 h-12 rounded-2xl bg-orange-600/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mb-6">
+              <div className="w-12 h-12 rounded-lg bg-orange-600/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mb-6">
                 <Lock className="w-6 h-6" />
               </div>
               <h3 className="text-2xl font-bold mb-3">Automated Legal Contract Safeguards</h3>
@@ -522,7 +504,7 @@ function LandingContent() {
       </section>
 
       {/* PRICING SECTION (#pricing) */}
-      <section id="pricing" className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="pricing" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-xs font-bold uppercase tracking-widest text-orange-500 mb-2 block">
             Transparent Pricing
@@ -535,11 +517,19 @@ function LandingContent() {
           </p>
         </div>
 
+        {checkoutError && (
+          <div className={`max-w-md mx-auto mb-8 p-4 rounded-xl border text-sm font-medium text-center ${
+            isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'
+          }`}>
+            {checkoutError}
+          </div>
+        )}
+
         <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 items-stretch">
           {/* PLAN 1 */}
           <motion.div 
             whileHover={{ y: -4 }}
-            className={`rounded-3xl border p-8 flex flex-col justify-between ${
+            className={`rounded-xl border p-8 flex flex-col justify-between ${
               isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
             }`}
           >
@@ -584,7 +574,7 @@ function LandingContent() {
           {/* PLAN 2 (HIGHLIGHTED) */}
           <motion.div 
             whileHover={{ y: -4 }}
-            className={`rounded-3xl border p-8 flex flex-col justify-between relative shadow-2xl ${
+            className={`rounded-xl border p-8 flex flex-col justify-between relative shadow-2xl ${
               isDark 
                 ? 'bg-gradient-to-b from-zinc-900 to-zinc-950 border-cyan-500/50 ring-1 ring-cyan-500/30' 
                 : 'bg-white border-orange-500/50 ring-2 ring-orange-500/20'
@@ -641,7 +631,7 @@ function LandingContent() {
           {/* PLAN 3 */}
           <motion.div 
             whileHover={{ y: -4 }}
-            className={`rounded-3xl border p-8 flex flex-col justify-between ${
+            className={`rounded-xl border p-8 flex flex-col justify-between ${
               isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
             }`}
           >
@@ -690,7 +680,7 @@ function LandingContent() {
       </section>
 
       {/* FAQ SECTION (#faq) */}
-      <section id="faq" className={`py-24 border-t ${
+      <section id="faq" className={`py-16 border-t ${
         isDark ? 'bg-zinc-900/30 border-zinc-800' : 'bg-slate-100/50 border-slate-200'
       }`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -707,7 +697,7 @@ function LandingContent() {
             {faqs.map((faq, idx) => (
               <div 
                 key={idx}
-                className={`rounded-2xl border transition-colors overflow-hidden ${
+                className={`rounded-lg border transition-colors overflow-hidden ${
                   isDark ? 'bg-zinc-900/70 border-zinc-800' : 'bg-white border-slate-200'
                 }`}
               >
@@ -762,7 +752,7 @@ export default function Page() {
     setMounted(true);
   }, []);
   
-  if (!mounted) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-200">Loading SafeSponsor AI...</div>;
+  if (!mounted) return <div className="min-h-screen dark:bg-zinc-950 bg-slate-50 dark:text-zinc-200 text-slate-900 flex items-center justify-center">Loading SafeSponsor AI...</div>;
   
   return (
     <AuthProvider>

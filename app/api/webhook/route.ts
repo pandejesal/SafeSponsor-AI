@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
     }
 
-    const eventType = body?.type || body?.event;
+    const eventType = body?.type;
     const data = body?.data || body;
 
     // Event Whitelist check
@@ -185,10 +185,19 @@ export async function POST(req: NextRequest) {
 
     if (isRevocationEvent) {
       entitlementUpdate.hasSubscription = false;
-      entitlementUpdate.subscription = {
-        status: eventType.includes("cancelled") ? "cancelled" : "expired",
-        expiresAt: new Date().toISOString(),
-      };
+      if (eventType.includes("cancelled")) {
+        // For cancelled subscriptions, keep access until the current period ends
+        const currentExpiry = data?.subscription?.current_period_end || data?.current_period_end;
+        entitlementUpdate.subscription = {
+          status: "cancelled",
+          expiresAt: currentExpiry ? new Date(currentExpiry).toISOString() : new Date().toISOString(),
+        };
+      } else {
+        entitlementUpdate.subscription = {
+          status: "expired",
+          expiresAt: new Date().toISOString(),
+        };
+      }
       console.log(`[ENTITLEMENT REVOCATION] Revoking subscription/credits access due to event: ${eventType} for plan: ${plan}`);
     } else if (plan === "subscription") {
       entitlementUpdate.hasSubscription = true;
@@ -198,7 +207,8 @@ export async function POST(req: NextRequest) {
     } else if (plan === "channel") {
       entitlementUpdate.channelCredits = FieldValue.increment(1);
     } else {
-      entitlementUpdate.videoCredits = FieldValue.increment(1);
+      console.warn(`[SECURITY WARN] Webhook event ${eventType} skipped: Unknown plan type "${plan}".`);
+      return NextResponse.json({ received: true, warning: "Unknown plan type" });
     }
 
     if (!uid) {

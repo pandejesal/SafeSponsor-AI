@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { ShieldAlert, Sun, Moon, ArrowRight, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
@@ -13,7 +13,12 @@ export function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   const handleSignOut = async () => {
     try {
@@ -32,7 +37,7 @@ export function Navbar() {
     <header className={`sticky top-0 z-50 transition-colors duration-300 backdrop-blur-xl border-b print:hidden ${
       isDark 
         ? 'bg-zinc-950/80 border-zinc-800/80 text-zinc-100' 
-        : 'bg-white/80 border-slate-200 text-slate-900 shadow-sm'
+        : 'bg-white/80 border-slate-200 text-slate-900 shadow-md'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         

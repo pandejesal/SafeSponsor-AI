@@ -125,6 +125,7 @@ function DashboardInner() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   // User credits / subscription state
   const [userCredits, setUserCredits] = useState<{
@@ -132,7 +133,7 @@ function DashboardInner() {
     channelCredits: number;
     hasSubscription: boolean;
     subscriptionExpiresAt: string | null;
-  }>({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
+  } | null>(null);
 
   // Filter, Tab & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -175,9 +176,11 @@ function DashboardInner() {
         hist.push({ id: docSnap.id, target: data.target || data.url || "Creator Audit", ...data } as HistoryItem);
       });
       setHistory(hist);
+      setHistoryError(null);
       setLoadingHistory(false);
     }, (error) => {
       console.error("Firestore history snapshot error:", error);
+      setHistoryError("Failed to load audit history.");
       setLoadingHistory(false);
     });
     return () => unsubscribe();
@@ -205,7 +208,10 @@ function DashboardInner() {
         hasSubscription: isSubActive,
         subscriptionExpiresAt: expiresAt,
       });
-    }, () => {});
+    }, (err) => {
+      console.warn("Credits listener error:", err);
+      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
+    });
     return () => unsubscribe();
   }, [user]);
 
@@ -421,8 +427,10 @@ youtube.com/@ijustine`
               : item
           ));
 
-          // Set as active result if first or requested
-          setResult(data);
+          // Only set as active result if this is the first item
+          if (i === 0) {
+            setResult(data);
+          }
 
         } catch (itemErr: any) {
           setBatchItems(prev => prev.map((item, idx) => 
@@ -530,7 +538,12 @@ youtube.com/@ijustine`
 
   const retrySingleBatchItem = async (targetItem: BatchQueueItem) => {
     if (isBatchProcessing || !user) return;
-    await runRetry(targetItem);
+    setIsBatchProcessing(true);
+    try {
+      await runRetry(targetItem);
+    } finally {
+      setIsBatchProcessing(false);
+    }
   };
 
   const retryFailedBatchItems = async () => {
@@ -655,7 +668,7 @@ Report Generated via SafeSponsor AI Research Engine
     const r = risk?.toLowerCase();
     if (r === 'low') return isDark ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30" : "bg-emerald-100 text-emerald-800 border-emerald-300";
     if (r === 'medium') return isDark ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-amber-100 text-amber-800 border-amber-300";
-    if (r === 'critical') return "bg-rose-600/30 text-rose-200 border-rose-500/50 animate-pulse";
+    if (r === 'critical') return "bg-rose-600/30 text-rose-200 border-rose-500/50";
     return isDark ? "bg-rose-500/20 text-rose-300 border-rose-500/30" : "bg-rose-100 text-rose-800 border-rose-300";
   };
 
@@ -703,7 +716,7 @@ Report Generated via SafeSponsor AI Research Engine
   const cachedHitCount = history.filter(h => h.is_cached === true).length;
 
   // Filtered and sorted history
-  const filteredHistory = history
+  const filteredHistory = useMemo(() => (history
     .filter((item) => {
       const q = searchQuery.toLowerCase().trim();
       if (q) {
@@ -734,7 +747,8 @@ Report Generated via SafeSponsor AI Research Engine
       if (sortBy === 'score_high') return (b.brand_safety_score || 0) - (a.brand_safety_score || 0);
       if (sortBy === 'score_low') return (a.brand_safety_score || 0) - (b.brand_safety_score || 0);
       return 0;
-    });
+    })
+  ), [history, searchQuery, filterStatus, sortBy]);
 
   if (authLoading || !user) {
     return (
@@ -756,7 +770,7 @@ Report Generated via SafeSponsor AI Research Engine
         
         {/* Analytics Header Metrics */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className={`p-5 rounded-3xl border transition-all ${
+          <div className={`p-5 rounded-xl border transition-all ${
             isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
           }`}>
             <div className="flex items-center justify-between text-slate-400 mb-2">
@@ -769,7 +783,7 @@ Report Generated via SafeSponsor AI Research Engine
             </p>
           </div>
 
-          <div className={`p-5 rounded-3xl border transition-all ${
+          <div className={`p-5 rounded-xl border transition-all ${
             isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
           }`}>
             <div className="flex items-center justify-between text-slate-400 mb-2">
@@ -782,7 +796,7 @@ Report Generated via SafeSponsor AI Research Engine
             </p>
           </div>
 
-          <div className={`p-5 rounded-3xl border transition-all ${
+          <div className={`p-5 rounded-xl border transition-all ${
             isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
           }`}>
             <div className="flex items-center justify-between text-slate-400 mb-2">
@@ -795,14 +809,18 @@ Report Generated via SafeSponsor AI Research Engine
             </p>
           </div>
 
-          <div className={`p-5 rounded-3xl border transition-all ${
+          <div className={`p-5 rounded-xl border transition-all ${
             isDark ? 'bg-zinc-900/80 border-cyan-500/20' : 'bg-white border-cyan-200 shadow-sm'
           }`}>
             <div className="flex items-center justify-between text-slate-400 mb-2">
               <span className="text-xs font-bold uppercase tracking-wider">Your Plan</span>
               <Zap className="w-4 h-4 text-cyan-500" />
             </div>
-            {userCredits.hasSubscription ? (
+            {userCredits === null ? (
+              <div className="flex items-center gap-2">
+                <div className={`h-8 w-16 rounded-lg animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-slate-200'}`} />
+              </div>
+            ) : userCredits.hasSubscription ? (
               <>
                 <div className="text-2xl sm:text-3xl font-black text-cyan-400">Pro</div>
                 <p className={`text-[11px] mt-1 ${isDark ? 'text-cyan-300/80' : 'text-cyan-900'}`}>
@@ -835,11 +853,11 @@ Report Generated via SafeSponsor AI Research Engine
 
         {/* Upgrade Banner */}
         {upgradeRequired && (
-          <div className={`p-6 rounded-3xl border shadow-xl space-y-4 ${
+          <div className={`p-6 rounded-xl border space-y-4 ${
             isDark ? 'bg-zinc-900/90 border-orange-500/40' : 'bg-white border-orange-300'
           }`}>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-orange-600/10 border border-orange-500/30 flex items-center justify-center text-orange-500 shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-orange-600/10 border border-orange-500/30 flex items-center justify-center text-orange-500 shrink-0">
                 <DollarSign className="w-6 h-6" />
               </div>
               <div className="space-y-1">
@@ -854,7 +872,7 @@ Report Generated via SafeSponsor AI Research Engine
               <button 
                 onClick={() => handleCheckout("single")}
                 disabled={loadingPlan !== null}
-                className={`p-4 rounded-2xl text-left border transition flex flex-col justify-between space-y-3 ${
+                className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
                   isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700' : 'bg-slate-100 hover:bg-slate-200 border-slate-300'
                 }`}
               >
@@ -870,7 +888,7 @@ Report Generated via SafeSponsor AI Research Engine
               <button 
                 onClick={() => handleCheckout("channel")}
                 disabled={loadingPlan !== null}
-                className={`p-4 rounded-2xl text-left border transition flex flex-col justify-between space-y-3 ${
+                className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
                   isDark ? 'bg-zinc-800/90 hover:bg-zinc-800 border-cyan-500/40' : 'bg-orange-50 hover:bg-orange-100 border-orange-300'
                 }`}
               >
@@ -886,7 +904,7 @@ Report Generated via SafeSponsor AI Research Engine
               <button 
                 onClick={() => handleCheckout("subscription")}
                 disabled={loadingPlan !== null}
-                className={`p-4 rounded-2xl text-left border transition flex flex-col justify-between space-y-3 relative overflow-hidden ${
+                className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 relative overflow-hidden ${
                   isDark ? 'bg-orange-950/40 hover:bg-orange-950/60 border-orange-500/40' : 'bg-blue-900 text-white hover:bg-blue-950 border-blue-950'
                 }`}
               >
@@ -904,7 +922,7 @@ Report Generated via SafeSponsor AI Research Engine
         )}
 
         {/* Audit Form Section */}
-        <section className={`p-6 sm:p-8 rounded-3xl border shadow-xl relative overflow-hidden transition-colors print:hidden ${
+        <section className={`p-6 sm:p-8 rounded-xl border relative overflow-hidden transition-colors print:hidden ${
           isDark 
             ? 'bg-zinc-900/80 border-zinc-800 ring-1 ring-cyan-500/10' 
             : 'bg-white border-slate-200'
@@ -946,7 +964,7 @@ Report Generated via SafeSponsor AI Research Engine
               >
                 <ListOrdered className="w-3.5 h-3.5" />
                 <span>Batch Multi-URL Queue</span>
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-orange-500 text-white animate-pulse">
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-orange-500 text-white">
                   NEW
                 </span>
               </button>
@@ -1038,7 +1056,7 @@ Report Generated via SafeSponsor AI Research Engine
                     <button
                       type="button"
                       onClick={() => setAuditFocus("standard")}
-                      className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between space-y-1 ${
+                      className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "standard"
                           ? (isDark ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 ring-1 ring-cyan-500/50' : 'bg-blue-50 border-blue-900 text-blue-950 font-bold')
                           : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 text-slate-600')
@@ -1054,7 +1072,7 @@ Report Generated via SafeSponsor AI Research Engine
                     <button
                       type="button"
                       onClick={() => setAuditFocus("deep_compliance")}
-                      className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between space-y-1 ${
+                      className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "deep_compliance"
                           ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300 ring-1 ring-orange-500/50' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
                           : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 text-slate-600')
@@ -1070,7 +1088,7 @@ Report Generated via SafeSponsor AI Research Engine
                     <button
                       type="button"
                       onClick={() => setAuditFocus("exclusivity_matrix")}
-                      className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between space-y-1 ${
+                      className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "exclusivity_matrix"
                           ? (isDark ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-50 border-emerald-600 text-emerald-950 font-bold')
                           : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 text-slate-600')
@@ -1210,10 +1228,10 @@ Report Generated via SafeSponsor AI Research Engine
                   <button 
                     type="submit" 
                     disabled={loadingAnalysis} 
-                    className={`font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-60 ${
+                    className={`font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
                       isDark
-                        ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white shadow-orange-950/40'
-                        : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+                        ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white'
+                        : 'bg-orange-600 hover:bg-orange-700 text-white'
                     }`}
                   >
                     {loadingAnalysis ? (
@@ -1272,7 +1290,7 @@ Report Generated via SafeSponsor AI Research Engine
                 value={batchUrlsInput}
                 onChange={(e) => setBatchUrlsInput(e.target.value)}
                 placeholder={`Paste YouTube channel handles, video links, or Instagram creator profiles here...\n\nExample:\nyoutube.com/@mrbeast\nyoutube.com/@mkbhd\nyoutube.com/@GrahamStephan\nyoutube.com/@DougDeMuro\nyoutube.com/@ijustine`}
-                className={`w-full border rounded-2xl p-4 text-sm font-mono focus:outline-none transition ${
+                className={`w-full border rounded-lg p-4 text-sm font-mono focus:outline-none transition ${
                   isDark 
                     ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-600 focus:border-orange-500' 
                     : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
@@ -1339,7 +1357,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => setAuditFocus("standard")}
                     disabled={isBatchProcessing}
-                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                    className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "standard"
                         ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
                         : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600')
@@ -1353,7 +1371,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => setAuditFocus("deep_compliance")}
                     disabled={isBatchProcessing}
-                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                    className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "deep_compliance"
                         ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
                         : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600')
@@ -1367,7 +1385,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => setAuditFocus("exclusivity_matrix")}
                     disabled={isBatchProcessing}
-                    className={`p-3 rounded-2xl border text-left transition flex flex-col justify-between ${
+                    className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "exclusivity_matrix"
                         ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
                         : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600')
@@ -1397,10 +1415,10 @@ Report Generated via SafeSponsor AI Research Engine
                 <button 
                   type="submit" 
                   disabled={isBatchProcessing || !batchUrlsInput.trim()} 
-                  className={`font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 ${
+                  className={`font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
                     isDark
-                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white shadow-orange-950/40'
-                      : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white'
+                      : 'bg-orange-600 hover:bg-orange-700 text-white'
                   }`}
                 >
                   {isBatchProcessing ? (
@@ -1452,7 +1470,7 @@ Report Generated via SafeSponsor AI Research Engine
                 <button
                   type="button"
                   onClick={() => setBatchFilterStatus(prev => prev === 'completed' ? 'all' : 'completed')}
-                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 cursor-pointer ${
+                  className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'completed'
                       ? (isDark ? 'bg-emerald-950/40 border-emerald-500/60 ring-2 ring-emerald-500/30' : 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300')
                       : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
@@ -1470,7 +1488,7 @@ Report Generated via SafeSponsor AI Research Engine
                 <button
                   type="button"
                   onClick={() => setBatchFilterStatus(prev => prev === 'processing' ? 'all' : 'processing')}
-                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 cursor-pointer ${
+                  className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'processing'
                       ? (isDark ? 'bg-blue-950/40 border-blue-500/60 ring-2 ring-blue-500/30' : 'bg-blue-50 border-blue-400 ring-2 ring-blue-300')
                       : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
@@ -1488,7 +1506,7 @@ Report Generated via SafeSponsor AI Research Engine
                 <button
                   type="button"
                   onClick={() => setBatchFilterStatus(prev => prev === 'pending' ? 'all' : 'pending')}
-                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 cursor-pointer ${
+                  className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'pending'
                       ? (isDark ? 'bg-zinc-800 border-zinc-500 ring-2 ring-zinc-500/30' : 'bg-slate-200 border-slate-400 ring-2 ring-slate-300')
                       : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
@@ -1506,7 +1524,7 @@ Report Generated via SafeSponsor AI Research Engine
                 <button
                   type="button"
                   onClick={() => setBatchFilterStatus(prev => prev === 'failed' ? 'all' : 'failed')}
-                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-3 cursor-pointer ${
+                  className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'failed'
                       ? (isDark ? 'bg-rose-950/40 border-rose-500/60 ring-2 ring-rose-500/30' : 'bg-rose-50 border-rose-400 ring-2 ring-rose-300')
                       : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
@@ -1539,7 +1557,7 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
 
               {/* Batch Queue Controls Toolbar: Status Pills, Search Input, Sort Dropdown & Actions */}
-              <div className={`p-4 rounded-2xl border space-y-3 ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-slate-100/80 border-slate-200'}`}>
+              <div className={`p-4 rounded-lg border space-y-3 ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-slate-100/80 border-slate-200'}`}>
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                   
                   {/* Status Filter Buttons */}
@@ -1706,7 +1724,7 @@ Report Generated via SafeSponsor AI Research Engine
 
               {/* Batch Queue Items List */}
               {filteredAndSortedBatchItems.length === 0 ? (
-                <div className={`p-8 rounded-2xl border text-center space-y-3 ${
+                <div className={`p-8 rounded-lg border text-center space-y-3 ${
                   isDark ? 'bg-zinc-950/50 border-zinc-800' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <Filter className="w-8 h-8 text-slate-400 mx-auto opacity-50" />
@@ -1736,7 +1754,7 @@ Report Generated via SafeSponsor AI Research Engine
                     return (
                       <div 
                         key={item.id}
-                        className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+                        className={`p-4 rounded-lg border transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                           item.status === 'processing'
                             ? (isDark ? 'bg-cyan-950/20 border-cyan-500/40 ring-1 ring-cyan-500/20' : 'bg-blue-50 border-blue-300')
                             : item.status === 'failed'
@@ -1843,7 +1861,7 @@ Report Generated via SafeSponsor AI Research Engine
                           )}
 
                           {item.status === 'processing' && (
-                            <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 animate-pulse flex items-center gap-1">
+                            <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
                               <Loader2 className="w-3 h-3 animate-spin" />
                               Auditing
                             </span>
@@ -1866,8 +1884,8 @@ Report Generated via SafeSponsor AI Research Engine
         </section>
 
         {/* Always-Visible Pricing & Upgrade Section */}
-        {!userCredits.hasSubscription && (
-          <section className={`p-6 sm:p-8 rounded-3xl border space-y-5 print:hidden ${
+        {userCredits !== null && !userCredits.hasSubscription && (
+          <section className={`p-6 sm:p-8 rounded-xl border space-y-5 print:hidden ${
             isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
           }`}>
             <div className="flex items-center justify-between">
@@ -1888,7 +1906,7 @@ Report Generated via SafeSponsor AI Research Engine
               <button 
                 onClick={() => handleCheckout("single")}
                 disabled={loadingPlan !== null}
-                className={`p-5 rounded-2xl text-left border transition-all flex flex-col justify-between space-y-4 ${
+                className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 ${
                   isDark 
                     ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 hover:border-zinc-600' 
                     : 'bg-slate-50 hover:bg-slate-100 border-slate-200 hover:border-slate-300'
@@ -1909,7 +1927,7 @@ Report Generated via SafeSponsor AI Research Engine
               <button 
                 onClick={() => handleCheckout("channel")}
                 disabled={loadingPlan !== null}
-                className={`p-5 rounded-2xl text-left border transition-all flex flex-col justify-between space-y-4 ${
+                className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 ${
                   isDark 
                     ? 'bg-zinc-800/90 hover:bg-zinc-800 border-cyan-500/30 hover:border-cyan-500/50' 
                     : 'bg-orange-50 hover:bg-orange-100 border-orange-200 hover:border-orange-300'
@@ -1930,7 +1948,7 @@ Report Generated via SafeSponsor AI Research Engine
               <button 
                 onClick={() => handleCheckout("subscription")}
                 disabled={loadingPlan !== null}
-                className={`p-5 rounded-2xl text-left border transition-all flex flex-col justify-between space-y-4 relative overflow-hidden ${
+                className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 relative overflow-hidden ${
                   isDark 
                     ? 'bg-orange-950/40 hover:bg-orange-950/60 border-orange-500/40 hover:border-orange-500/60' 
                     : 'bg-blue-900 text-white hover:bg-blue-950 border-blue-800'
@@ -1954,7 +1972,7 @@ Report Generated via SafeSponsor AI Research Engine
 
         {/* Executive Dossier Results View */}
         {result && (
-          <section className={`p-6 sm:p-8 rounded-3xl border shadow-2xl space-y-8 animate-in fade-in duration-300 printable-dossier ${
+          <section className={`p-6 sm:p-8 rounded-xl border space-y-8 animate-in fade-in duration-300 printable-dossier ${
             isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white border-slate-200'
           }`}>
             {/* Agency Print PDF Report Header */}
@@ -1983,7 +2001,7 @@ Report Generated via SafeSponsor AI Research Engine
 
             {/* Cache Hit Notice Banner */}
             {result.is_cached && (
-              <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden ${
+              <div className={`p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden ${
                 isDark ? 'bg-cyan-950/30 border-cyan-500/30 text-cyan-200' : 'bg-cyan-50 border-cyan-200 text-cyan-900'
               }`}>
                 <div className="flex items-center gap-3">
@@ -2040,7 +2058,7 @@ Report Generated via SafeSponsor AI Research Engine
                 {/* Copy Markdown Summary */}
                 <button
                   onClick={() => copyDossierSummary(result)}
-                  className={`px-4 py-3 rounded-2xl border transition text-xs font-bold flex items-center gap-2 print:hidden ${
+                  className={`px-4 py-3 rounded-lg border transition text-xs font-bold flex items-center gap-2 print:hidden ${
                     copySuccess
                       ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                       : (isDark ? 'bg-zinc-800 border-zinc-700 hover:bg-zinc-700' : 'bg-slate-100 border-slate-300 hover:bg-slate-200')
@@ -2054,7 +2072,7 @@ Report Generated via SafeSponsor AI Research Engine
                 {/* Download JSON Dossier */}
                 <button
                   onClick={() => downloadJsonDossier(result)}
-                  className={`p-3 rounded-2xl border transition text-xs font-bold flex items-center gap-1.5 print:hidden ${
+                  className={`p-3 rounded-lg border transition text-xs font-bold flex items-center gap-1.5 print:hidden ${
                     isDark ? 'bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-orange-400' : 'bg-slate-100 border-slate-300 hover:bg-slate-200 text-orange-600'
                   }`}
                   title="Download Raw JSON Dossier Artifact"
@@ -2066,7 +2084,7 @@ Report Generated via SafeSponsor AI Research Engine
                 {/* Print/Export Action */}
                 <button
                   onClick={() => window.print()}
-                  className={`p-3 rounded-2xl border transition text-xs font-bold flex items-center gap-1.5 print:hidden ${
+                  className={`p-3 rounded-lg border transition text-xs font-bold flex items-center gap-1.5 print:hidden ${
                     isDark ? 'bg-cyan-500/20 border-cyan-500/40 hover:bg-cyan-500/30 text-cyan-300' : 'bg-blue-900 hover:bg-blue-950 text-white'
                   }`}
                   title="Print or Save as PDF"
@@ -2076,13 +2094,13 @@ Report Generated via SafeSponsor AI Research Engine
                 </button>
 
                 {/* Score */}
-                <div className={`px-6 py-3.5 rounded-2xl border flex flex-col items-center justify-center ${getScoreBadgeColor(result.brand_safety_score)}`}>
+                <div className={`px-6 py-3.5 rounded-lg border flex flex-col items-center justify-center ${getScoreBadgeColor(result.brand_safety_score)}`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Safety Score</span>
                   <span className="text-3xl font-black">{result.brand_safety_score}/100</span>
                 </div>
 
                 {/* Risk Badge */}
-                <div className={`px-6 py-3.5 rounded-2xl border flex flex-col items-center justify-center ${getRiskBadgeColor(result.risk_level)}`}>
+                <div className={`px-6 py-3.5 rounded-lg border flex flex-col items-center justify-center ${getRiskBadgeColor(result.risk_level)}`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider opacity-80">Risk Level</span>
                   <span className="text-xl font-bold uppercase">{result.risk_level}</span>
                 </div>
@@ -2090,7 +2108,7 @@ Report Generated via SafeSponsor AI Research Engine
             </div>
 
             {/* 1. Creator Summary */}
-            <div className={`p-6 rounded-2xl border space-y-2 ${
+            <div className={`p-6 rounded-lg border space-y-2 ${
               isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
             }`}>
               <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-2 ${
@@ -2105,7 +2123,7 @@ Report Generated via SafeSponsor AI Research Engine
             </div>
 
             {/* 2. Final Verdict & Contractual Safeguards */}
-            <div className={`p-6 rounded-2xl border space-y-4 ${
+            <div className={`p-6 rounded-lg border space-y-4 ${
               isDark 
                 ? 'bg-zinc-950 border-cyan-500/20' 
                 : 'bg-white border-slate-200 shadow-sm'
@@ -2155,25 +2173,25 @@ Report Generated via SafeSponsor AI Research Engine
                   Audience Quality & YouTube Comments Sentiment
                 </h3>
                 <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                  <div className={`p-4 rounded-2xl border space-y-1 ${
+                  <div className={`p-4 rounded-lg border space-y-1 ${
                     isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Authenticity Rating</span>
                     <p className="text-xs font-semibold text-emerald-500">{result.audience_insights.authenticity_rating}</p>
                   </div>
-                  <div className={`p-4 rounded-2xl border space-y-1 ${
+                  <div className={`p-4 rounded-lg border space-y-1 ${
                     isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Demographics</span>
                     <p className={`text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>{result.audience_insights.demographics_summary}</p>
                   </div>
-                  <div className={`p-4 rounded-2xl border space-y-1 ${
+                  <div className={`p-4 rounded-lg border space-y-1 ${
                     isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Engagement Quality</span>
                     <p className={`text-xs font-medium ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>{result.audience_insights.engagement_quality}</p>
                   </div>
-                  <div className={`p-4 rounded-2xl border space-y-1 ${
+                  <div className={`p-4 rounded-lg border space-y-1 ${
                     isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
                   }`}>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Community Sentiment</span>
@@ -2183,7 +2201,7 @@ Report Generated via SafeSponsor AI Research Engine
 
                 {/* YouTube Comment Toxicity Breakdown */}
                 {(result.audience_insights.comment_sentiment_summary || (result.audience_insights.toxic_recurring_themes && result.audience_insights.toxic_recurring_themes.length > 0)) && (
-                  <div className={`p-4 rounded-2xl border space-y-3 mt-3 ${
+                  <div className={`p-4 rounded-lg border space-y-3 mt-3 ${
                     isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
                   }`}>
                     <div className="flex items-center gap-2">
@@ -2222,7 +2240,7 @@ Report Generated via SafeSponsor AI Research Engine
                   <MessageSquare className="w-5 h-5 text-amber-500" />
                   Public Perception & PR Controversy History
                 </h3>
-                <div className={`p-5 rounded-2xl border space-y-4 ${
+                <div className={`p-5 rounded-lg border space-y-4 ${
                   isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
                 }`}>
                   <div>
@@ -2271,7 +2289,7 @@ Report Generated via SafeSponsor AI Research Engine
                     return (
                       <div 
                         key={idx} 
-                        className={`p-4 rounded-2xl space-y-2 border ${
+                        className={`p-4 rounded-lg space-y-2 border ${
                           isCleanNoConflict 
                             ? (isDark ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-emerald-50 border-emerald-200')
                             : (isDark ? 'bg-amber-500/5 border-amber-500/20' : 'bg-amber-50 border-amber-200')
@@ -2337,7 +2355,7 @@ Report Generated via SafeSponsor AI Research Engine
               ) : (
                 <div className="grid gap-3">
                   {result.nuanced_red_flags.map((flag, idx) => (
-                    <div key={idx} className={`p-4 rounded-2xl space-y-2 border ${
+                    <div key={idx} className={`p-4 rounded-lg space-y-2 border ${
                       isDark ? 'bg-rose-500/5 border-rose-500/20' : 'bg-rose-50 border-rose-200'
                     }`}>
                       <div className="flex items-center justify-between gap-2">
@@ -2429,7 +2447,7 @@ Report Generated via SafeSponsor AI Research Engine
         )}
 
         {/* Audit History & Saved Dossiers Section */}
-        <section className={`p-6 sm:p-8 rounded-3xl border space-y-5 print:hidden ${
+        <section className={`p-6 sm:p-8 rounded-xl border space-y-5 print:hidden ${
           isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
         }`}>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2534,6 +2552,12 @@ Report Generated via SafeSponsor AI Research Engine
             <div className="flex justify-center p-8">
               <Activity className="w-6 h-6 animate-spin text-orange-500" />
             </div>
+          ) : historyError ? (
+            <div className={`p-4 rounded-xl border text-sm text-center ${
+              isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'
+            }`}>
+              {historyError}
+            </div>
           ) : filteredHistory.length === 0 ? (
             <p className="text-slate-400 text-center py-8 text-sm">
               {searchQuery || filterStatus !== 'all' ? 'No dossiers match your search or filter.' : 'No saved sponsorship audits yet. Run your first audit above!'}
@@ -2547,7 +2571,7 @@ Report Generated via SafeSponsor AI Research Engine
                     setResult(item);
                     window.scrollTo({ top: 500, behavior: 'smooth' });
                   }}
-                  className={`p-4 rounded-2xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer transition-all hover:-translate-y-0.5 ${
+                  className={`p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer transition-all hover:-translate-y-0.5 ${
                     isDark 
                       ? 'bg-zinc-950/60 hover:bg-zinc-950 border-zinc-800 hover:border-cyan-500/30' 
                       : 'bg-slate-50 hover:bg-slate-100 border-slate-200 shadow-sm'
@@ -2602,7 +2626,7 @@ export default function DashboardPage() {
   
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-200 font-sans">
+      <div className="min-h-screen dark:bg-zinc-950 bg-slate-50 dark:text-zinc-200 text-slate-900 flex items-center justify-center font-sans">
         Loading SafeSponsor Research Engine...
       </div>
     );

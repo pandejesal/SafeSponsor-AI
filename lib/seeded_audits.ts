@@ -107,7 +107,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
       { title: "MrBeast Official Channel", url: "https://youtube.com/@mrbeast" },
       { title: "SocialBlade MrBeast Metrics", url: "https://socialblade.com/youtube/c/mrbeast" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   },
 
   "mkbhd": {
@@ -173,7 +173,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
       { title: "MKBHD Official YouTube", url: "https://youtube.com/@mkbhd" },
       { title: "MKBHD Tech Insights", url: "https://mkbhd.com" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   },
 
   "pewdiepie": {
@@ -237,7 +237,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
     grounding_sources: [
       { title: "PewDiePie YouTube", url: "https://youtube.com/@pewdiepie" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   },
 
   "markrober": {
@@ -285,7 +285,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
     grounding_sources: [
       { title: "Mark Rober Official Channel", url: "https://youtube.com/@markrober" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   },
 
   "loganpaul": {
@@ -342,7 +342,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
     grounding_sources: [
       { title: "Logan Paul YouTube", url: "https://youtube.com/@loganpaul" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   },
 
   "ijustine": {
@@ -390,7 +390,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
     grounding_sources: [
       { title: "iJustine Official Channel", url: "https://youtube.com/@ijustine" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   },
 
   "grahamstephan": {
@@ -448,7 +448,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
     grounding_sources: [
       { title: "Graham Stephan YouTube", url: "https://youtube.com/@GrahamStephan" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   },
 
   "dougdemuro": {
@@ -496,7 +496,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
     grounding_sources: [
       { title: "Doug DeMuro Official Channel", url: "https://youtube.com/@DougDeMuro" }
     ],
-    analyzed_at: new Date().toISOString()
+    analyzed_at: "2025-01-15T00:00:00.000Z"
   }
 };
 

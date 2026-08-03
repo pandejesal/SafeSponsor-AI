@@ -106,13 +106,13 @@ function LoginInner() {
           transition={{ duration: 0.3 }}
           className="w-full max-w-md relative z-10"
         >
-          <div className={`backdrop-blur-xl border rounded-3xl shadow-2xl overflow-hidden ${
+          <div className={`backdrop-blur-xl border rounded-xl shadow-sm overflow-hidden ${
             isDark 
               ? 'bg-zinc-900/90 border-zinc-800 ring-1 ring-cyan-500/20' 
               : 'bg-white border-slate-200 ring-1 ring-slate-900/5'
           }`}>
             <div className="p-8 sm:p-10 text-center border-b border-zinc-800/20">
-              <div className={`w-12 h-12 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-md ${
+              <div className={`w-12 h-12 rounded-lg mx-auto flex items-center justify-center mb-4 shadow-md ${
                 isDark ? 'bg-cyan-500 text-zinc-950' : 'bg-blue-900 text-white'
               }`}>
                 <ShieldAlert className="w-7 h-7 stroke-[2.2]" />
@@ -131,7 +131,7 @@ function LoginInner() {
                 <motion.div 
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-start gap-3 text-red-400"
+                  className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 flex items-start gap-3 text-red-400"
                 >
                   <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                   <p className="text-xs font-medium leading-relaxed">{error}</p>
@@ -142,10 +142,10 @@ function LoginInner() {
                 type="button"
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
-                className={`w-full py-4 px-6 rounded-2xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 ${
+                className={`w-full py-4 px-6 rounded-lg font-bold text-sm transition-all duration-200 flex items-center justify-center gap-3 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-70 ${
                   isDark
-                    ? 'bg-white hover:bg-zinc-100 text-zinc-950 shadow-cyan-950/20'
-                    : 'bg-slate-900 hover:bg-slate-800 text-white shadow-slate-200'
+                    ? 'bg-white hover:bg-zinc-100 text-zinc-950'
+                    : 'bg-slate-900 hover:bg-slate-800 text-white'
                 }`}
               >
                 {isLoading ? (
@@ -188,7 +188,7 @@ export default function LoginPage() {
     setMounted(true);
   }, []);
   
-  if (!mounted) return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-200">Loading...</div>;
+  if (!mounted) return <div className="min-h-screen dark:bg-zinc-950 bg-slate-50 dark:text-zinc-200 text-slate-900 flex items-center justify-center">Loading...</div>;
   
   return (
     <AuthProvider>
