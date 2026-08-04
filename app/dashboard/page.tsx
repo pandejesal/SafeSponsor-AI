@@ -148,7 +148,6 @@ function DashboardInner() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'sponsor' | 'caution' | 'blacklist' | 'cached'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'score_high' | 'score_low'>('newest');
   const [copySuccess, setCopySuccess] = useState(false);
-  const [dossierTab, setDossierTab] = useState<'overview' | 'redflags' | 'competitors' | 'sentiment' | 'safeguards' | 'sources'>('overview');
 
   const isDark = theme === 'dark';
 
@@ -838,7 +837,9 @@ Report Generated via SafeSponsor AI Research Engine
     .sort((a, b) => {
       if (sortBy === 'score_high') return (b.brand_safety_score || 0) - (a.brand_safety_score || 0);
       if (sortBy === 'score_low') return (a.brand_safety_score || 0) - (b.brand_safety_score || 0);
-      return 0;
+      const dateA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+      const dateB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+      return dateB - dateA;
     })
   ), [history, searchQuery, filterStatus, sortBy]);
 
@@ -936,21 +937,22 @@ Report Generated via SafeSponsor AI Research Engine
                     <> &middot; renews {new Date(userCredits.subscriptionExpiresAt).toLocaleDateString()}</>
                   )}
                 </p>
-                {!cancelSuccess ? (
-                  <button
-                    onClick={() => setCancelStep(1)}
-                    className={`mt-3 text-[11px] font-semibold underline transition-colors ${
-                      isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-slate-400 hover:text-slate-700'
-                    }`}
-                  >
-                    Cancel subscription
-                  </button>
-                ) : (
-                  <p className="mt-3 text-[11px] font-semibold text-amber-500">
-                    Subscription cancelled. Access until {new Date(cancelSuccess).toLocaleDateString()}.
-                  </p>
-                )}
+                <button
+                  onClick={() => setCancelStep(1)}
+                  className={`mt-3 text-[11px] font-semibold underline transition-colors ${
+                    isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-slate-400 hover:text-slate-700'
+                  }`}
+                >
+                  Cancel subscription
+                </button>
               </>
+            ) : cancelSuccess ? (
+              <div className="text-center">
+                <div className="text-2xl sm:text-3xl font-black text-cyan-400">Pro</div>
+                <p className="mt-1 text-[11px] font-semibold text-amber-500">
+                  Subscription cancelled. Access until {new Date(cancelSuccess).toLocaleDateString()}.
+                </p>
+              </div>
             ) : (
               <>
                 <div className="flex items-center gap-3">
@@ -2776,7 +2778,7 @@ Report Generated via SafeSponsor AI Research Engine
 
         {/* Cancel Subscription — 3-Step Flow */}
         {cancelStep > 0 && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setCancelStep(0)}>
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => { setCancelStep(0); setCancelTyping(""); }}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
             <div
               className={`relative w-full max-w-md rounded-2xl border p-6 space-y-5 shadow-2xl ${
