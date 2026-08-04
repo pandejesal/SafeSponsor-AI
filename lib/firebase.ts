@@ -21,7 +21,7 @@ let appCheck: AppCheck | undefined;
 if (typeof window !== "undefined") {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
-  db = getFirestore(app, config.firestoreDatabaseId);
+  db = getFirestore(app);
 
   const recaptchaKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || config.recaptchaSiteKey;
   if (recaptchaKey && app) {
