@@ -121,6 +121,7 @@ function DashboardInner() {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [auditComplete, setAuditComplete] = useState(false);
 
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [history, setHistory] = useState<HistoryItem[]>([]);
@@ -330,6 +331,8 @@ function DashboardInner() {
 
       const data: AnalysisResult = await res.json();
       setResult(data);
+      setAuditComplete(true);
+      setTimeout(() => setAuditComplete(false), 5000);
     } catch (err: any) {
       setAnalysisError(err.message || "Failed to execute 360-degree brand safety audit.");
     } finally {
@@ -1281,7 +1284,7 @@ Report Generated via SafeSponsor AI Research Engine
                     {loadingAnalysis ? (
                       <>
                         <Activity className="w-5 h-5 animate-spin" />
-                        <span>Checking Cache & Researching Creator...</span>
+                        <span>Researching Creator & Running Brand Safety Checks...</span>
                       </>
                     ) : (
                       <>
@@ -2019,6 +2022,15 @@ Report Generated via SafeSponsor AI Research Engine
           <section className={`p-6 sm:p-8 rounded-xl border space-y-8 animate-in fade-in duration-300 printable-dossier ${
             isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white border-slate-200'
           }`}>
+            {/* Audit Complete Banner */}
+            {auditComplete && (
+              <div className={`flex items-center gap-3 p-3 rounded-lg border text-sm font-medium ${
+                isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
+              }`}>
+                <CheckCircle2 className="w-5 h-5 shrink-0" />
+                <span>Audit complete! Report generated successfully.</span>
+              </div>
+            )}
             {/* Agency Print PDF Report Header */}
             <div className="hidden print:flex flex-col pb-4 border-b-2 border-cyan-600 mb-6 space-y-3">
               <div className="flex items-center justify-between">
@@ -2052,13 +2064,13 @@ Report Generated via SafeSponsor AI Research Engine
                   <Database className="w-5 h-5 text-cyan-400 shrink-0" />
                   <div>
                     <h4 className="font-bold text-sm flex items-center gap-2">
-                      <span>Instant Database Cache Hit</span>
+                      <span>Free Preview</span>
                       <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">
-                        Zero API Cost
+                        Try SafeSponsor Free
                       </span>
                     </h4>
                     <p className="text-xs opacity-80">
-                      Retrieved from SafeSponsor AI global database (Last analyzed: {result.cached_at ? new Date(result.cached_at).toLocaleDateString() : 'Recently'}).
+                      This is a sample audit from our database. Sign up and purchase credits to analyze any creator.
                     </p>
                   </div>
                 </div>

@@ -536,6 +536,13 @@ ${commentsText ? `SAMPLE OF RECENT/TOP YOUTUBE COMMENTS EXTRACTED FROM TARGET VI
 
 EXECUTE RESEARCH AS AN EXPLICIT CHECKLIST:
 
+ABSOLUTE ANTI-HALLUCINATION RULES:
+- You MUST derive ALL claims about this creator's content niche, topics, and audience from the EXTRACTED TRANSCRIPTS and SEARCH EVIDENCE provided below. NEVER infer content type from the creator's name, handle, or channel name alone.
+- If transcripts are empty or unavailable, state explicitly: "No transcript data available — analysis based solely on web search results" and rely ONLY on grounded search findings.
+- If search results are sparse, state explicitly: "Limited external data found" and avoid filling gaps with assumptions.
+- NEVER fabricate video topics, content niches, or audience demographics. If you don't have evidence, say "Insufficient data to determine."
+- Every factual claim MUST cite its source: transcript, search result, or comment sample.
+
 1. INDIVIDUAL COMPETITOR SPONSORSHIP CHECK:
 - For EACH competitor brand individually (${competitor_brands.length > 0 ? competitor_brands.join(", ") : "General Competitors"}):
   * Search specifically for: "${target} sponsored OR partnership OR ad <competitor_brand>" and "${creator_known_aliases.join(" OR ") || target} <competitor_brand>"
@@ -633,6 +640,12 @@ TARGET CREATOR / URL: ${target}
 SUBMITTED URLS: ${JSON.stringify(allUrls)}
 
 Synthesize all findings into the required executive dossier JSON schema.
+
+CRITICAL ANTI-HALLUCINATION REQUIREMENTS FOR SYNTHESIS:
+- NEVER invent or assume content topics, video themes, or audience demographics not present in the Pass 1 research findings.
+- If Pass 1 findings are sparse or missing data about the creator's content, state "Insufficient data to determine" rather than guessing.
+- If the creator's content niche is unclear from evidence, say so explicitly in creator_summary.
+- Every factual claim in your output MUST be traceable to a specific finding in Pass 1 or a grounded source.
 
 CRITICAL REQUIREMENTS:
 1. brand_safety_score: 0-100 (100 = completely safe, taking domain context into account).
