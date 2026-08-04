@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db, auth, getAppCheckToken } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot, doc, addDoc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
 import { Navbar } from "@/components/Navbar";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
@@ -310,13 +310,22 @@ function DashboardInner() {
 
   const [saveSuccess, setSaveSuccess] = useState(false);
   const handleSaveToDossiers = async () => {
-    if (!user || !result || !db) return;
+    if (!user || !result) return;
     try {
-      const { id, ...reportData } = result;
-      await addDoc(collection(db, "users", user.uid, "history"), {
-        ...reportData,
-        createdAt: new Date().toISOString(),
+      const token = await user.getIdToken();
+      const res = await fetch("/api/save-dossier", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(result),
       });
+      if (!res.ok) {
+        const data = await res.json();
+        alert(data.error || "Failed to save dossier.");
+        return;
+      }
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err) {
