@@ -93,7 +93,16 @@ export async function POST(req: NextRequest) {
     await userRef.set(entitlementUpdate, { merge: true });
     console.log(`[VERIFY PAYMENT] Credits granted to user ${uid} via fallback verification (plan: ${plan}, payment: ${paymentId})`);
 
-    return NextResponse.json({ success: true, message: "Credits granted.", plan });
+    const verifySnap = await userRef.get();
+    const verifyData = verifySnap.exists ? verifySnap.data() : null;
+    console.log(`[VERIFY PAYMENT] Post-write verification:`, {
+      exists: verifySnap.exists,
+      videoCredits: verifyData?.videoCredits,
+      channelCredits: verifyData?.channelCredits,
+      lastPaymentId: verifyData?.lastPaymentId,
+    });
+
+    return NextResponse.json({ success: true, message: "Credits granted.", plan, debug: { videoCredits: verifyData?.videoCredits, channelCredits: verifyData?.channelCredits } });
   } catch (error: any) {
     console.error("[VERIFY PAYMENT] Error:", error?.message || error);
     return NextResponse.json({ error: "Internal error verifying payment." }, { status: 500 });
