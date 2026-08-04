@@ -510,23 +510,49 @@ export async function POST(req: NextRequest) {
     const youtubeChannelRegex = /(?:youtube\.com\/@|youtube\.com\/channel\/|youtube\.com\/c\/)([\w-]+)/;
     const isChannelHandle = target.startsWith('@') || youtubeChannelRegex.test(target);
 
-    // If target is a channel handle, try to find recent video URLs via Gemini search first
+    // If target is a channel handle, use YouTube Data API to find recent video URLs
     let resolvedUrls = allUrls;
     if (isChannelHandle && allUrls.length <= 1) {
-      try {
-        const searchResp = await getAI().models.generateContent({
-          model: GEMINI_MODELS_FALLBACK_ORDER[0],
-          contents: `Find 3 recent YouTube video URLs (full watch URLs with ?v=) from the channel "${target}". Return ONLY the URLs, one per line, nothing else. Example format: https://www.youtube.com/watch?v=ABC123abc4D`,
-          config: { tools: [{ googleSearch: {} }] },
-        });
-        const searchText = searchResp.text || "";
-        const foundUrls = searchText.match(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+/g) || [];
-        if (foundUrls.length > 0) {
-          resolvedUrls = [...allUrls, ...foundUrls.slice(0, 3)];
-          console.log(`[CHANNEL RESOLVE] Found ${foundUrls.length} video URLs for ${target}`);
+      const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+      if (youtubeApiKey) {
+        try {
+          // Extract handle from target
+          let handle = target.replace(/^@/, '');
+          const handleMatch = target.match(youtubeChannelRegex);
+          if (handleMatch) handle = handleMatch[1];
+
+          // Step 1: Resolve channel handle to channel ID
+          const channelRes = await fetch(
+            `https://www.googleapis.com/youtube/v3/channels?forHandle=@${handle}&key=${youtubeApiKey}&part=id,snippet`
+          );
+          const channelData = await channelRes.json();
+
+          if (channelData.items?.length > 0) {
+            const channelId = channelData.items[0].id;
+            const channelTitle = channelData.items[0].snippet?.title || handle;
+            console.log(`[CHANNEL RESOLVE] Resolved @${handle} to channel ${channelId} (${channelTitle})`);
+
+            // Step 2: Fetch recent video IDs from the channel
+            const searchRes = await fetch(
+              `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&key=${youtubeApiKey}&part=id&order=date&maxResults=5&type=video`
+            );
+            const searchData = await searchRes.json();
+
+            if (searchData.items?.length > 0) {
+              const videoUrls = searchData.items
+                .map((item: any) => `https://www.youtube.com/watch?v=${item.id.videoId}`)
+                .filter((url: string) => !allUrls.includes(url));
+              resolvedUrls = [...allUrls, ...videoUrls];
+              console.log(`[CHANNEL RESOLVE] Found ${videoUrls.length} recent videos for @${handle}`);
+            }
+          } else {
+            console.warn(`[CHANNEL RESOLVE] Could not find YouTube channel for @${handle}`);
+          }
+        } catch (e: any) {
+          console.warn(`[CHANNEL RESOLVE] YouTube API error for ${target}:`, e.message);
         }
-      } catch (e: any) {
-        console.warn(`[CHANNEL RESOLVE] Could not find videos for ${target}:`, e.message);
+      } else {
+        console.warn(`[CHANNEL RESOLVE] No YOUTUBE_API_KEY set, cannot resolve channel handle`);
       }
     }
 
