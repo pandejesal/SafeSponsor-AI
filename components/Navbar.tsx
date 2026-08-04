@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { ShieldAlert, Sun, Moon, ArrowRight, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
+import { Sun, Moon, ArrowRight, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
 import { signOut } from 'firebase/auth';
@@ -43,13 +43,11 @@ export function Navbar() {
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 shadow-md ${
-            isDark 
-              ? 'bg-gradient-to-br from-cyan-500 to-orange-600 text-black font-extrabold' 
-              : 'bg-gradient-to-br from-blue-900 via-cyan-600 to-orange-600 text-white'
-          }`}>
-            <ShieldAlert className="w-6 h-6 stroke-[2.2]" />
-          </div>
+          <img 
+            src="/favicon.svg" 
+            alt="SafeSponsor AI" 
+            className="w-10 h-10 rounded-xl shadow-md transition-transform group-hover:scale-105"
+          />
           <div className="flex flex-col">
             <span className="font-extrabold text-lg sm:text-xl tracking-tight leading-none flex items-center gap-1">
               SafeSponsor

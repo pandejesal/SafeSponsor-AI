@@ -760,7 +760,7 @@ function LandingContent() {
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <ShieldAlert className={`w-5 h-5 ${isDark ? 'text-cyan-400' : 'text-orange-600'}`} />
+            <img src="/favicon.svg" alt="SafeSponsor AI" className="w-5 h-5" />
             <span className="font-bold text-slate-200 dark:text-zinc-200">SafeSponsor AI</span>
             <span>© {new Date().getFullYear()} All rights reserved.</span>
           </div>

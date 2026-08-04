@@ -9,7 +9,7 @@ import { Navbar } from "@/components/Navbar";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
 import { 
-  ShieldAlert, Search, Activity, AlertTriangle, CheckCircle2, 
+  Search, Activity, AlertTriangle, CheckCircle2, 
   ExternalLink, Building2, Flame, ChevronRight, Layers, AlertCircle,
   Users, MessageSquare, Scale, Ban, FileCheck, ThumbsUp, Sparkles, Globe, Shield, DollarSign, Zap,
   Printer, Share2, RefreshCw, Copy, Check, Database, Filter, Clock, BarChart2, TrendingUp, Video, Camera,
@@ -2037,9 +2037,11 @@ Report Generated via SafeSponsor AI Research Engine
             <div className="hidden print:flex flex-col pb-4 border-b-2 border-cyan-600 mb-6 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-900 text-white flex items-center justify-center font-black">
-                    <ShieldAlert className="w-6 h-6 text-cyan-400" />
-                  </div>
+                  <img 
+                    src="/favicon.svg" 
+                    alt="SafeSponsor AI" 
+                    className="w-10 h-10 rounded-xl"
+                  />
                   <div>
                     <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-1">
                       SafeSponsor <span className="text-cyan-600">AI</span>

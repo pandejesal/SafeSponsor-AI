@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
-import { ShieldAlert, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '@/components/AuthProvider';
 import { Navbar } from '@/components/Navbar';
@@ -112,11 +112,11 @@ function LoginInner() {
               : 'bg-white border-slate-200 ring-1 ring-slate-900/5'
           }`}>
             <div className="p-8 sm:p-10 text-center border-b border-zinc-800/20">
-              <div className={`w-12 h-12 rounded-lg mx-auto flex items-center justify-center mb-4 shadow-md ${
-                isDark ? 'bg-cyan-500 text-zinc-950' : 'bg-blue-900 text-white'
-              }`}>
-                <ShieldAlert className="w-7 h-7 stroke-[2.2]" />
-              </div>
+              <img 
+                src="/favicon.svg" 
+                alt="SafeSponsor AI" 
+                className="w-12 h-12 rounded-lg mx-auto mb-4 shadow-md"
+              />
 
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
                 Welcome to SafeSponsor AI
