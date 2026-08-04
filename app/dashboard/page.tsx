@@ -82,6 +82,8 @@ interface AnalysisResult {
   target?: string;
   is_cached?: boolean;
   cached_at?: string;
+  data_quality?: "full" | "limited";
+  data_quality_note?: string | null;
 }
 
 interface HistoryItem extends AnalysisResult {
@@ -2088,6 +2090,21 @@ Report Generated via SafeSponsor AI Research Engine
                   <RefreshCw className={`w-3.5 h-3.5 ${loadingAnalysis ? 'animate-spin' : ''}`} />
                   <span>Force Re-Audit Live</span>
                 </button>
+              </div>
+            )}
+
+            {/* Limited Data Warning Banner */}
+            {result.data_quality === 'limited' && (
+              <div className={`p-4 rounded-lg border flex items-center gap-3 ${
+                isDark ? 'bg-amber-950/30 border-amber-500/30 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'
+              }`}>
+                <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+                <div>
+                  <h4 className="font-bold text-sm">Limited Data Available</h4>
+                  <p className="text-xs opacity-80">
+                    {result.data_quality_note || "This analysis had limited data. Try providing a specific video URL for a more accurate report."}
+                  </p>
+                </div>
               </div>
             )}
 

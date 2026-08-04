@@ -59,23 +59,38 @@ async function generateWithModelFallback(params: {
   contents: any;
   config?: any;
   models?: string[];
+  maxRetries?: number;
 }) {
   const models = params.models || GEMINI_MODELS_FALLBACK_ORDER;
+  const maxRetries = params.maxRetries ?? 2;
   let lastError: any = null;
 
   for (const modelName of models) {
-    try {
-      console.log(`[Gemini API] Executing generateContent with model: ${modelName}`);
-      const response = await getAI().models.generateContent({
-        model: modelName,
-        contents: params.contents,
-        config: params.config,
-      });
-      return response;
-    } catch (err: any) {
-      console.warn(`[Gemini API] Model ${modelName} failed or quota reached:`, err?.message || err);
-      lastError = err;
-      // Continue loop to try next model in fallback list
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          const delayMs = attempt * 3000;
+          console.log(`[Gemini API] Retrying model ${modelName} after ${delayMs}ms delay (attempt ${attempt + 1}/${maxRetries + 1})`);
+          await new Promise(resolve => setTimeout(resolve, delayMs));
+        }
+        console.log(`[Gemini API] Executing generateContent with model: ${modelName}`);
+        const response = await getAI().models.generateContent({
+          model: modelName,
+          contents: params.contents,
+          config: params.config,
+        });
+        return response;
+      } catch (err: any) {
+        const is429 = err?.message?.includes('429') || err?.message?.includes('RESOURCE_EXHAUSTED') || err?.status === 429;
+        if (is429 && attempt < maxRetries) {
+          console.warn(`[Gemini API] Model ${modelName} rate-limited (attempt ${attempt + 1}), will retry...`);
+          lastError = err;
+          continue;
+        }
+        console.warn(`[Gemini API] Model ${modelName} failed:`, err?.message || err);
+        lastError = err;
+        break;
+      }
     }
   }
   throw lastError || new Error("All Gemini models in fallback sequence failed.");
@@ -491,8 +506,31 @@ export async function POST(req: NextRequest) {
     let commentsText = "";
     // Updated regex to include shorts, embed, v, watch, live
     const youtubeVideoRegex = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|live\/|shorts\/))([\w-]{11})/;
+    // Detect channel handles: @username, youtube.com/@user, youtube.com/channel/ID, youtube.com/c/Name
+    const youtubeChannelRegex = /(?:youtube\.com\/@|youtube\.com\/channel\/|youtube\.com\/c\/)([\w-]+)/;
+    const isChannelHandle = target.startsWith('@') || youtubeChannelRegex.test(target);
 
-    for (const url of allUrls) {
+    // If target is a channel handle, try to find recent video URLs via Gemini search first
+    let resolvedUrls = allUrls;
+    if (isChannelHandle && allUrls.length <= 1) {
+      try {
+        const searchResp = await getAI().models.generateContent({
+          model: GEMINI_MODELS_FALLBACK_ORDER[0],
+          contents: `Find 3 recent YouTube video URLs (full watch URLs with ?v=) from the channel "${target}". Return ONLY the URLs, one per line, nothing else. Example format: https://www.youtube.com/watch?v=ABC123abc4D`,
+          config: { tools: [{ googleSearch: {} }] },
+        });
+        const searchText = searchResp.text || "";
+        const foundUrls = searchText.match(/https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[\w-]+/g) || [];
+        if (foundUrls.length > 0) {
+          resolvedUrls = [...allUrls, ...foundUrls.slice(0, 3)];
+          console.log(`[CHANNEL RESOLVE] Found ${foundUrls.length} video URLs for ${target}`);
+        }
+      } catch (e: any) {
+        console.warn(`[CHANNEL RESOLVE] Could not find videos for ${target}:`, e.message);
+      }
+    }
+
+    for (const url of resolvedUrls) {
       const match = url.match(youtubeVideoRegex);
       if (match && match[1]) {
         const videoId = match[1];
@@ -902,6 +940,10 @@ CRITICAL REQUIREMENTS:
       additional_urls,
       creator_known_aliases,
       is_cached: false,
+      data_quality: (transcriptText.length < 100 && groundingSources.length === 0) ? "limited" : "full",
+      data_quality_note: (transcriptText.length < 100 && groundingSources.length === 0)
+        ? "This analysis had limited data (no video transcripts or web sources found). Results may be less accurate. Try providing a specific video URL for better analysis."
+        : null,
       createdAt: new Date().toISOString(),
     };
 
