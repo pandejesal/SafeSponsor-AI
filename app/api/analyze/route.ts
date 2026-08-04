@@ -7,7 +7,7 @@ import { sanitizeUrl } from "@/lib/utils";
 import { z } from "zod";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const analyzeSchema = z.object({
   target: z.string().max(500).optional(),
@@ -52,7 +52,6 @@ const GEMINI_MODELS_FALLBACK_ORDER = [
   "gemini-3.6-flash",
   "gemini-3.5-flash",
   "gemini-3.1-flash-lite",
-  "gemini-flash-latest",
 ];
 
 async function generateWithModelFallback(params: {
@@ -62,23 +61,26 @@ async function generateWithModelFallback(params: {
   maxRetries?: number;
 }) {
   const models = params.models || GEMINI_MODELS_FALLBACK_ORDER;
-  const maxRetries = params.maxRetries ?? 2;
+  const maxRetries = params.maxRetries ?? 1;
   let lastError: any = null;
 
   for (const modelName of models) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         if (attempt > 0) {
-          const delayMs = attempt * 3000;
+          const delayMs = attempt * 2000;
           console.log(`[Gemini API] Retrying model ${modelName} after ${delayMs}ms delay (attempt ${attempt + 1}/${maxRetries + 1})`);
           await new Promise(resolve => setTimeout(resolve, delayMs));
         }
         console.log(`[Gemini API] Executing generateContent with model: ${modelName}`);
-        const response = await getAI().models.generateContent({
-          model: modelName,
-          contents: params.contents,
-          config: params.config,
-        });
+        const response = await Promise.race([
+          getAI().models.generateContent({
+            model: modelName,
+            contents: params.contents,
+            config: params.config,
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error(`Model ${modelName} timed out after 15s`)), 15000)),
+        ]) as any;
         return response;
       } catch (err: any) {
         const is429 = err?.message?.includes('429') || err?.message?.includes('RESOURCE_EXHAUSTED') || err?.status === 429;
