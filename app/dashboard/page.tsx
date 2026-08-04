@@ -215,33 +215,33 @@ function DashboardInner() {
     return () => unsubscribe();
   }, [user]);
 
-  // Listen to user document for credits & subscription status
   useEffect(() => {
-    if (!user || !db) {
+    if (!user) {
       setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
       return;
     }
-    const userDocRef = doc(db, "users", user.uid);
-    const unsubscribe = onSnapshot(userDocRef, (docSnap) => {
-      if (!docSnap.exists()) {
-        setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
-        return;
+    const fetchCredits = async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/check-credits', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserCredits({
+            videoCredits: data.videoCredits || 0,
+            channelCredits: data.channelCredits || 0,
+            hasSubscription: data.hasSubscription || false,
+            subscriptionExpiresAt: data.subscriptionExpiresAt || null,
+          });
+        }
+      } catch (err) {
+        console.warn("Credits fetch error:", err);
       }
-      const data = docSnap.data();
-      const sub = data.subscription && typeof data.subscription === "object" ? data.subscription : null;
-      const expiresAt = sub?.expiresAt || null;
-      const isSubActive = data.hasSubscription === true && expiresAt && new Date(expiresAt).getTime() > Date.now();
-      setUserCredits({
-        videoCredits: typeof data.videoCredits === "number" ? data.videoCredits : 0,
-        channelCredits: typeof data.channelCredits === "number" ? data.channelCredits : 0,
-        hasSubscription: isSubActive,
-        subscriptionExpiresAt: expiresAt,
-      });
-    }, (err) => {
-      console.warn("Credits listener error:", err);
-      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
-    });
-    return () => unsubscribe();
+    };
+    fetchCredits();
+    const interval = setInterval(fetchCredits, 10000);
+    return () => clearInterval(interval);
   }, [user]);
 
   const handleCheckout = async (plan: string) => {
