@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     const userData = userDoc.data() || {};
     const subData = userData.subscription && typeof userData.subscription === "object" ? userData.subscription : null;
-    const subscriptionId = subData?.subscriptionId;
+    const subscriptionId = subData?.subscriptionId || userData.lastSubscriptionId;
     const expiresAt = subData?.expiresAt;
 
     if (!subscriptionId) {

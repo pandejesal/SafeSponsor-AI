@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
       console.log(`[ENTITLEMENT REVOCATION] Revoking subscription/credits access due to event: ${eventType} for plan: ${plan}`);
     } else if (plan === "subscription") {
       entitlementUpdate.hasSubscription = true;
-      entitlementUpdate.subscription = { status: "active" };
+      entitlementUpdate.subscription = { status: "active", subscriptionId: subscriptionId || null };
     } else if (plan === "single") {
       entitlementUpdate.videoCredits = FieldValue.increment(1);
     } else if (plan === "channel") {
