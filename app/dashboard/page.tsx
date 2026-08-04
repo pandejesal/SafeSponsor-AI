@@ -138,7 +138,9 @@ function DashboardInner() {
     subscriptionExpiresAt: string | null;
   } | null>(null);
   const [cancellingSub, setCancellingSub] = useState(false);
-  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [cancelStep, setCancelStep] = useState<0 | 1 | 2 | 3>(0); // 0=closed, 1=reason, 2=confirm, 3=typing
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelTyping, setCancelTyping] = useState("");
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
 
   // Filter, Tab & Search states
@@ -298,7 +300,9 @@ function DashboardInner() {
         return;
       }
       setCancelSuccess(data.expiresAt);
-      setCancelConfirmOpen(false);
+      setCancelStep(0);
+      setCancelReason("");
+      setCancelTyping("");
       // Update local state
       setUserCredits(prev => prev ? { ...prev, hasSubscription: false } : prev);
     } catch {
@@ -934,7 +938,7 @@ Report Generated via SafeSponsor AI Research Engine
                 </p>
                 {!cancelSuccess ? (
                   <button
-                    onClick={() => setCancelConfirmOpen(true)}
+                    onClick={() => setCancelStep(1)}
                     className={`mt-3 text-[11px] font-semibold underline transition-colors ${
                       isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-slate-400 hover:text-slate-700'
                     }`}
@@ -2770,41 +2774,137 @@ Report Generated via SafeSponsor AI Research Engine
           )}
         </section>
 
-        {/* Cancel Subscription Confirmation Dialog */}
-        {cancelConfirmOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setCancelConfirmOpen(false)}>
+        {/* Cancel Subscription — 3-Step Flow */}
+        {cancelStep > 0 && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setCancelStep(0)}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
             <div
-              className={`relative w-full max-w-md rounded-2xl border p-6 space-y-4 shadow-2xl ${
+              className={`relative w-full max-w-md rounded-2xl border p-6 space-y-5 shadow-2xl ${
                 isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold">Cancel Subscription?</h3>
-              <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
-                Your subscription will be cancelled and will <strong>not renew</strong> next billing cycle. You will retain full access to unlimited audits until{" "}
-                <strong>{userCredits?.subscriptionExpiresAt ? new Date(userCredits.subscriptionExpiresAt).toLocaleDateString() : "the end of your billing period"}</strong>.
-              </p>
-              <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
-                No refunds are issued. After cancellation, you can resubscribe at any time.
-              </p>
-              <div className="flex gap-3 pt-2">
-                <button
-                  onClick={() => setCancelConfirmOpen(false)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                    isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  Keep Subscription
-                </button>
-                <button
-                  onClick={handleCancelSubscription}
-                  disabled={cancellingSub}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
-                  {cancellingSub ? "Cancelling..." : "Yes, Cancel"}
-                </button>
-              </div>
+              {/* STEP 1: Reason */}
+              {cancelStep === 1 && (
+                <>
+                  <div>
+                    <h3 className="text-lg font-bold">Before you go...</h3>
+                    <p className={`text-sm mt-1 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                      Help us understand why you&apos;re cancelling so we can improve.
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    {["Too expensive", "Not using it enough", "Missing features I need", "Found a better alternative", "Just testing / no longer needed"].map((reason) => (
+                      <button
+                        key={reason}
+                        onClick={() => { setCancelReason(reason); setCancelStep(2); }}
+                        className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium border transition-all ${
+                          cancelReason === reason
+                            ? isDark ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-blue-50 border-blue-300 text-blue-900'
+                            : isDark ? 'bg-zinc-800 border-zinc-700 hover:border-zinc-500 text-zinc-300' : 'bg-slate-50 border-slate-200 hover:border-slate-400 text-slate-700'
+                        }`}
+                      >
+                        {reason}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => setCancelStep(0)}
+                    className={`w-full py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                      isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    Never mind, keep subscription
+                  </button>
+                </>
+              )}
+
+              {/* STEP 2: Are you sure? */}
+              {cancelStep === 2 && (
+                <>
+                  <div>
+                    <h3 className="text-lg font-bold">You&apos;ll lose access to:</h3>
+                  </div>
+                  <div className={`space-y-3 text-sm ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    <div className="flex items-start gap-3">
+                      <span className="text-red-400 mt-0.5">✕</span>
+                      <span>Unlimited creator brand safety audits</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-red-400 mt-0.5">✕</span>
+                      <span>FTC & Legal Compliance deep dives</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-red-400 mt-0.5">✕</span>
+                      <span>Competitor Exclusivity Matrix analysis</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <span className="text-red-400 mt-0.5">✕</span>
+                      <span>Batch multi-URL processing</span>
+                    </div>
+                  </div>
+                  <div className={`p-3 rounded-xl text-xs ${isDark ? 'bg-cyan-500/10 text-cyan-300' : 'bg-blue-50 text-blue-800'}`}>
+                    <strong>Pro tip:</strong> You can resubscribe anytime and pick up right where you left off.
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setCancelStep(0)}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                        isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      Keep Subscription
+                    </button>
+                    <button
+                      onClick={() => setCancelStep(3)}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-red-600/20 text-red-400 border border-red-500/30 hover:bg-red-600/30 transition-colors"
+                    >
+                      Continue cancelling
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {/* STEP 3: Type to confirm */}
+              {cancelStep === 3 && (
+                <>
+                  <div>
+                    <h3 className="text-lg font-bold">Final confirmation</h3>
+                    <p className={`text-sm mt-1 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                      Type <span className="font-mono font-bold text-red-400">CANCEL</span> to confirm cancellation. This action cannot be undone.
+                    </p>
+                  </div>
+                  <input
+                    type="text"
+                    value={cancelTyping}
+                    onChange={(e) => setCancelTyping(e.target.value)}
+                    placeholder="Type CANCEL"
+                    autoFocus
+                    className={`w-full px-4 py-3 rounded-xl border text-sm font-mono outline-none transition-colors ${
+                      cancelTyping === "CANCEL"
+                        ? 'border-red-500 bg-red-500/10'
+                        : isDark ? 'bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-slate-50 border-slate-300 text-slate-900'
+                    }`}
+                  />
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => { setCancelStep(0); setCancelTyping(""); }}
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                        isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      Go back
+                    </button>
+                    <button
+                      onClick={() => { handleCancelSubscription(); setCancelTyping(""); }}
+                      disabled={cancellingSub || cancelTyping !== "CANCEL"}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                      {cancellingSub ? "Cancelling..." : "Confirm cancellation"}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
