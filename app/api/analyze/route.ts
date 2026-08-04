@@ -354,8 +354,18 @@ export async function POST(req: NextRequest) {
     // GLOBAL DATABASE CACHE CHECK
     // If another user previously audited this same creator target,
     // retrieve from Firestore global_audits instantly (saves API costs).
+    // SKIP for subscribed users — they paid for fresh analysis.
     // -------------------------------------------------------------
-    if (!force_refresh && targetKey) {
+    const userDoc = await userDocRef.get();
+    const userData = userDoc.data() || {};
+    const subData = userData.subscription && typeof userData.subscription === "object" ? userData.subscription : null;
+    const isSubscribed = userData.hasSubscription === true && subData?.expiresAt && new Date(subData.expiresAt).getTime() > Date.now();
+
+    const hasCredits = (typeof userData.videoCredits === "number" && userData.videoCredits > 0) ||
+                       (typeof userData.channelCredits === "number" && userData.channelCredits > 0);
+    const isPaidUser = isSubscribed || hasCredits;
+
+    if (!force_refresh && targetKey && !isPaidUser) {
       // First check in-memory pre-computed seeded audits for top famous YouTubers
       const seeded = getSeededAudit(target || targetKey);
       if (seeded) {

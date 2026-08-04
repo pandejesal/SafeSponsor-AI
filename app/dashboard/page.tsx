@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db, auth, getAppCheckToken } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, addDoc } from "firebase/firestore";
 import { Navbar } from "@/components/Navbar";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
@@ -137,6 +137,9 @@ function DashboardInner() {
     hasSubscription: boolean;
     subscriptionExpiresAt: string | null;
   } | null>(null);
+  const [cancellingSub, setCancellingSub] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
 
   // Filter, Tab & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -277,6 +280,48 @@ function DashboardInner() {
       alert("Failed to connect to checkout service.");
     } finally {
       setLoadingPlan(null);
+    }
+  };
+
+  const handleCancelSubscription = async () => {
+    setCancellingSub(true);
+    try {
+      const token = await user?.getIdToken();
+      if (!token) return;
+      const res = await fetch("/api/cancel-subscription", {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Failed to cancel subscription.");
+        return;
+      }
+      setCancelSuccess(data.expiresAt);
+      setCancelConfirmOpen(false);
+      // Update local state
+      setUserCredits(prev => prev ? { ...prev, hasSubscription: false } : prev);
+    } catch {
+      alert("Failed to connect to cancellation service.");
+    } finally {
+      setCancellingSub(false);
+    }
+  };
+
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const handleSaveToDossiers = async () => {
+    if (!user || !result || !db) return;
+    try {
+      const { id, ...reportData } = result;
+      await addDoc(collection(db, "users", user.uid, "history"), {
+        ...reportData,
+        createdAt: new Date().toISOString(),
+      });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err) {
+      console.error("Failed to save dossier:", err);
+      alert("Failed to save dossier.");
     }
   };
 
@@ -878,6 +923,20 @@ Report Generated via SafeSponsor AI Research Engine
                     <> &middot; renews {new Date(userCredits.subscriptionExpiresAt).toLocaleDateString()}</>
                   )}
                 </p>
+                {!cancelSuccess ? (
+                  <button
+                    onClick={() => setCancelConfirmOpen(true)}
+                    className={`mt-3 text-[11px] font-semibold underline transition-colors ${
+                      isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-slate-400 hover:text-slate-700'
+                    }`}
+                  >
+                    Cancel subscription
+                  </button>
+                ) : (
+                  <p className="mt-3 text-[11px] font-semibold text-amber-500">
+                    Subscription cancelled. Access until {new Date(cancelSuccess).toLocaleDateString()}.
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -2130,6 +2189,20 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
 
               <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                {/* Save to Dossiers */}
+                <button
+                  onClick={handleSaveToDossiers}
+                  className={`px-4 py-3 rounded-lg border transition text-xs font-bold flex items-center gap-2 print:hidden ${
+                    saveSuccess
+                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                      : (isDark ? 'bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-emerald-400' : 'bg-slate-100 border-slate-300 hover:bg-slate-200 text-emerald-600')
+                  }`}
+                  title="Save this report to your personal dossier database"
+                >
+                  {saveSuccess ? <Check className="w-4 h-4" /> : <Database className="w-4 h-4" />}
+                  <span>{saveSuccess ? 'Saved!' : 'Save to Dossiers'}</span>
+                </button>
+
                 {/* Copy Markdown Summary */}
                 <button
                   onClick={() => copyDossierSummary(result)}
@@ -2687,6 +2760,45 @@ Report Generated via SafeSponsor AI Research Engine
             </div>
           )}
         </section>
+
+        {/* Cancel Subscription Confirmation Dialog */}
+        {cancelConfirmOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setCancelConfirmOpen(false)}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div
+              className={`relative w-full max-w-md rounded-2xl border p-6 space-y-4 shadow-2xl ${
+                isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'
+              }`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-bold">Cancel Subscription?</h3>
+              <p className={`text-sm leading-relaxed ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                Your subscription will be cancelled and will <strong>not renew</strong> next billing cycle. You will retain full access to unlimited audits until{" "}
+                <strong>{userCredits?.subscriptionExpiresAt ? new Date(userCredits.subscriptionExpiresAt).toLocaleDateString() : "the end of your billing period"}</strong>.
+              </p>
+              <p className={`text-xs ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
+                No refunds are issued. After cancellation, you can resubscribe at any time.
+              </p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setCancelConfirmOpen(false)}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                    isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
+                >
+                  Keep Subscription
+                </button>
+                <button
+                  onClick={handleCancelSubscription}
+                  disabled={cancellingSub}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-red-600 text-white hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {cancellingSub ? "Cancelling..." : "Yes, Cancel"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </main>
     </div>
