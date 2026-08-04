@@ -504,6 +504,7 @@ export async function POST(req: NextRequest) {
     // 4. Extract YouTube Video / Shorts Transcripts & Comments
     let transcriptText = "";
     let commentsText = "";
+    let channelMetadata = "";
     // Updated regex to include shorts, embed, v, watch, live
     const youtubeVideoRegex = /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|live\/|shorts\/))([\w-]{11})/;
     // Detect channel handles: @username, youtube.com/@user, youtube.com/channel/ID, youtube.com/c/Name
@@ -521,16 +522,22 @@ export async function POST(req: NextRequest) {
           const handleMatch = target.match(youtubeChannelRegex);
           if (handleMatch) handle = handleMatch[1];
 
-          // Step 1: Resolve channel handle to channel ID
+          // Step 1: Resolve channel handle to channel ID + description
           const channelRes = await fetch(
-            `https://www.googleapis.com/youtube/v3/channels?forHandle=@${handle}&key=${youtubeApiKey}&part=id,snippet`
+            `https://www.googleapis.com/youtube/v3/channels?forHandle=@${handle}&key=${youtubeApiKey}&part=id,snippet,statistics`
           );
           const channelData = await channelRes.json();
 
           if (channelData.items?.length > 0) {
-            const channelId = channelData.items[0].id;
-            const channelTitle = channelData.items[0].snippet?.title || handle;
+            const ch = channelData.items[0];
+            const channelId = ch.id;
+            const channelTitle = ch.snippet?.title || handle;
+            const channelDesc = ch.snippet?.description || "";
+            const subscriberCount = ch.statistics?.subscriberCount || "unknown";
+            const videoCount = ch.statistics?.videoCount || "unknown";
             console.log(`[CHANNEL RESOLVE] Resolved @${handle} to channel ${channelId} (${channelTitle})`);
+
+            channelMetadata = `[Channel Metadata for @${handle}]:\nTitle: ${channelTitle}\nDescription: ${channelDesc.slice(0, 2000)}\nSubscribers: ${subscriberCount}\nTotal Videos: ${videoCount}\n`;
 
             // Step 2: Fetch recent video IDs from the channel
             const searchRes = await fetch(
@@ -544,6 +551,21 @@ export async function POST(req: NextRequest) {
                 .filter((url: string) => !allUrls.includes(url));
               resolvedUrls = [...allUrls, ...videoUrls];
               console.log(`[CHANNEL RESOLVE] Found ${videoUrls.length} recent videos for @${handle}`);
+
+              // Step 3: Fetch video details (titles + descriptions) as context
+              const videoIds = searchData.items.map((item: any) => item.id.videoId).join(",");
+              const detailsRes = await fetch(
+                `https://www.googleapis.com/youtube/v3/videos?key=${youtubeApiKey}&id=${videoIds}&part=snippet,statistics`
+              );
+              const detailsData = await detailsRes.json();
+              if (detailsData.items?.length > 0) {
+                const videoSummaries = detailsData.items.map((v: any) => {
+                  const s = v.snippet;
+                  const st = v.statistics;
+                  return `• "${s.title}" (Views: ${st.viewCount || "?"}, Likes: ${st.likeCount || "?"})\n  Description: ${(s.description || "").slice(0, 500)}`;
+                }).join("\n");
+                channelMetadata += `\nRecent Videos:\n${videoSummaries}\n`;
+              }
             }
           } else {
             console.warn(`[CHANNEL RESOLVE] Could not find YouTube channel for @${handle}`);
@@ -597,6 +619,7 @@ KNOWN ALIASES / HANDLES: ${creator_known_aliases.length > 0 ? creator_known_alia
 
 ${transcriptText ? `VERIFIED TRANSCRIPT DATA EXTRACTED FROM YOUTUBE VIDEOS / SHORTS:\n"${transcriptText}"\n` : ""}
 ${commentsText ? `SAMPLE OF RECENT/TOP YOUTUBE COMMENTS EXTRACTED FROM TARGET VIDEO(S):\n"${commentsText}"\n` : ""}
+${channelMetadata ? `YOUTUBE CHANNEL METADATA (fetched via YouTube Data API):\n${channelMetadata}\n` : ""}
 
 EXECUTE RESEARCH AS AN EXPLICIT CHECKLIST:
 
@@ -966,8 +989,8 @@ CRITICAL REQUIREMENTS:
       additional_urls,
       creator_known_aliases,
       is_cached: false,
-      data_quality: (transcriptText.length < 100 && groundingSources.length === 0) ? "limited" : "full",
-      data_quality_note: (transcriptText.length < 100 && groundingSources.length === 0)
+      data_quality: (transcriptText.length < 100 && groundingSources.length === 0 && !channelMetadata) ? "limited" : "full",
+      data_quality_note: (transcriptText.length < 100 && groundingSources.length === 0 && !channelMetadata)
         ? "This analysis had limited data (no video transcripts or web sources found). Results may be less accurate. Try providing a specific video URL for better analysis."
         : null,
       createdAt: new Date().toISOString(),
