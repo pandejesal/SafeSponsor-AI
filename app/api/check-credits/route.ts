@@ -18,6 +18,7 @@ export async function GET(req: NextRequest) {
         channelCredits: 0,
         hasSubscription: false,
         subscriptionExpiresAt: null,
+        cancelAtPeriodEnd: false,
         plan: null,
       });
     }
@@ -32,6 +33,7 @@ export async function GET(req: NextRequest) {
       channelCredits: typeof data.channelCredits === "number" ? data.channelCredits : 0,
       hasSubscription: isSubActive,
       subscriptionExpiresAt: expiresAt,
+      cancelAtPeriodEnd: sub?.cancelAtPeriodEnd === true,
       plan: data.plan || null,
     });
   } catch (error: any) {

@@ -136,6 +136,7 @@ function DashboardInner() {
     channelCredits: number;
     hasSubscription: boolean;
     subscriptionExpiresAt: string | null;
+    cancelAtPeriodEnd: boolean;
   } | null>(null);
   const [cancellingSub, setCancellingSub] = useState(false);
   const [cancelStep, setCancelStep] = useState<0 | 1 | 2 | 3>(0); // 0=closed, 1=reason, 2=confirm, 3=typing
@@ -224,7 +225,7 @@ function DashboardInner() {
 
   useEffect(() => {
     if (!user) {
-      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null });
+      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null, cancelAtPeriodEnd: false });
       return;
     }
     const fetchCredits = async () => {
@@ -240,6 +241,7 @@ function DashboardInner() {
             channelCredits: data.channelCredits || 0,
             hasSubscription: data.hasSubscription || false,
             subscriptionExpiresAt: data.subscriptionExpiresAt || null,
+            cancelAtPeriodEnd: data.cancelAtPeriodEnd === true,
           });
         }
       } catch (err) {
@@ -302,8 +304,8 @@ function DashboardInner() {
       setCancelStep(0);
       setCancelReason("");
       setCancelTyping("");
-      // Update local state
-      setUserCredits(prev => prev ? { ...prev, hasSubscription: false } : prev);
+      // Update local state — access continues until period end, but mark as cancelled
+      setUserCredits(prev => prev ? { ...prev, cancelAtPeriodEnd: true } : prev);
     } catch {
       alert("Failed to connect to cancellation service.");
     } finally {
@@ -932,19 +934,29 @@ Report Generated via SafeSponsor AI Research Engine
               <>
                 <div className="text-2xl sm:text-3xl font-black text-cyan-400">Pro</div>
                 <p className={`text-[11px] mt-1 ${isDark ? 'text-cyan-300/80' : 'text-cyan-900'}`}>
-                  Unlimited audits
-                  {userCredits.subscriptionExpiresAt && (
-                    <> &middot; renews {new Date(userCredits.subscriptionExpiresAt).toLocaleDateString()}</>
+                  {userCredits.cancelAtPeriodEnd ? (
+                    <>
+                      Cancelled &middot; access until {userCredits.subscriptionExpiresAt ? new Date(userCredits.subscriptionExpiresAt).toLocaleDateString() : "period end"}
+                    </>
+                  ) : (
+                    <>
+                      Unlimited audits
+                      {userCredits.subscriptionExpiresAt && (
+                        <> &middot; renews {new Date(userCredits.subscriptionExpiresAt).toLocaleDateString()}</>
+                      )}
+                    </>
                   )}
                 </p>
-                <button
-                  onClick={() => setCancelStep(1)}
-                  className={`mt-3 text-[11px] font-semibold underline transition-colors ${
-                    isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-slate-400 hover:text-slate-700'
-                  }`}
-                >
-                  Cancel subscription
-                </button>
+                {!userCredits.cancelAtPeriodEnd && (
+                  <button
+                    onClick={() => setCancelStep(1)}
+                    className={`mt-3 text-[11px] font-semibold underline transition-colors ${
+                      isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-slate-400 hover:text-slate-700'
+                    }`}
+                  >
+                    Cancel subscription
+                  </button>
+                )}
               </>
             ) : cancelSuccess ? (
               <div className="text-center">
