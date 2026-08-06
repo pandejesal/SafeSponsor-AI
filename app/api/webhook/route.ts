@@ -252,6 +252,14 @@ export async function POST(req: NextRequest) {
         const userData = userSnap.exists ? userSnap.data() || {} : {};
         const nowMs = Date.now();
 
+        // Guard against double-grant: if verify-payment (client fallback) already
+        // credited THIS payment, skip. Renewals carry a fresh payment_id each
+        // cycle, so this cannot block legitimate renewals.
+        if (paymentId && userData.lastPaymentId === paymentId) {
+          console.log(`[ENTITLEMENT SKIP] Payment ${paymentId} already credited for user ${uid} (verify-payment).`);
+          return;
+        }
+
         const existingSub = userData.subscription && typeof userData.subscription === "object" ? userData.subscription : null;
         const existingExpiryMs = existingSub?.expiresAt ? new Date(existingSub.expiresAt).getTime() : NaN;
         const hasValidExpiry = !isNaN(existingExpiryMs) && existingExpiryMs > 0;
@@ -279,7 +287,17 @@ export async function POST(req: NextRequest) {
       });
       console.log(`[ENTITLEMENT CONFIRMED] Subscription granted/extended for user ${uid} via event: ${eventType}`);
     } else {
-      await userRef.set(entitlementUpdate, { merge: true });
+      // Single/channel credit grants: run in a transaction and skip if this
+      // payment was already credited by /api/verify-payment.
+      await adminDb.runTransaction(async (tx) => {
+        const userSnap = await tx.get(userRef);
+        const userData = userSnap.exists ? userSnap.data() || {} : {};
+        if (paymentId && userData.lastPaymentId === paymentId) {
+          console.log(`[ENTITLEMENT SKIP] Payment ${paymentId} already credited for user ${uid} (verify-payment).`);
+          return;
+        }
+        tx.set(userRef, entitlementUpdate, { merge: true });
+      });
       console.log(`[ENTITLEMENT CONFIRMED] User ${uid} updated for event: ${eventType} (plan: ${plan})`);
     }
     } catch (grantErr: any) {

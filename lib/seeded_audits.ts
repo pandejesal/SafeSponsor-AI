@@ -503,6 +503,7 @@ export const SEEDED_AUDITS: Record<string, AuditReport> = {
 export function getSeededAudit(targetStr: string): AuditReport | null {
   if (!targetStr) return null;
   const key = targetStr.toLowerCase().trim()
+    .replace(/^@+/, "") // @mrbeast and mrbeast are the same creator
     .replace(/^https?:\/\//, "")
     .replace(/^www\./, "")
     .replace(/\/+$/, "")

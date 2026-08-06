@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db, auth, getAppCheckToken } from "@/lib/firebase";
@@ -84,6 +84,8 @@ interface AnalysisResult {
   cached_at?: string;
   data_quality?: "full" | "limited";
   data_quality_note?: string | null;
+  createdAt?: string | { seconds: number; nanoseconds?: number };
+  persisted?: boolean;
 }
 
 interface HistoryItem extends AnalysisResult {
@@ -152,11 +154,14 @@ function DashboardInner() {
 
   const isDark = theme === 'dark';
 
-  // Read query params from hero search redirect
+  // Read query params from hero search redirect (consume once so later navigations
+  // don't clobber whatever the user has typed into the form)
+  const consumedTargetRef = useRef(false);
   useEffect(() => {
     const queryTarget = searchParams.get('target');
-    if (queryTarget) {
+    if (queryTarget && !consumedTargetRef.current) {
       setTarget(queryTarget);
+      consumedTargetRef.current = true;
     }
   }, [searchParams]);
 
@@ -175,25 +180,30 @@ function DashboardInner() {
             body: JSON.stringify({ plan }),
           });
           const data = await res.json();
-          if (data.success) {
-            setPaymentVerified(true);
-          } else {
-            setPaymentVerified(false);
-          }
+          setPaymentVerified(data.success === true);
         } catch (err) {
           console.error('Payment verification error:', err);
           setPaymentVerified(false);
+        } finally {
+          // Strip the ?dodo_success=&plan= params so a refresh doesn't re-verify
+          // and the banner can be dismissed cleanly.
+          router.replace('/dashboard', { scroll: false });
         }
       };
       verifyPayment();
     }
-  }, [searchParams, user]);
+  }, [searchParams, user, router]);
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login');
+      const targetParam = searchParams.get('target');
+      if (targetParam) {
+        router.push(`/login?target=${encodeURIComponent(targetParam)}`);
+      } else {
+        router.push('/login');
+      }
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, searchParams]);
 
   useEffect(() => {
     if (!user || !db) {
@@ -236,12 +246,20 @@ function DashboardInner() {
         });
         if (res.ok) {
           const data = await res.json();
-          setUserCredits({
-            videoCredits: data.videoCredits || 0,
-            channelCredits: data.channelCredits || 0,
-            hasSubscription: data.hasSubscription || false,
-            subscriptionExpiresAt: data.subscriptionExpiresAt || null,
-            cancelAtPeriodEnd: data.cancelAtPeriodEnd === true,
+          // Guard against a stale in-flight poll response reverting the
+          // optimistic cancelAtPeriodEnd set right after cancelling.
+          setUserCredits(prev => {
+            const serverCancel = data.cancelAtPeriodEnd === true;
+            if (prev?.cancelAtPeriodEnd && !serverCancel) {
+              return prev;
+            }
+            return {
+              videoCredits: data.videoCredits || 0,
+              channelCredits: data.channelCredits || 0,
+              hasSubscription: data.hasSubscription || false,
+              subscriptionExpiresAt: data.subscriptionExpiresAt || null,
+              cancelAtPeriodEnd: serverCancel,
+            };
           });
         }
       } catch (err) {
@@ -287,6 +305,11 @@ function DashboardInner() {
   };
 
   const handleCancelSubscription = async () => {
+    // Defense-in-depth: re-validate the typed confirmation even if the
+    // disabled button guard is bypassed.
+    if (cancelTyping !== "CANCEL") {
+      return;
+    }
     setCancellingSub(true);
     try {
       const token = await user?.getIdToken();
@@ -318,13 +341,24 @@ function DashboardInner() {
     if (!user || !result) return;
     try {
       const token = await user.getIdToken();
+      // Normalize Firestore Timestamp createdAt (loaded from history) into an
+      // ISO string so the saved copy is consistent with fresh reports, and the
+      // save-dossier route stores a string (not a plain object) for createdAt.
+      const payload = {
+        ...result,
+        createdAt: (result.createdAt as any)?.seconds
+          ? new Date((result.createdAt as any).seconds * 1000).toISOString()
+          : typeof result.createdAt === "string"
+            ? result.createdAt
+            : new Date().toISOString(),
+      };
       const res = await fetch("/api/save-dossier", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
-        body: JSON.stringify(result),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -339,10 +373,16 @@ function DashboardInner() {
     }
   };
 
-  const handleAnalyze = async (e?: React.FormEvent, isForce: boolean = false) => {
+  const handleAnalyze = async (e?: React.FormEvent, isForce: boolean = false, overrides?: { target?: string; brandName?: string; competitorBrands?: string[] }) => {
     if (e) e.preventDefault();
-    if (!target || !brandName) {
-      setAnalysisError(!target ? "Please enter a Target Creator handle, video URL, or channel URL." : "Your Brand Name is required to run brand safety analyses.");
+    if (loadingAnalysis || isBatchProcessing) {
+      return;
+    }
+    const effTarget = overrides?.target ?? target;
+    const effBrandName = overrides?.brandName ?? brandName;
+    const effCompetitors = overrides?.competitorBrands ?? competitorBrands;
+    if (!effTarget || !effBrandName) {
+      setAnalysisError(!effTarget ? "Please enter a Target Creator handle, video URL, or channel URL." : "Your Brand Name is required to run brand safety analyses.");
       return;
     }
     if (!user) {
@@ -367,9 +407,9 @@ function DashboardInner() {
       }
 
       const payload = {
-        target: target,
-        brand_name: brandName,
-        competitor_brands: competitorBrands,
+        target: effTarget,
+        brand_name: effBrandName,
+        competitor_brands: effCompetitors,
         additional_urls: additionalUrls,
         creator_known_aliases: creatorAliases,
         force_refresh: isForce || forceRefresh,
@@ -392,8 +432,12 @@ function DashboardInner() {
 
       const data: AnalysisResult = await res.json();
       setResult(data);
-      setAuditComplete(true);
-      setTimeout(() => setAuditComplete(false), 5000);
+      // The "Audit complete!" banner is only meaningful for a live analysis;
+      // cached/seeded previews are instant and would make the banner misleading.
+      if (!data.is_cached) {
+        setAuditComplete(true);
+        setTimeout(() => setAuditComplete(false), 5000);
+      }
     } catch (err: any) {
       setAnalysisError(err.message || "Failed to execute 360-degree brand safety audit.");
     } finally {
@@ -435,6 +479,9 @@ youtube.com/@ijustine`
 
   const handleProcessBatch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isBatchProcessing || loadingAnalysis) {
+      return;
+    }
     if (!brandName) {
       setAnalysisError("Your Brand Name is required to process batch creator audits.");
       return;
@@ -864,14 +911,26 @@ Report Generated via SafeSponsor AI Research Engine
       {/* Payment verification banner */}
       {paymentVerified !== null && (
         <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4`}>
-          <div className={`p-4 rounded-xl border text-sm font-medium ${
+          <div className={`p-4 rounded-xl border text-sm font-medium flex items-center justify-between gap-3 ${
             paymentVerified
               ? isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-700'
               : isDark ? 'bg-amber-500/10 border-amber-500/30 text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700'
           }`}>
-            {paymentVerified
-              ? 'Payment verified! Your credits have been applied.'
-              : 'Payment received. Credits will appear shortly — if not, contact support.'}
+            <span>
+              {paymentVerified
+                ? 'Payment verified! Your credits have been applied.'
+                : 'Payment received. Credits will appear shortly — if not, contact support.'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPaymentVerified(null)}
+              aria-label="Dismiss notification"
+              className={`shrink-0 p-1 rounded-lg transition-colors ${
+                isDark ? 'hover:bg-emerald-500/20' : 'hover:bg-emerald-100'
+              }`}
+            >
+              <XCircle className="w-4 h-4" />
+            </button>
           </div>
         </div>
       )}
@@ -962,7 +1021,7 @@ Report Generated via SafeSponsor AI Research Engine
               <div className="text-center">
                 <div className="text-2xl sm:text-3xl font-black text-cyan-400">Pro</div>
                 <p className="mt-1 text-[11px] font-semibold text-amber-500">
-                  Subscription cancelled. Access until {new Date(cancelSuccess).toLocaleDateString()}.
+                  Subscription cancelled. Access until {cancelSuccess && !isNaN(new Date(cancelSuccess).getTime()) ? new Date(cancelSuccess).toLocaleDateString() : "the end of your billing period"}.
                 </p>
               </div>
             ) : (
@@ -2145,8 +2204,10 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
             </div>
 
-            {/* Cache Hit Notice Banner */}
-            {result.is_cached && (
+            {/* Cache Hit Notice Banner — only "Free Preview" for genuinely free
+                users; a paying user viewing an old cached dossier must not see
+                an upsell to purchase the product they already pay for. */}
+            {result.is_cached && !(userCredits?.hasSubscription || (userCredits?.videoCredits || 0) > 0 || (userCredits?.channelCredits || 0) > 0) && (
               <div className={`p-4 rounded-lg border flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden ${
                 isDark ? 'bg-cyan-950/30 border-cyan-500/30 text-cyan-200' : 'bg-cyan-50 border-cyan-200 text-cyan-900'
               }`}>
@@ -2167,7 +2228,7 @@ Report Generated via SafeSponsor AI Research Engine
 
                 <button
                   type="button"
-                  onClick={() => handleAnalyze(undefined, true)}
+                  onClick={() => handleAnalyze(undefined, true, { target: result.target, brandName: result.brand_name || brandName })}
                   disabled={loadingAnalysis}
                   className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shrink-0 border ${
                     isDark 
@@ -2775,10 +2836,10 @@ Report Generated via SafeSponsor AI Research Engine
 
                   <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
                     <span className={`text-xs font-bold px-2.5 py-1 rounded-xl border ${getScoreBadgeColor(item.brand_safety_score)}`}>
-                      {item.brand_safety_score}/100
+                      {item.brand_safety_score ?? "—"}/100
                     </span>
                     <span className={`text-xs font-bold uppercase px-2.5 py-1 rounded-xl border ${getRiskBadgeColor(item.risk_level)}`}>
-                      {item.risk_level}
+                      {item.risk_level || "Unknown"}
                     </span>
                     <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
