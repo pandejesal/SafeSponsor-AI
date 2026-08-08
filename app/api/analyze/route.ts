@@ -482,9 +482,10 @@ export async function POST(req: NextRequest) {
 
     // 3. Check User Quota / Entitlements ATOMICALLY via Firestore Transaction
     // Runs AFTER the cache check so cached/zero-cost audits never consume credits.
-    // Track which entitlement this request consumed so it can be refunded if the
-    // pipeline fails after the quota was already decremented.
-    let consumedEntitlement: string | null = null;
+    // NOTE: consumedEntitlement is intentionally NOT re-declared here — it is
+    // hoisted above the outer try block so refundEntitlement() can see the value
+    // when this request fails after quota consumption. A shadowing re-declaration
+    // here would make the variable invisible to the refund closure.
     try {
       const transactionResult = await adminDb.runTransaction(async (tx) => {
         const userSnap = await tx.get(userDocRef);

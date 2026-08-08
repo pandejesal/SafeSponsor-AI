@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import { adminDb, verifyAuthHeader } from "@/lib/firebase-admin";
 
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
+    const uid = await verifyAuthHeader(request);
+    if (!uid) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+
     const { target_key } = await request.json();
-    if (!target_key) {
+    if (!target_key || typeof target_key !== "string") {
       return NextResponse.json({ error: "target_key required" }, { status: 400 });
     }
 
-    const docRef = adminDb.collection("global_audits").doc(target_key);
+    const docRef = adminDb.collection("global_audits").doc(target_key.slice(0, 500));
     const doc = await docRef.get();
 
     if (!doc.exists) {
