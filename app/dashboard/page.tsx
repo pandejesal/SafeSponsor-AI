@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
 import { db, auth, getAppCheckToken } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, limit } from "firebase/firestore";
 import { Navbar } from "@/components/Navbar";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
@@ -214,7 +214,8 @@ function DashboardInner() {
     setLoadingHistory(true);
     const q = query(
       collection(db, "users", user.uid, "history"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
+      limit(50)
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const hist: HistoryItem[] = [];
@@ -267,8 +268,23 @@ function DashboardInner() {
       }
     };
     fetchCredits();
-    const interval = setInterval(fetchCredits, 10000);
-    return () => clearInterval(interval);
+    // Poll credits only while the tab is visible — prevents 6 reads/min per
+    // background tab forever. Falls back to the 10s interval on focus regain.
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchCredits();
+      }
+    }, 10000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") {
+        fetchCredits();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [user]);
 
   const handleCheckout = async (plan: string) => {

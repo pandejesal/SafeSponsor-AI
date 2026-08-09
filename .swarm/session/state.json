@@ -1,0 +1,1737 @@
+{
+  "version": 2,
+  "writtenAt": 1786266682583,
+  "toolAggregates": {
+    "swarm_command": {
+      "tool": "swarm_command",
+      "count": 3,
+      "successCount": 3,
+      "failureCount": 0,
+      "totalDuration": 1974
+    },
+    "todowrite": {
+      "tool": "todowrite",
+      "count": 12,
+      "successCount": 12,
+      "failureCount": 0,
+      "totalDuration": 66
+    },
+    "set_reasoning_effort": {
+      "tool": "set_reasoning_effort",
+      "count": 2,
+      "successCount": 2,
+      "failureCount": 0,
+      "totalDuration": 5163
+    },
+    "bash": {
+      "tool": "bash",
+      "count": 713,
+      "successCount": 713,
+      "failureCount": 0,
+      "totalDuration": 11343021
+    },
+    "jules_status": {
+      "tool": "jules_status",
+      "count": 21,
+      "successCount": 21,
+      "failureCount": 0,
+      "totalDuration": 54025
+    },
+    "jules_message": {
+      "tool": "jules_message",
+      "count": 15,
+      "successCount": 15,
+      "failureCount": 0,
+      "totalDuration": 62684
+    },
+    "question": {
+      "tool": "question",
+      "count": 5,
+      "successCount": 5,
+      "failureCount": 0,
+      "totalDuration": 1272931
+    },
+    "jules_create": {
+      "tool": "jules_create",
+      "count": 5,
+      "successCount": 5,
+      "failureCount": 0,
+      "totalDuration": 11076
+    },
+    "jules_list_sources": {
+      "tool": "jules_list_sources",
+      "count": 3,
+      "successCount": 3,
+      "failureCount": 0,
+      "totalDuration": 10631
+    },
+    "invalid": {
+      "tool": "invalid",
+      "count": 5,
+      "successCount": 5,
+      "failureCount": 0,
+      "totalDuration": 3
+    },
+    "gitingest": {
+      "tool": "gitingest",
+      "count": 17,
+      "successCount": 17,
+      "failureCount": 0,
+      "totalDuration": 86142
+    },
+    "retrieve_summary": {
+      "tool": "retrieve_summary",
+      "count": 82,
+      "successCount": 82,
+      "failureCount": 0,
+      "totalDuration": 7677
+    },
+    "crawlberg_map": {
+      "tool": "crawlberg_map",
+      "count": 1,
+      "successCount": 1,
+      "failureCount": 0,
+      "totalDuration": 8
+    },
+    "read": {
+      "tool": "read",
+      "count": 713,
+      "successCount": 713,
+      "failureCount": 0,
+      "totalDuration": 174621
+    },
+    "websearch": {
+      "tool": "websearch",
+      "count": 118,
+      "successCount": 118,
+      "failureCount": 0,
+      "totalDuration": 350906
+    },
+    "crawlberg_crawl": {
+      "tool": "crawlberg_crawl",
+      "count": 1,
+      "successCount": 1,
+      "failureCount": 0,
+      "totalDuration": 9
+    },
+    "web_fetch": {
+      "tool": "web_fetch",
+      "count": 9,
+      "successCount": 9,
+      "failureCount": 0,
+      "totalDuration": 23
+    },
+    "jules_activity": {
+      "tool": "jules_activity",
+      "count": 1,
+      "successCount": 1,
+      "failureCount": 0,
+      "totalDuration": 1421
+    },
+    "glob": {
+      "tool": "glob",
+      "count": 154,
+      "successCount": 154,
+      "failureCount": 0,
+      "totalDuration": 1279859
+    },
+    "grep": {
+      "tool": "grep",
+      "count": 192,
+      "successCount": 192,
+      "failureCount": 0,
+      "totalDuration": 860196
+    },
+    "search": {
+      "tool": "search",
+      "count": 3,
+      "successCount": 3,
+      "failureCount": 0,
+      "totalDuration": 15193
+    },
+    "task": {
+      "tool": "task",
+      "count": 19,
+      "successCount": 19,
+      "failureCount": 0,
+      "totalDuration": 15131975
+    },
+    "skill": {
+      "tool": "skill",
+      "count": 3,
+      "successCount": 3,
+      "failureCount": 0,
+      "totalDuration": 733
+    },
+    "imports": {
+      "tool": "imports",
+      "count": 4,
+      "successCount": 4,
+      "failureCount": 0,
+      "totalDuration": 4
+    },
+    "write": {
+      "tool": "write",
+      "count": 30,
+      "successCount": 30,
+      "failureCount": 0,
+      "totalDuration": 3364
+    },
+    "webfetch": {
+      "tool": "webfetch",
+      "count": 30,
+      "successCount": 30,
+      "failureCount": 0,
+      "totalDuration": 53184
+    },
+    "edit": {
+      "tool": "edit",
+      "count": 146,
+      "successCount": 146,
+      "failureCount": 0,
+      "totalDuration": 10517
+    },
+    "actionlint_scan": {
+      "tool": "actionlint_scan",
+      "count": 2,
+      "successCount": 2,
+      "failureCount": 0,
+      "totalDuration": 11
+    },
+    "dispatch_lanes_async": {
+      "tool": "dispatch_lanes_async",
+      "count": 1,
+      "successCount": 1,
+      "failureCount": 0,
+      "totalDuration": 338
+    },
+    "collect_lane_results": {
+      "tool": "collect_lane_results",
+      "count": 3,
+      "successCount": 3,
+      "failureCount": 0,
+      "totalDuration": 1126007
+    }
+  },
+  "activeAgent": {
+    "ses_028d73e44ffeE0Hgshj8T26NJf": "build",
+    "ses_043e32606ffeYac8weRILenGxQ": "plan",
+    "ses_0247a7978ffeHsbja4GVGO3BYG": "build",
+    "ses_0247a796fffeyxWXNZYZiRZaSI": "build",
+    "ses_01e586a1effeHBDo5rFSqmc24C": "build",
+    "ses_01db4ae71ffejp5bYCBIOZRB9g": "plan",
+    "ses_01db40302ffedu2r7Xnit66Ne7": "build",
+    "ses_01db3ba98ffedeRKfEO9LSRn7c": "plan",
+    "ses_08064cd88ffep0pxaWwbzLUEed": "build",
+    "ses_01d59599dffejUERG13fn861hx": "architect",
+    "ses_01d57ab55ffeWoDpcTslDBtTBJ": "explorer",
+    "ses_01d57604bffeV2JoBHp963iZqe": "explorer",
+    "ses_01d57278cffepuBUZMtPF5qsLe": "explorer",
+    "ses_01d534e8cffe1mHzcHPj1yV4uC": "curator_phase",
+    "ses_01d52f24affeHPIQHUsKcW1yVl": "curator_phase",
+    "ses_01d52f250ffeLip0daHDOL6WVS": "curator_phase",
+    "ses_01d51cd4bffeUoW5uoonrufIzi": "curator_phase",
+    "ses_01d517640ffeQz2PIYEDQ6JLPN": "curator_phase",
+    "ses_01d517647ffeEw0iUn7s5cUs8V": "curator_phase",
+    "ses_01d4d0e40ffeBcc711wCfMmiBu": "curator_phase",
+    "ses_01d4d0e3cffejoQuULX846YqYa": "curator_phase",
+    "ses_01d4c7d3effeKgf3mLp7bxJ0E9": "reviewer",
+    "ses_01d4c6a68ffeNR5lw8rWaagJvU": "reviewer",
+    "ses_01d4c582dffemWDcFufqCp3KyH": "reviewer",
+    "ses_01d4baaf8ffe90uKOKGS6mrBGm": "architect",
+    "ses_01d475ba8ffeRGxk0nbn7Z3VNF": "curator_phase",
+    "ses_01d475baeffeo1kAbeertX0PwO": "curator_phase",
+    "ses_01d46acbeffeJJrIM5AfETBUA2": "curator_phase",
+    "ses_01d46acc1ffeVn4LUbQURS0BTA": "curator_phase",
+    "ses_01d45fad4ffegr7jmNhEygVZjK": "curator_phase",
+    "ses_01d45faceffeYOSol3MwIkKuLS": "curator_phase",
+    "ses_01d43133cffefCGhI9l3GdL1CS": "explorer",
+    "ses_01d43102dffexBPFu2WLz0bH6K": "build",
+    "ses_01d3dfb5affesvly1HrojumCDS": "build",
+    "ses_01d3dcac7ffeBNH7JRNmDul1RM": "curator_phase",
+    "ses_01d3d810bffeG4e7W4XjJq0HkW": "curator_phase",
+    "ses_01d3d8110ffeMMMCUFDtnr1g8L": "curator_phase",
+    "ses_01d3d1973ffe2jMY3KRBWK2aeQ": "reviewer",
+    "ses_01d3d069cffe7irVFjJ67ljLMs": "reviewer",
+    "ses_01d3cf89effez5FzGR97vDnaMV": "reviewer",
+    "ses_01d3ceb37ffeWajizbOsq02HXq": "reviewer",
+    "ses_01d3cdba0ffewZ4JA4OP8vJj24": "reviewer",
+    "ses_01d3ca567ffehu2W4XV1P65bt0": "explorer",
+    "ses_01d3c773affeQ5t8lFZWpgCBXW": "explorer",
+    "ses_01d3c558bffeWCFCQOoMlo7RKd": "explorer",
+    "ses_01d354d75ffejvzA20RwoGw3dz": "curator_phase",
+    "ses_01d354d7bffeeyohKYOAsYNj63": "curator_phase",
+    "ses_01d30cec9ffe5PCliDBBq7pNT4": "curator_phase",
+    "ses_01d30ced9ffe64FnlVUxQ7Rzcw": "curator_phase",
+    "ses_01d2fc49affeZ12TwKzOLbnpzy": "curator_phase",
+    "ses_01d2ef3ecffeix6GST7s2pMaWH": "curator_phase",
+    "ses_01d2ed42effeS0Z3Naacd3u8xX": "curator_phase",
+    "ses_01d2ed42affe3NRrPc5rZ1cbJn": "curator_phase",
+    "ses_01d2c4750ffebYMTcxD742b5SU": "curator_phase",
+    "ses_01d2bea3bffeYv8Dqntu36VQHs": "curator_phase",
+    "ses_01d2bea40ffehghM6NMIGWzlwa": "curator_phase",
+    "ses_01d2b6512ffetyJXvDvnuz5378": "build",
+    "ses_01d2b550fffeqptmQM19siCIwB": "curator_phase",
+    "ses_01d2b1b85ffeLEz0asT6Iva8L4": "build",
+    "ses_01d2afea9ffeu6dMvJgTVm4v0k": "curator_phase",
+    "ses_01d2afeafffeXXJnW9lV6QJIWM": "curator_phase",
+    "ses_01d2ad214ffeZ0GyLN03rt0l5Y": "build",
+    "ses_01d2a7587ffeItzbhCsYQlOHYQ": "build",
+    "ses_01d29e1dbffeUacO7uIv0JhU4e": "build",
+    "ses_01d299fb1ffeI5riDj7JtijfFa": "build",
+    "ses_01d255ecdffeII8Gi7GELU5dIU": "curator_phase",
+    "ses_01d2364f3ffeUZnRQiut463cq7": "explorer",
+    "ses_01d234b63ffeiIry2KuNJVWQDd": "reviewer",
+    "ses_01d2336b6ffey2xjYu1YcS07U4": "reviewer",
+    "ses_01d232aebffefxZJHnK7tz4esM": "reviewer",
+    "ses_04052cf1affen4v41Usu4SitNJ": "build",
+    "ses_01d0c6160ffeaGYHKVHsqW4Ozk": "curator_phase",
+    "ses_01ceeef2affeJCL30L3OJyq9ai": "build",
+    "ses_01cee983dffemI8wuFgO36TmVQ": "build",
+    "ses_01cee92ddffeByKTDR5Dg9gT5B": "build",
+    "ses_01b4246cfffervxsLJcBHrnRTc": "build",
+    "ses_01b422378ffetQQRWozmtc7IU8": "build",
+    "ses_01b6b126effeay5afiTLRdpBNu": "build",
+    "ses_01b6b9959ffeKrNW3mHKVKM1ki": "build",
+    "ses_01b6b371affeEvq9t9fE53thTL": "build",
+    "ses_01b6cb3c6ffeIxa3GApTvIgx7j": "build",
+    "ses_01b6cdfbcffe6PhGg5AcXgUL50": "build",
+    "ses_01a7b812cffeX33x1ztHhFL7p4": "build",
+    "ses_01a636f09ffeF2jIzdeXDfV8Kz": "reviewer",
+    "ses_01a636ee3ffeC550tlasNuAJp7": "reviewer",
+    "ses_01a636ef4ffeJ06CZCyG9zFJeP": "reviewer"
+  },
+  "delegationChains": {
+    "ses_043e32606ffeYac8weRILenGxQ": [
+      {
+        "from": "build",
+        "to": "plan",
+        "timestamp": 1786212183978
+      },
+      {
+        "from": "plan",
+        "to": "build",
+        "timestamp": 1786249184098
+      },
+      {
+        "from": "build",
+        "to": "plan",
+        "timestamp": 1786265912015
+      }
+    ]
+  },
+  "agentSessions": {
+    "ses_043e32606ffeYac8weRILenGxQ": {
+      "agentName": "plan",
+      "lastToolCallTime": 1786266423395,
+      "lastAgentEventTime": 1786265912015,
+      "delegationActive": true,
+      "activeInvocationId": 14,
+      "lastInvocationIdByAgent": {
+        "build": 39,
+        "plan": 14
+      },
+      "windows": {
+        "plan:14": {
+          "id": 14,
+          "agentName": "plan",
+          "startedAtMs": 1786265912015,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786266325661,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:39": {
+          "id": 39,
+          "agentName": "build",
+          "startedAtMs": 1786264063476,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786264430334,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:38": {
+          "id": 38,
+          "agentName": "build",
+          "startedAtMs": 1786262922976,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786263956414,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:37": {
+          "id": 37,
+          "agentName": "build",
+          "startedAtMs": 1786262606520,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786262695397,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:36": {
+          "id": 36,
+          "agentName": "build",
+          "startedAtMs": 1786260939696,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786262392557,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:35": {
+          "id": 35,
+          "agentName": "build",
+          "startedAtMs": 1786258659082,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786258734395,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:34": {
+          "id": 34,
+          "agentName": "build",
+          "startedAtMs": 1786258387062,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786258431061,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:33": {
+          "id": 33,
+          "agentName": "build",
+          "startedAtMs": 1786257930624,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786258058913,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:32": {
+          "id": 32,
+          "agentName": "build",
+          "startedAtMs": 1786256313582,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786256333268,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:31": {
+          "id": 31,
+          "agentName": "build",
+          "startedAtMs": 1786254985527,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786256071636,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:30": {
+          "id": 30,
+          "agentName": "build",
+          "startedAtMs": 1786252217463,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786252546400,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:29": {
+          "id": 29,
+          "agentName": "build",
+          "startedAtMs": 1786252054849,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786252054849,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:28": {
+          "id": 28,
+          "agentName": "build",
+          "startedAtMs": 1786251683425,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786251683425,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:27": {
+          "id": 27,
+          "agentName": "build",
+          "startedAtMs": 1786251187043,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786251469604,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:26": {
+          "id": 26,
+          "agentName": "build",
+          "startedAtMs": 1786250687582,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786250918136,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:25": {
+          "id": 25,
+          "agentName": "build",
+          "startedAtMs": 1786249621290,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786250236773,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:24": {
+          "id": 24,
+          "agentName": "build",
+          "startedAtMs": 1786249559012,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249559012,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:23": {
+          "id": 23,
+          "agentName": "build",
+          "startedAtMs": 1786249184099,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249184099,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:13": {
+          "id": 13,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:12": {
+          "id": 12,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:11": {
+          "id": 11,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:10": {
+          "id": 10,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:9": {
+          "id": 9,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:8": {
+          "id": 8,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:7": {
+          "id": 7,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:6": {
+          "id": 6,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:5": {
+          "id": 5,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:4": {
+          "id": 4,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:3": {
+          "id": 3,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:2": {
+          "id": 2,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "plan:1": {
+          "id": 1,
+          "agentName": "plan",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:22": {
+          "id": 22,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:21": {
+          "id": 21,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:20": {
+          "id": 20,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:19": {
+          "id": 19,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:18": {
+          "id": 18,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:17": {
+          "id": 17,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:16": {
+          "id": 16,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:15": {
+          "id": 15,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:14": {
+          "id": 14,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:13": {
+          "id": 13,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:12": {
+          "id": 12,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:11": {
+          "id": 11,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:10": {
+          "id": 10,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:9": {
+          "id": 9,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:8": {
+          "id": 8,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:7": {
+          "id": 7,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:6": {
+          "id": 6,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:5": {
+          "id": 5,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:4": {
+          "id": 4,
+          "agentName": "build",
+          "startedAtMs": 1786249010088,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786249010088,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        }
+      },
+      "lastCompactionHint": 0,
+      "architectWriteCount": 0,
+      "lastCoderDelegationTaskId": null,
+      "currentTaskId": "ses_043e32606ffeYac8weRILenGxQ:unknown",
+      "turboMode": false,
+      "leanTurboActive": false,
+      "epicModeActive": false,
+      "gateLog": {},
+      "reviewerCallCount": {},
+      "lastGateFailure": null,
+      "partialGateWarningsIssuedForTask": [],
+      "completionGateWarnedForTask": [],
+      "selfFixAttempted": false,
+      "selfCodingWarnedAtCount": 0,
+      "catastrophicPhaseWarnings": [],
+      "lastPhaseCompleteTimestamp": 0,
+      "lastPhaseCompletePhase": 0,
+      "phaseAgentsDispatched": [
+        "build",
+        "plan"
+      ],
+      "lastCompletedPhaseAgentsDispatched": [],
+      "qaSkipCount": 0,
+      "qaSkipTaskIds": [],
+      "pendingAdvisoryMessages": [],
+      "taskWorkflowStates": {},
+      "modifiedFilesByTask": {
+        "ses_043e32606ffeYac8weRILenGxQ:unknown": [
+          "C:\\Users\\DELL\\Documents\\Default Project\\WSB-Alpha-System-latest\\docs\\research\\session3-prompt.md",
+          "C:\\Users\\DELL\\Documents\\Default Project\\WSB-Alpha-System-latest\\AUDIT_REPORT.md",
+          "C:\\Users\\DELL\\Documents\\Default Project\\pr102-worktree\\src\\backtest\\run_historic_backtest.py",
+          "C:\\Users\\DELL\\Documents\\Default Project\\WSB-Alpha-System-latest\\README.md"
+        ]
+      },
+      "scopeViolationDetected": false,
+      "model_fallback_index": 0,
+      "modelFallbackExhausted": false,
+      "coderRevisions": 0,
+      "revisionLimitHit": false,
+      "fullAutoMode": false,
+      "fullAutoInteractionCount": 0,
+      "fullAutoDeadlockCount": 0,
+      "fullAutoLastQuestionHash": null,
+      "sessionRehydratedAt": 1786249010088,
+      "cachedCohortId": "fbae8ea8b3b0"
+    },
+    "ses_01b422378ffetQQRWozmtc7IU8": {
+      "agentName": "build",
+      "lastToolCallTime": 1786264454716,
+      "lastAgentEventTime": 1786249077693,
+      "delegationActive": true,
+      "activeInvocationId": 7,
+      "lastInvocationIdByAgent": {
+        "build": 7
+      },
+      "windows": {
+        "build:7": {
+          "id": 7,
+          "agentName": "build",
+          "startedAtMs": 1786261391360,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786264454715,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:6": {
+          "id": 6,
+          "agentName": "build",
+          "startedAtMs": 1786259630253,
+          "toolCalls": 0,
+          "consecutiveErrors": 3,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786261235651,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:5": {
+          "id": 5,
+          "agentName": "build",
+          "startedAtMs": 1786254793474,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786258350248,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:4": {
+          "id": 4,
+          "agentName": "build",
+          "startedAtMs": 1786252388152,
+          "toolCalls": 0,
+          "consecutiveErrors": 1,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786254590133,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:3": {
+          "id": 3,
+          "agentName": "build",
+          "startedAtMs": 1786252067075,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786252067075,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:2": {
+          "id": 2,
+          "agentName": "build",
+          "startedAtMs": 1786251822156,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786251822156,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:1": {
+          "id": 1,
+          "agentName": "build",
+          "startedAtMs": 1786249077693,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786251558078,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        }
+      },
+      "lastCompactionHint": 0,
+      "architectWriteCount": 0,
+      "lastCoderDelegationTaskId": null,
+      "currentTaskId": "ses_01b422378ffetQQRWozmtc7IU8:unknown",
+      "turboMode": false,
+      "leanTurboActive": false,
+      "epicModeActive": false,
+      "gateLog": {},
+      "reviewerCallCount": {},
+      "lastGateFailure": null,
+      "partialGateWarningsIssuedForTask": [],
+      "completionGateWarnedForTask": [],
+      "selfFixAttempted": false,
+      "selfCodingWarnedAtCount": 0,
+      "catastrophicPhaseWarnings": [],
+      "lastPhaseCompleteTimestamp": 0,
+      "lastPhaseCompletePhase": 0,
+      "phaseAgentsDispatched": [
+        "build"
+      ],
+      "lastCompletedPhaseAgentsDispatched": [],
+      "qaSkipCount": 0,
+      "qaSkipTaskIds": [],
+      "pendingAdvisoryMessages": [],
+      "taskWorkflowStates": {},
+      "modifiedFilesByTask": {
+        "ses_01b422378ffetQQRWozmtc7IU8:unknown": [
+          "C:\\Users\\DELL\\Documents\\Default Project\\opencode.json"
+        ]
+      },
+      "scopeViolationDetected": false,
+      "model_fallback_index": 0,
+      "modelFallbackExhausted": false,
+      "coderRevisions": 0,
+      "revisionLimitHit": false,
+      "fullAutoMode": false,
+      "fullAutoInteractionCount": 0,
+      "fullAutoDeadlockCount": 0,
+      "fullAutoLastQuestionHash": null,
+      "sessionRehydratedAt": 0,
+      "cachedCohortId": "fbae8ea8b3b0"
+    },
+    "ses_01a7b812cffeX33x1ztHhFL7p4": {
+      "agentName": "build",
+      "lastToolCallTime": 1786264950462,
+      "lastAgentEventTime": 1786262094158,
+      "delegationActive": true,
+      "activeInvocationId": 3,
+      "lastInvocationIdByAgent": {
+        "build": 3
+      },
+      "windows": {
+        "build:3": {
+          "id": 3,
+          "agentName": "build",
+          "startedAtMs": 1786262959648,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786264929114,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 1
+        },
+        "build:2": {
+          "id": 2,
+          "agentName": "build",
+          "startedAtMs": 1786262819733,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786262819733,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        },
+        "build:1": {
+          "id": 1,
+          "agentName": "build",
+          "startedAtMs": 1786262094158,
+          "toolCalls": 0,
+          "consecutiveErrors": 1,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786262416143,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        }
+      },
+      "lastCompactionHint": 0,
+      "architectWriteCount": 0,
+      "lastCoderDelegationTaskId": null,
+      "currentTaskId": "ses_01a7b812cffeX33x1ztHhFL7p4:unknown",
+      "turboMode": false,
+      "leanTurboActive": false,
+      "epicModeActive": false,
+      "gateLog": {},
+      "reviewerCallCount": {},
+      "lastGateFailure": null,
+      "partialGateWarningsIssuedForTask": [],
+      "completionGateWarnedForTask": [],
+      "selfFixAttempted": false,
+      "selfCodingWarnedAtCount": 0,
+      "catastrophicPhaseWarnings": [],
+      "lastPhaseCompleteTimestamp": 0,
+      "lastPhaseCompletePhase": 0,
+      "phaseAgentsDispatched": [
+        "build"
+      ],
+      "lastCompletedPhaseAgentsDispatched": [],
+      "qaSkipCount": 0,
+      "qaSkipTaskIds": [],
+      "pendingAdvisoryMessages": [],
+      "taskWorkflowStates": {},
+      "modifiedFilesByTask": {
+        "ses_01a7b812cffeX33x1ztHhFL7p4:unknown": [
+          "C:\\Users\\DELL\\Documents\\Default Project\\opencode.json",
+          "C:\\Users\\DELL\\Documents\\Default Project\\oc-providers.patch.json5"
+        ]
+      },
+      "scopeViolationDetected": false,
+      "model_fallback_index": 1,
+      "modelFallbackExhausted": true,
+      "coderRevisions": 0,
+      "revisionLimitHit": false,
+      "fullAutoMode": false,
+      "fullAutoInteractionCount": 0,
+      "fullAutoDeadlockCount": 0,
+      "fullAutoLastQuestionHash": null,
+      "sessionRehydratedAt": 0,
+      "cachedCohortId": "fbae8ea8b3b0"
+    },
+    "ses_04052cf1affen4v41Usu4SitNJ": {
+      "agentName": "build",
+      "lastToolCallTime": 1786266682329,
+      "lastAgentEventTime": 1786263533933,
+      "delegationActive": true,
+      "activeInvocationId": 1,
+      "lastInvocationIdByAgent": {
+        "build": 1
+      },
+      "windows": {
+        "build:1": {
+          "id": 1,
+          "agentName": "build",
+          "startedAtMs": 1786263533933,
+          "toolCalls": 0,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786266682329,
+          "recentToolCalls": [],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        }
+      },
+      "lastCompactionHint": 0,
+      "architectWriteCount": 0,
+      "lastCoderDelegationTaskId": null,
+      "currentTaskId": "ses_04052cf1affen4v41Usu4SitNJ:unknown",
+      "turboMode": false,
+      "leanTurboActive": false,
+      "epicModeActive": false,
+      "gateLog": {},
+      "reviewerCallCount": {},
+      "lastGateFailure": null,
+      "partialGateWarningsIssuedForTask": [],
+      "completionGateWarnedForTask": [],
+      "selfFixAttempted": false,
+      "selfCodingWarnedAtCount": 0,
+      "catastrophicPhaseWarnings": [],
+      "lastPhaseCompleteTimestamp": 0,
+      "lastPhaseCompletePhase": 0,
+      "phaseAgentsDispatched": [
+        "build"
+      ],
+      "lastCompletedPhaseAgentsDispatched": [],
+      "qaSkipCount": 0,
+      "qaSkipTaskIds": [],
+      "pendingAdvisoryMessages": [],
+      "taskWorkflowStates": {},
+      "modifiedFilesByTask": {
+        "ses_04052cf1affen4v41Usu4SitNJ:unknown": [
+          "C:\\Users\\DELL\\Desktop\\SafeSponsor_AI\\app\\api\\webhook\\route.ts",
+          "C:\\Users\\DELL\\Desktop\\SafeSponsor_AI\\app\\api\\clear-cache\\route.ts",
+          "C:\\Users\\DELL\\Desktop\\SafeSponsor_AI\\app\\api\\save-dossier\\route.ts",
+          "C:\\Users\\DELL\\Desktop\\SafeSponsor_AI\\app\\api\\verify-payment\\route.ts",
+          "C:\\Users\\DELL\\Desktop\\SafeSponsor_AI\\app\\api\\analyze\\route.ts",
+          "C:\\Users\\DELL\\Desktop\\SafeSponsor_AI\\app\\dashboard\\page.tsx"
+        ]
+      },
+      "scopeViolationDetected": false,
+      "model_fallback_index": 0,
+      "modelFallbackExhausted": false,
+      "coderRevisions": 0,
+      "revisionLimitHit": false,
+      "fullAutoMode": false,
+      "fullAutoInteractionCount": 0,
+      "fullAutoDeadlockCount": 0,
+      "fullAutoLastQuestionHash": null,
+      "sessionRehydratedAt": 0,
+      "cachedCohortId": "c86849b2562e"
+    },
+    "ses_01a636f09ffeF2jIzdeXDfV8Kz": {
+      "agentName": "reviewer",
+      "lastToolCallTime": 1786263945680,
+      "lastAgentEventTime": 1786263671101,
+      "delegationActive": true,
+      "activeInvocationId": 1,
+      "lastInvocationIdByAgent": {
+        "reviewer": 1
+      },
+      "windows": {
+        "reviewer:1": {
+          "id": 1,
+          "agentName": "reviewer",
+          "startedAtMs": 1786263671101,
+          "toolCalls": 33,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786263945680,
+          "recentToolCalls": [
+            {
+              "tool": "read",
+              "argsHash": 8860961973077916000,
+              "timestamp": 1786263741978
+            },
+            {
+              "tool": "read",
+              "argsHash": 18043870578508200000,
+              "timestamp": 1786263742152
+            },
+            {
+              "tool": "read",
+              "argsHash": 8880403429167067000,
+              "timestamp": 1786263742293
+            },
+            {
+              "tool": "read",
+              "argsHash": 17583535424444109000,
+              "timestamp": 1786263742461
+            },
+            {
+              "tool": "grep",
+              "argsHash": 14830982734853542000,
+              "timestamp": 1786263759468
+            },
+            {
+              "tool": "grep",
+              "argsHash": 16918970005116707000,
+              "timestamp": 1786263759851
+            },
+            {
+              "tool": "grep",
+              "argsHash": 7603305380404735000,
+              "timestamp": 1786263760206
+            },
+            {
+              "tool": "grep",
+              "argsHash": 12829826587589810000,
+              "timestamp": 1786263760429
+            },
+            {
+              "tool": "read",
+              "argsHash": 13116114227726119000,
+              "timestamp": 1786263843628
+            },
+            {
+              "tool": "glob",
+              "argsHash": 2796781272377758000,
+              "timestamp": 1786263843960
+            },
+            {
+              "tool": "grep",
+              "argsHash": 3928483882078296600,
+              "timestamp": 1786263844569
+            },
+            {
+              "tool": "grep",
+              "argsHash": 2746380638071643000,
+              "timestamp": 1786263845164
+            },
+            {
+              "tool": "read",
+              "argsHash": 17590269312757496000,
+              "timestamp": 1786263862431
+            },
+            {
+              "tool": "glob",
+              "argsHash": 7101657441045241000,
+              "timestamp": 1786263862528
+            },
+            {
+              "tool": "glob",
+              "argsHash": 6698717660257969000,
+              "timestamp": 1786263863029
+            },
+            {
+              "tool": "grep",
+              "argsHash": 7739339814880017000,
+              "timestamp": 1786263863317
+            },
+            {
+              "tool": "bash",
+              "argsHash": 13740409108008536000,
+              "timestamp": 1786263877516
+            },
+            {
+              "tool": "read",
+              "argsHash": 13108084038091730000,
+              "timestamp": 1786263877970
+            },
+            {
+              "tool": "glob",
+              "argsHash": 8772789908554690000,
+              "timestamp": 1786263945150
+            },
+            {
+              "tool": "read",
+              "argsHash": 17428808210194880000,
+              "timestamp": 1786263945431
+            }
+          ],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        }
+      },
+      "lastCompactionHint": 0,
+      "architectWriteCount": 0,
+      "lastCoderDelegationTaskId": null,
+      "currentTaskId": null,
+      "turboMode": false,
+      "leanTurboActive": false,
+      "epicModeActive": false,
+      "gateLog": {},
+      "reviewerCallCount": {},
+      "lastGateFailure": null,
+      "partialGateWarningsIssuedForTask": [],
+      "completionGateWarnedForTask": [],
+      "selfFixAttempted": false,
+      "selfCodingWarnedAtCount": 0,
+      "catastrophicPhaseWarnings": [],
+      "lastPhaseCompleteTimestamp": 0,
+      "lastPhaseCompletePhase": 0,
+      "phaseAgentsDispatched": [
+        "reviewer"
+      ],
+      "lastCompletedPhaseAgentsDispatched": [],
+      "qaSkipCount": 0,
+      "qaSkipTaskIds": [],
+      "pendingAdvisoryMessages": [],
+      "taskWorkflowStates": {},
+      "scopeViolationDetected": false,
+      "model_fallback_index": 0,
+      "modelFallbackExhausted": false,
+      "coderRevisions": 0,
+      "revisionLimitHit": false,
+      "fullAutoMode": false,
+      "fullAutoInteractionCount": 0,
+      "fullAutoDeadlockCount": 0,
+      "fullAutoLastQuestionHash": null,
+      "sessionRehydratedAt": 0,
+      "cachedCohortId": "c86849b2562e"
+    },
+    "ses_01a636ee3ffeC550tlasNuAJp7": {
+      "agentName": "reviewer",
+      "lastToolCallTime": 1786263705239,
+      "lastAgentEventTime": 1786263671132,
+      "delegationActive": true,
+      "activeInvocationId": 1,
+      "lastInvocationIdByAgent": {
+        "reviewer": 1
+      },
+      "windows": {
+        "reviewer:1": {
+          "id": 1,
+          "agentName": "reviewer",
+          "startedAtMs": 1786263671132,
+          "toolCalls": 2,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786263705239,
+          "recentToolCalls": [
+            {
+              "tool": "read",
+              "argsHash": 9967553382242908000,
+              "timestamp": 1786263704711
+            },
+            {
+              "tool": "read",
+              "argsHash": 9598213241955670000,
+              "timestamp": 1786263705058
+            }
+          ],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        }
+      },
+      "lastCompactionHint": 0,
+      "architectWriteCount": 0,
+      "lastCoderDelegationTaskId": null,
+      "currentTaskId": null,
+      "turboMode": false,
+      "leanTurboActive": false,
+      "epicModeActive": false,
+      "gateLog": {},
+      "reviewerCallCount": {},
+      "lastGateFailure": null,
+      "partialGateWarningsIssuedForTask": [],
+      "completionGateWarnedForTask": [],
+      "selfFixAttempted": false,
+      "selfCodingWarnedAtCount": 0,
+      "catastrophicPhaseWarnings": [],
+      "lastPhaseCompleteTimestamp": 0,
+      "lastPhaseCompletePhase": 0,
+      "phaseAgentsDispatched": [
+        "reviewer"
+      ],
+      "lastCompletedPhaseAgentsDispatched": [],
+      "qaSkipCount": 0,
+      "qaSkipTaskIds": [],
+      "pendingAdvisoryMessages": [],
+      "taskWorkflowStates": {},
+      "scopeViolationDetected": false,
+      "model_fallback_index": 0,
+      "modelFallbackExhausted": false,
+      "coderRevisions": 0,
+      "revisionLimitHit": false,
+      "fullAutoMode": false,
+      "fullAutoInteractionCount": 0,
+      "fullAutoDeadlockCount": 0,
+      "fullAutoLastQuestionHash": null,
+      "sessionRehydratedAt": 0,
+      "cachedCohortId": "c86849b2562e"
+    },
+    "ses_01a636ef4ffeJ06CZCyG9zFJeP": {
+      "agentName": "reviewer",
+      "lastToolCallTime": 1786264777893,
+      "lastAgentEventTime": 1786263671347,
+      "delegationActive": true,
+      "activeInvocationId": 1,
+      "lastInvocationIdByAgent": {
+        "reviewer": 1
+      },
+      "windows": {
+        "reviewer:1": {
+          "id": 1,
+          "agentName": "reviewer",
+          "startedAtMs": 1786263671347,
+          "toolCalls": 36,
+          "consecutiveErrors": 0,
+          "hardLimitHit": false,
+          "lastSuccessTimeMs": 1786264777893,
+          "recentToolCalls": [
+            {
+              "tool": "read",
+              "argsHash": 3260214896605236000,
+              "timestamp": 1786263818405
+            },
+            {
+              "tool": "read",
+              "argsHash": 15767669347448525000,
+              "timestamp": 1786263912241
+            },
+            {
+              "tool": "grep",
+              "argsHash": 7678555497541530000,
+              "timestamp": 1786263912547
+            },
+            {
+              "tool": "grep",
+              "argsHash": 15147914220418793000,
+              "timestamp": 1786263988810
+            },
+            {
+              "tool": "glob",
+              "argsHash": 16679492611577750000,
+              "timestamp": 1786263989566
+            },
+            {
+              "tool": "read",
+              "argsHash": 13116114227726119000,
+              "timestamp": 1786264001604
+            },
+            {
+              "tool": "bash",
+              "argsHash": 17092863681282675000,
+              "timestamp": 1786264003594
+            },
+            {
+              "tool": "bash",
+              "argsHash": 2831423601351054000,
+              "timestamp": 1786264017191
+            },
+            {
+              "tool": "bash",
+              "argsHash": 13702105320147546000,
+              "timestamp": 1786264050768
+            },
+            {
+              "tool": "grep",
+              "argsHash": 11952788674165199000,
+              "timestamp": 1786264121318
+            },
+            {
+              "tool": "bash",
+              "argsHash": 2570923304797288000,
+              "timestamp": 1786264751509
+            },
+            {
+              "tool": "bash",
+              "argsHash": 7148690963213131000,
+              "timestamp": 1786264751883
+            },
+            {
+              "tool": "bash",
+              "argsHash": 487088036306416200,
+              "timestamp": 1786264752239
+            },
+            {
+              "tool": "bash",
+              "argsHash": 17983469640242290000,
+              "timestamp": 1786264752783
+            },
+            {
+              "tool": "bash",
+              "argsHash": 6287258286768450000,
+              "timestamp": 1786264753986
+            },
+            {
+              "tool": "bash",
+              "argsHash": 3946183852412223500,
+              "timestamp": 1786264773956
+            },
+            {
+              "tool": "bash",
+              "argsHash": 9020768851594747000,
+              "timestamp": 1786264774329
+            },
+            {
+              "tool": "bash",
+              "argsHash": 15962247259833410000,
+              "timestamp": 1786264774870
+            },
+            {
+              "tool": "bash",
+              "argsHash": 11476209411747647000,
+              "timestamp": 1786264775271
+            },
+            {
+              "tool": "bash",
+              "argsHash": 13121654245555990000,
+              "timestamp": 1786264775769
+            }
+          ],
+          "warningIssued": false,
+          "warningReason": "",
+          "transientRetryCount": 0
+        }
+      },
+      "lastCompactionHint": 0,
+      "architectWriteCount": 0,
+      "lastCoderDelegationTaskId": null,
+      "currentTaskId": null,
+      "turboMode": false,
+      "leanTurboActive": false,
+      "epicModeActive": false,
+      "gateLog": {},
+      "reviewerCallCount": {},
+      "lastGateFailure": null,
+      "partialGateWarningsIssuedForTask": [],
+      "completionGateWarnedForTask": [],
+      "selfFixAttempted": false,
+      "selfCodingWarnedAtCount": 0,
+      "catastrophicPhaseWarnings": [],
+      "lastPhaseCompleteTimestamp": 0,
+      "lastPhaseCompletePhase": 0,
+      "phaseAgentsDispatched": [
+        "reviewer"
+      ],
+      "lastCompletedPhaseAgentsDispatched": [],
+      "qaSkipCount": 0,
+      "qaSkipTaskIds": [],
+      "pendingAdvisoryMessages": [],
+      "taskWorkflowStates": {},
+      "scopeViolationDetected": false,
+      "model_fallback_index": 0,
+      "modelFallbackExhausted": false,
+      "coderRevisions": 0,
+      "revisionLimitHit": false,
+      "fullAutoMode": false,
+      "fullAutoInteractionCount": 0,
+      "fullAutoDeadlockCount": 0,
+      "fullAutoLastQuestionHash": null,
+      "sessionRehydratedAt": 0,
+      "cachedCohortId": "c86849b2562e"
+    }
+  }
+}

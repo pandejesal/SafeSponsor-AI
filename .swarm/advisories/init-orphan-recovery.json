@@ -1,0 +1,12 @@
+{
+  "initTimestamp": "2026-08-09T04:16:53.793Z",
+  "warnings": [
+    "Orphan recovery timed out or failed: background ownership tag scan exceeded its bounded init budget"
+  ],
+  "errors": [],
+  "reclaimed": {
+    "removedBranches": [],
+    "removedWorktrees": [],
+    "prunedWorktrees": false
+  }
+}

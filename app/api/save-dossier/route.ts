@@ -11,7 +11,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const body = await request.json();
+    const contentLength = request.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > 1024 * 1024) {
+      return NextResponse.json({ error: "Payload too large. Maximum allowed request size is 1MB." }, { status: 413 });
+    }
+
+    const rawText = await request.text();
+    if (rawText.length > 1024 * 1024) {
+      return NextResponse.json({ error: "Payload too large. Maximum allowed request size is 1MB." }, { status: 413 });
+    }
+    const body = JSON.parse(rawText);
     if (!body || !body.target) {
       return NextResponse.json({ error: "Report data is required." }, { status: 400 });
     }

@@ -29,10 +29,17 @@ export async function POST(req: NextRequest) {
 
     const dodo = getDodoPayments();
 
-    // List recent succeeded payments (last 20)
+    // List recent succeeded payments (bounded) — filter server-side by created
+    // time instead of scanning the full account history.
     let recentPayments: any[] = [];
     try {
-      const response: any = await dodo.payments.list({ status: "succeeded" });
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      const response: any = await dodo.payments.list({
+        status: "succeeded",
+        created_at_gte: cutoff.toISOString(),
+        page_size: 20,
+      });
       const raw = response?.data || response || [];
       if (Array.isArray(raw)) {
         recentPayments = raw;
@@ -59,15 +66,9 @@ export async function POST(req: NextRequest) {
 
     const paymentId = matchingPayment.payment_id || matchingPayment.id;
 
-    // Check if this payment was already credited
-    const userDoc = await adminDb.collection("users").doc(uid).get();
-    const userData = userDoc.exists ? userDoc.data() || {} : {};
-
-    if (userData.lastPaymentId === paymentId) {
-      return NextResponse.json({ success: true, message: "Credits already granted.", alreadyCredited: true });
-    }
-
-    // Grant credits atomically
+    // Grant credits atomically: the already-credited check and the grant must
+    // run in ONE transaction so two concurrent calls cannot both pass the
+    // lastPaymentId check and double-grant credits.
     const userRef = adminDb.collection("users").doc(uid);
     const entitlementUpdate: Record<string, any> = {
       lastPaymentId: paymentId,
@@ -90,7 +91,21 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    await userRef.set(entitlementUpdate, { merge: true });
+    try {
+      await adminDb.runTransaction(async (tx) => {
+        const userSnap = await tx.get(userRef);
+        const existing = userSnap.exists ? userSnap.data() || {} : {};
+        if (existing.lastPaymentId === paymentId) {
+          throw new Error("already_granted");
+        }
+        tx.set(userRef, entitlementUpdate, { merge: true });
+      });
+    } catch (grantErr: any) {
+      if (grantErr?.message === "already_granted") {
+        return NextResponse.json({ success: true, message: "Credits already granted.", alreadyCredited: true });
+      }
+      throw grantErr;
+    }
     console.log(`[VERIFY PAYMENT] Credits granted to user ${uid} via fallback verification (plan: ${plan}, payment: ${paymentId})`);
 
     const verifySnap = await userRef.get();

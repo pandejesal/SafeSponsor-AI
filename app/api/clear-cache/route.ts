@@ -10,6 +10,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
+    // Admin-only: cache entries are shared across all users, so a regular
+    // authenticated user must not be able to purge them for everyone.
+    const adminSnap = await adminDb.collection("users").doc(uid).get();
+    const adminData = adminSnap.exists ? adminSnap.data() || {} : {};
+    if (adminData.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden. Admin access required." }, { status: 403 });
+    }
+
     const { target_key } = await request.json();
     if (!target_key || typeof target_key !== "string") {
       return NextResponse.json({ error: "target_key required" }, { status: 400 });
@@ -27,6 +35,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, deleted: target_key });
   } catch (error: any) {
     console.error("[CACHE CLEAR] Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Failed to clear cache entry." }, { status: 500 });
   }
 }

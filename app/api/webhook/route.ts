@@ -87,12 +87,9 @@ export async function POST(req: NextRequest) {
     }
 
     console.log(`[PAYMENTS LOG] Valid Dodo Payments Webhook received: ${eventType}`);
-    console.log(`[PAYMENTS LOG] Headers:`, {
-      "webhook-id": req.headers.get("webhook-id") || req.headers.get("x-webhook-id") || "MISSING",
-      "webhook-signature": (req.headers.get("webhook-signature") || req.headers.get("x-dodo-signature") || "MISSING").substring(0, 30) + "...",
-      "body-keys": Object.keys(body || {}),
-      "data-keys": Object.keys(data || {}),
-      "metadata": data?.metadata || body?.metadata || "MISSING",
+    const receivedWebhookId = req.headers.get("webhook-id") || req.headers.get("x-webhook-id");
+    console.log(`[PAYMENTS LOG] Webhook ${receivedWebhookId || "(no id)"}:`, {
+      "payload-keys": Object.keys(body || {}),
     });
 
     const webhookHeaderId = req.headers.get("webhook-id") || req.headers.get("x-webhook-id");
@@ -243,6 +240,21 @@ export async function POST(req: NextRequest) {
           [creditKey]: clampedVal,
         }, { merge: true });
       });
+    } else if (isRevocationEvent && plan === "subscription") {
+      // CRITICAL ORDERING FIX: subscription.cancelled / subscription.expired /
+      // refund.succeeded (with subscription context) MUST hit the revocation
+      // branch. Previously they fell through to the grant path below, which
+      // re-set hasSubscription=true with a fresh ~1-month expiry — users who
+      // cancelled or were refunded silently kept unlimited access.
+      await adminDb.runTransaction(async (tx) => {
+        const userSnap = await tx.get(userRef);
+        if (!userSnap.exists) {
+          console.log(`[ENTITLEMENT REVOCATION] User doc ${uid} does not exist, skipping subscription revocation.`);
+          return;
+        }
+        tx.set(userRef, entitlementUpdate, { merge: true });
+      });
+      console.log(`[ENTITLEMENT REVOCATION] Subscription revoked for user ${uid} via event: ${eventType}`);
     } else if (plan === "subscription") {
       // Subscription grants: extend from the latest expiry, but never double-extend
       // when payment.succeeded + subscription.active (or subscription.renewed) arrive
