@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signInWithRedirect, signInWithPopup, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { useAuth } from '@/components/AuthProvider';
 import { Navbar } from '@/components/Navbar';
 import { useTheme } from '@/components/ThemeProvider';
@@ -45,7 +46,12 @@ function LoginInner() {
       })
       .catch((err: any) => {
         console.error('Redirect sign-in error:', err);
-        if (active) setError(err?.message || 'Sign-in failed. Please try again.');
+        if (!active) return;
+        if (err?.code === 'auth/internal-error') {
+          setError('Sign-in failed (auth/internal-error). If this persists after retrying, confirm this domain is in Firebase Auth authorized domains and that App Check enforcement allows this domain.');
+        } else {
+          setError(err?.message || 'Sign-in failed. Please try again.');
+        }
       });
     return () => {
       active = false;
@@ -57,23 +63,22 @@ function LoginInner() {
     setError(null);
     const provider = new GoogleAuthProvider();
     try {
-      // Path 3a: Popup (primary) - completes the sign-in without leaving the page.
-      await signInWithPopup(auth!, provider);
-      goToDashboard(router);
+      // Redirect flow is the PRIMARY sign-in path. Full-page navigation to
+      // Google avoids the cross-origin popup handshake (vercel.app ->
+      // firebaseapp.com) that needs third-party cookies and fails with
+      // auth/internal-error when they are blocked. No explicit
+      // PopupRedirectResolver is passed: the SDK's default resolver must stay
+      // consistent with getRedirectResult or the pending-state match fails.
+      await signInWithRedirect(auth!, provider);
     } catch (err: any) {
+      console.error('Google sign-in error:', err);
       const code = err?.code || '';
-      // Path 3b: If the popup is blocked (or is in progress), fall back to the
-      // redirect flow, which always works on the main domain.
-      if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request' || code === 'auth/popup-closed-by-user') {
-        try {
-          await signInWithRedirect(auth!, provider);
-        } catch (redirectErr: any) {
-          console.error('Redirect fallback error:', redirectErr);
-          setError(redirectErr?.message || 'Sign-in failed. Please try again.');
-        }
+      if (code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized for Google sign-in. Add it to Firebase Auth → Settings → Authorized Domains, then try again.');
+      } else if (code === 'auth/internal-error') {
+        setError('Sign-in failed (auth/internal-error). Please clear this site\u2019s cookies and try again. If it persists, re-verify the Firebase Auth authorized domains.');
       } else {
-        console.error('Authentication error:', err);
-        setError(err?.message || 'An error occurred during authentication.');
+        setError(err?.message || 'Sign-in failed. Please try again.');
       }
     } finally {
       setIsLoading(false);
@@ -112,9 +117,11 @@ function LoginInner() {
               : 'bg-white border-slate-200 ring-1 ring-slate-900/5'
           }`}>
             <div className="p-8 sm:p-10 text-center border-b border-zinc-800/20">
-              <img 
+              <Image 
                 src="/favicon.svg" 
                 alt="SafeSponsor AI" 
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-lg mx-auto mb-4 shadow-md"
               />
 

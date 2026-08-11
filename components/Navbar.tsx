@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { Sun, Moon, ArrowRight, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
@@ -43,9 +44,11 @@ export function Navbar() {
         
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 group">
-          <img 
+          <Image 
             src="/favicon.svg" 
             alt="SafeSponsor AI" 
+            width={40}
+            height={40}
             className="w-10 h-10 rounded-xl shadow-md transition-transform group-hover:scale-105"
           />
           <div className="flex flex-col">

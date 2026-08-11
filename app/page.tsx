@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { getAppCheckToken } from '@/lib/firebase';
 import { Navbar } from '@/components/Navbar';
 import { useTheme } from '@/components/ThemeProvider';
@@ -760,7 +761,7 @@ function LandingContent() {
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <img src="/favicon.svg" alt="SafeSponsor AI" className="w-5 h-5" />
+            <Image src="/favicon.svg" alt="SafeSponsor AI" width={20} height={20} className="w-5 h-5" />
             <span className="font-bold text-slate-200 dark:text-zinc-200">SafeSponsor AI</span>
             <span>© {new Date().getFullYear()} All rights reserved.</span>
           </div>
