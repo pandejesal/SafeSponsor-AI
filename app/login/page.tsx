@@ -17,6 +17,25 @@ function goToDashboard(router: ReturnType<typeof useRouter>) {
   router.replace(targetParam ? `/dashboard?target=${encodeURIComponent(targetParam)}` : '/dashboard');
 }
 
+// A failed signInWithRedirect can leave a stale "pending redirect" marker in
+// sessionStorage. The next getRedirectResult call then throws auth/internal-error
+// and the user gets stuck in an error loop. Clear any such keys on failure paths.
+function clearPendingRedirectState() {
+  if (typeof sessionStorage === 'undefined') return;
+  try {
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && key.startsWith('firebase:pendingRedirect:')) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach((key) => sessionStorage.removeItem(key));
+  } catch (err) {
+    console.warn('Failed to clear pending redirect state:', err);
+  }
+}
+
 function LoginInner() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -46,6 +65,7 @@ function LoginInner() {
       })
       .catch((err: any) => {
         console.error('Redirect sign-in error:', err);
+        clearPendingRedirectState();
         if (!active) return;
         if (err?.code === 'auth/internal-error') {
           setError('Sign-in failed (auth/internal-error). If this persists after retrying, confirm this domain is in Firebase Auth authorized domains and that App Check enforcement allows this domain.');
@@ -69,18 +89,36 @@ function LoginInner() {
       // auth/internal-error when they are blocked. No explicit
       // PopupRedirectResolver is passed: the SDK's default resolver must stay
       // consistent with getRedirectResult or the pending-state match fails.
-      await signInWithRedirect(auth!, provider);
+      //
+      // signInWithRedirect waits on the App Check (reCAPTCHA Enterprise) token
+      // before it can navigate, and that wait has NO internal timeout: when
+      // reCAPTCHA is blocked (ad blocker, privacy extension, hostile network)
+      // the button spins for ~30s and then fails with the cryptic
+      // auth/network-request-failed. Race it with a timeout so we can surface
+      // a clear message and reset the button instead.
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('App Check verification timed out')), 18000)
+      );
+      await Promise.race([signInWithRedirect(auth!, provider), timeout]);
     } catch (err: any) {
       console.error('Google sign-in error:', err);
       const code = err?.code || '';
-      if (code === 'auth/unauthorized-domain') {
+      if (err?.message === 'App Check verification timed out') {
+        setError('Google sign-in is taking too long. This usually happens when App Check\'s reCAPTCHA is blocked by an ad blocker or privacy extension. Allow google.com and gstatic.com on this site (or disable the blocker), then try again.');
+      } else if (code === 'auth/unauthorized-domain') {
         setError('This domain is not authorized for Google sign-in. Add it to Firebase Auth → Settings → Authorized Domains, then try again.');
       } else if (code === 'auth/internal-error') {
         setError('Sign-in failed (auth/internal-error). Please clear this site\u2019s cookies and try again. If it persists, re-verify the Firebase Auth authorized domains.');
+      } else if (code === 'auth/network-request-failed') {
+        setError('Google sign-in could not be verified (App Check reCAPTCHA failed — often caused by ad blockers or privacy extensions blocking google.com). Allow those domains or disable the blocker, then retry.');
       } else {
         setError(err?.message || 'Sign-in failed. Please try again.');
       }
     } finally {
+      // The pending redirect marker is only valid if a redirect is actually
+      // underway. On timeout/error the SDK may leave a stale marker behind
+      // that breaks the next attempt with auth/internal-error.
+      clearPendingRedirectState();
       setIsLoading(false);
     }
   };
