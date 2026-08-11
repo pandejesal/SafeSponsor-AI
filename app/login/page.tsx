@@ -36,6 +36,19 @@ function clearPendingRedirectState() {
   }
 }
 
+function describeHandlerError(code: string, desc?: string): string {
+  const known: Record<string, string> = {
+    'auth/internal-error': 'App Check or token verification failed on Firebase\u2019s auth handler. This often happens when a privacy extension blocks reCAPTCHA on firebaseapp.com, or when third-party cookies are blocked.',
+    'auth/unauthorized-domain': 'This domain is not authorized for Google sign-in. Add it to Firebase Auth \u2192 Settings \u2192 Authorized Domains, then try again.',
+    'auth/operation-not-allowed': 'The Google sign-in provider is disabled in Firebase Auth settings.',
+    'auth/network-request-failed': 'A network request to Firebase failed during sign-in.',
+    'auth/cancelled-popup-request': 'The sign-in request was cancelled.',
+  };
+  const text = known[code] || `Sign-in failed: ${code}`;
+  const extra = desc && desc !== code ? ` (${desc})` : '';
+  return text + extra;
+}
+
 function LoginInner() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +90,24 @@ function LoginInner() {
       active = false;
     };
   }, [router]);
+
+  // Path 3: The Firebase auth handler can bounce straight back to this page
+  // without registering a redirect result (App Check/reCAPTCHA failure on the
+  // firebaseapp.com origin, Google-side error, etc). The handler encodes the
+  // failure in the URL fragment/query - surface it instead of silently
+  // returning the user to the login page.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const raw = window.location.hash + window.location.search;
+    if (!raw) return;
+    console.debug('Returned from auth handler:', window.location.href);
+    const mErr = raw.match(/[?&#](?:error|errorCode|errorDescription)=([^&#]+)/);
+    if (!mErr) return;
+    const decoded = decodeURIComponent(mErr[1]);
+    const code = decoded.startsWith('auth/') ? decoded : `auth/${decoded}`;
+    setError(describeHandlerError(code, decoded));
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
