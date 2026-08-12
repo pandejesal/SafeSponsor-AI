@@ -32,15 +32,17 @@ export const adminAppCheck = getAppCheck(adminApp);
 
 export async function verifyAppCheckHeader(req: NextRequest): Promise<{ valid: boolean; error?: string }> {
   const appCheckToken = req.headers.get("X-Firebase-AppCheck") || req.headers.get("x-firebase-appcheck");
-  const isProduction = process.env.NODE_ENV === "production";
-  const isOptedOut = process.env.ENFORCE_APP_CHECK === "false";
-  const isEnforced = isProduction && !isOptedOut;
+  // Enforcement is OPT-IN (FR-4): until ENFORCE_APP_CHECK === "true" is set,
+  // the server accepts missing tokens so that clients whose reCAPTCHA is
+  // blocked can still sign in. A token that is PRESENT but invalid is always
+  // rejected (defense in depth - broken or spoofed tokens never pass).
+  const isEnforced = process.env.ENFORCE_APP_CHECK === "true";
 
   if (!appCheckToken) {
     if (isEnforced) {
       return { valid: false, error: "Missing App Check token" };
     }
-    console.warn("[SECURITY WARN] Firebase App Check token missing (non-production / dev mode permitted)");
+    console.warn("[SECURITY WARN] Firebase App Check token missing (enforcement is opt-in via ENFORCE_APP_CHECK=true)");
     return { valid: true };
   }
 
@@ -49,11 +51,7 @@ export async function verifyAppCheckHeader(req: NextRequest): Promise<{ valid: b
     return { valid: true };
   } catch (error: any) {
     console.warn("Firebase App Check Token verification failed:", error?.message || error);
-    if (isEnforced) {
-      return { valid: false, error: "Invalid App Check token" };
-    }
-    console.warn("[SECURITY WARN] Invalid App Check token permitted in non-production / dev mode");
-    return { valid: true };
+    return { valid: false, error: "Invalid App Check token" };
   }
 }
 

@@ -39,6 +39,7 @@ function clearPendingRedirectState() {
 function describeHandlerError(code: string, desc?: string): string {
   const known: Record<string, string> = {
     'auth/internal-error': 'App Check or token verification failed on Firebase\u2019s auth handler. This often happens when a privacy extension blocks reCAPTCHA on firebaseapp.com, or when third-party cookies are blocked.',
+    'auth/appcheck-failed': 'App Check verification failed while processing the sign-in. This usually means reCAPTCHA was blocked by an ad blocker or privacy extension - allow google.com and gstatic.com on this site, then try again.',
     'auth/unauthorized-domain': 'This domain is not authorized for Google sign-in. Add it to Firebase Auth \u2192 Settings \u2192 Authorized Domains, then try again.',
     'auth/operation-not-allowed': 'The Google sign-in provider is disabled in Firebase Auth settings.',
     'auth/network-request-failed': 'A network request to Firebase failed during sign-in.',
@@ -80,8 +81,8 @@ function LoginInner() {
         console.error('Redirect sign-in error:', err);
         clearPendingRedirectState();
         if (!active) return;
-        if (err?.code === 'auth/internal-error') {
-          setError('Sign-in failed (auth/internal-error). If this persists after retrying, confirm this domain is in Firebase Auth authorized domains and that App Check enforcement allows this domain.');
+        if (err?.code) {
+          setError(describeHandlerError(err.code, err?.message));
         } else {
           setError(err?.message || 'Sign-in failed. Please try again.');
         }
@@ -98,14 +99,20 @@ function LoginInner() {
   // returning the user to the login page.
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    // FirebaseAuthError fragments carry error=FirebaseAuthError plus separate
+    // errorCode / errorDescription params. Prefer errorCode over the generic
+    // "FirebaseAuthError" marker, and surface the description when present.
     const raw = window.location.hash + window.location.search;
     if (!raw) return;
     console.debug('Returned from auth handler:', window.location.href);
-    const mErr = raw.match(/[?&#](?:error|errorCode|errorDescription)=([^&#]+)/);
-    if (!mErr) return;
-    const decoded = decodeURIComponent(mErr[1]);
-    const code = decoded.startsWith('auth/') ? decoded : `auth/${decoded}`;
-    setError(describeHandlerError(code, decoded));
+    const params = new URLSearchParams(
+      (window.location.hash || '').replace(/^#/, '?') + (window.location.search || '')
+    );
+    if (!params.has('error') && !params.has('errorCode')) return;
+    const codeParam = params.get('errorCode') || params.get('error') || '';
+    const desc = params.get('errorDescription') || '';
+    const code = codeParam.startsWith('auth/') ? codeParam : `auth/${codeParam}`;
+    setError(describeHandlerError(code, desc));
     history.replaceState(null, '', window.location.pathname + window.location.search);
   }, []);
 
@@ -121,27 +128,22 @@ function LoginInner() {
       // PopupRedirectResolver is passed: the SDK's default resolver must stay
       // consistent with getRedirectResult or the pending-state match fails.
       //
-      // signInWithRedirect waits on the App Check (reCAPTCHA Enterprise) token
-      // before it can navigate, and that wait has NO internal timeout: when
-      // reCAPTCHA is blocked (ad blocker, privacy extension, hostile network)
-      // the button spins for ~30s and then fails with the cryptic
-      // auth/network-request-failed. Race it with a timeout so we can surface
-      // a clear message and reset the button instead.
-      const timeout = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error('App Check verification timed out')), 18000)
-      );
-      await Promise.race([signInWithRedirect(auth!, provider), timeout]);
+      // App Check is NOT registered while the user is signed out (see
+      // lib/firebase.ts), so this navigation no longer waits on a reCAPTCHA
+      // Enterprise token - the ~30s hang and cryptic auth/network-request-failed
+      // that caused are gone from the sign-in path (FR-4).
+      await signInWithRedirect(auth!, provider);
     } catch (err: any) {
       console.error('Google sign-in error:', err);
       const code = err?.code || '';
-      if (err?.message === 'App Check verification timed out') {
-        setError('Google sign-in is taking too long. This usually happens when App Check\'s reCAPTCHA is blocked by an ad blocker or privacy extension. Allow google.com and gstatic.com on this site (or disable the blocker), then try again.');
-      } else if (code === 'auth/unauthorized-domain') {
+      if (code === 'auth/unauthorized-domain') {
         setError('This domain is not authorized for Google sign-in. Add it to Firebase Auth → Settings → Authorized Domains, then try again.');
       } else if (code === 'auth/internal-error') {
         setError('Sign-in failed (auth/internal-error). Please clear this site\u2019s cookies and try again. If it persists, re-verify the Firebase Auth authorized domains.');
       } else if (code === 'auth/network-request-failed') {
         setError('Google sign-in could not be verified (App Check reCAPTCHA failed — often caused by ad blockers or privacy extensions blocking google.com). Allow those domains or disable the blocker, then retry.');
+      } else if (code) {
+        setError(describeHandlerError(code, err?.message));
       } else {
         setError(err?.message || 'Sign-in failed. Please try again.');
       }
