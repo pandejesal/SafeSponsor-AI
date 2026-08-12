@@ -10,6 +10,16 @@ import { z } from "zod";
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
+// Hard wall-clock budget for the whole pipeline (Vercel Hobby ~60s limit).
+const OVERALL_BUDGET_MS = 50000;
+// Worst-case cost of the transcript/comment fetch phase: two sequential
+// capped fetches per video (transcript then comments), parallel across videos.
+const FETCH_PHASE_WORST_CASE_MS = 20000;
+// Worst-case cost of a single LLM call (Gemini/Groq timeout + retry backoff).
+const LLM_CALL_WORST_CASE_MS = 15000;
+// Reserve for the tail (JSON post-processing + Firestore writes) + safety margin.
+const BUDGET_MARGIN_MS = 5000;
+
 const analyzeSchema = z.object({
   target: z.string().max(500).optional(),
   primary_url: z.string().max(500).optional(),
@@ -55,13 +65,20 @@ async function generateWithModelFallback(params: {
   config?: any;
   models?: string[];
   maxRetries?: number;
+  deadlineMs?: number;
 }) {
   const models = params.models || GEMINI_MODELS_FALLBACK_ORDER;
   const maxRetries = params.maxRetries ?? 1;
+  const deadlineMs = params.deadlineMs;
+  const GEMINI_TIMEOUT_MS = 12000;
   let lastError: any = null;
 
   for (const modelName of models) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      // Stop trying further models once the wall-clock deadline is near.
+      if (deadlineMs && performance.now() + GEMINI_TIMEOUT_MS + 2000 > deadlineMs) {
+        throw new Error("Gemini API budget exhausted before model attempt");
+      }
       try {
         if (attempt > 0) {
           const delayMs = attempt * 2000;
@@ -70,7 +87,7 @@ async function generateWithModelFallback(params: {
         }
         console.log(`[Gemini API] Executing generateContent with model: ${modelName}`);
         const response = await new Promise<any>(async (resolve, reject) => {
-          const timer = setTimeout(() => reject(new Error(`Model ${modelName} timed out after 15s`)), 15000);
+          const timer = setTimeout(() => reject(new Error(`Model ${modelName} timed out after ${GEMINI_TIMEOUT_MS}ms`)), GEMINI_TIMEOUT_MS);
           try {
             const res = await getAI().models.generateContent({
               model: modelName,
@@ -101,7 +118,7 @@ async function generateWithModelFallback(params: {
   throw lastError || new Error("All Gemini models in fallback sequence failed.");
 }
 
-async function fetchYouTubeComments(videoId: string): Promise<string[]> {
+async function fetchYouTubeComments(videoId: string, signal?: AbortSignal): Promise<string[]> {
   // Only the dedicated YouTube Data API key is valid here. The Gemini key was
   // previously used as a fallback, but it is not a valid YouTube API credential
   // and only produced 403s while hiding the misconfiguration.
@@ -113,12 +130,14 @@ async function fetchYouTubeComments(videoId: string): Promise<string[]> {
   try {
     // 1. Attempt to fetch 50 most recent comments (order=time)
     const res = await fetch(
-      `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=50&order=time&key=${apiKey}`
+      `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=50&order=time&key=${apiKey}`,
+      { signal }
     );
     if (!res.ok) {
       // Fallback to top relevant comments if order=time fails
       const fallbackRes = await fetch(
-        `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=50&order=relevance&key=${apiKey}`
+        `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${videoId}&maxResults=50&order=relevance&key=${apiKey}`,
+        { signal }
       );
       if (!fallbackRes.ok) return [];
       const data = await fallbackRes.json();
@@ -134,6 +153,16 @@ async function fetchYouTubeComments(videoId: string): Promise<string[]> {
     console.warn(`Could not fetch YouTube comments for video ${videoId}:`, err?.message || err);
     return [];
   }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
 }
 
 function cleanJsonText(raw: string): string {
@@ -167,10 +196,12 @@ async function callGroqFallback({
   prompt,
   systemPrompt,
   jsonMode = false,
+  deadlineMs,
 }: {
   prompt: string;
   systemPrompt?: string;
   jsonMode?: boolean;
+  deadlineMs?: number;
 }): Promise<string> {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -196,7 +227,16 @@ async function callGroqFallback({
   }
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000);
+  const GROQ_TIMEOUT_MS = 12000;
+  let timeoutMs = GROQ_TIMEOUT_MS;
+  if (deadlineMs) {
+    const remainingToDeadline = deadlineMs - performance.now();
+    if (remainingToDeadline <= 1000) {
+      throw new Error("Groq API budget exhausted before request");
+    }
+    timeoutMs = Math.min(GROQ_TIMEOUT_MS, remainingToDeadline - 1000);
+  }
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -261,6 +301,26 @@ export async function POST(req: NextRequest) {
       consumedEntitlement = null;
     } catch (refundErr: any) {
       console.error(`[CREDIT REFUND FAILED] Could not refund ${consumedEntitlement}:`, refundErr?.message || refundErr);
+    }
+  };
+
+  // Hard wall-clock budget for the whole pipeline (Vercel Hobby ~60s limit).
+  const requestStartMs = performance.now();
+  const deadlineMs = requestStartMs + OVERALL_BUDGET_MS;
+
+  // Fail fast BEFORE starting an expensive phase when the remaining budget is
+  // already smaller than the phase's worst-case cost + margin. On exhaustion,
+  // refund the entitlement and return the existing 502 shape.
+  const failFastIfOverBudget = async (phase: string, worstCaseMs: number) => {
+    const remaining = deadlineMs - performance.now();
+    if (remaining < worstCaseMs + BUDGET_MARGIN_MS) {
+      console.warn(`[TIME BUDGET] Over budget before ${phase}: ${Math.round(remaining)}ms left, needing ~${worstCaseMs + BUDGET_MARGIN_MS}ms`);
+      await refundEntitlement(`time budget exhausted before ${phase}`);
+      const err: any = new Error(
+        "Analysis could not be completed within the time budget. Please try again later."
+      );
+      err.timeBudgetExhausted = true;
+      throw err;
     }
   };
 
@@ -698,6 +758,7 @@ export async function POST(req: NextRequest) {
     // Fetch transcripts + comments for each video in parallel (bounded to the
     // resolved URL list, max ~6) instead of serially — cuts ~30-60s of wall
     // clock for channel audits.
+    await failFastIfOverBudget("fetch phase", FETCH_PHASE_WORST_CASE_MS);
     const pendingResults: { videoId: string; url: string }[] = [];
     for (const url of resolvedUrls) {
       const match = url.match(youtubeVideoRegex);
@@ -708,7 +769,11 @@ export async function POST(req: NextRequest) {
     await Promise.all(pendingResults.map(async ({ videoId, url }) => {
       let reached = false;
       try {
-        const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+        const transcript = await withTimeout(
+          YoutubeTranscript.fetchTranscript(videoId),
+          10000,
+          `Transcript fetch for ${url}`
+        );
         const text = transcript.map(t => t.text).join(" ");
         transcriptText += `\n[Transcript for ${url}]:\n${text.slice(0, 10000)}\n`;
         reached = true;
@@ -717,7 +782,14 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        const comments = await fetchYouTubeComments(videoId);
+        const commentsController = new AbortController();
+        const commentsTimeoutId = setTimeout(() => commentsController.abort(), 10000);
+        let comments: string[] = [];
+        try {
+          comments = await fetchYouTubeComments(videoId, commentsController.signal);
+        } finally {
+          clearTimeout(commentsTimeoutId);
+        }
         if (comments.length > 0) {
           commentsText += `\n[YouTube Comments Sample for ${url} (${comments.length} top/recent comments)]:\n` + comments.map((c, i) => `${i + 1}. ${c}`).join("\n") + "\n";
           reached = true;
@@ -879,10 +951,12 @@ ${modeExtra}`;
     // Skip Gemini googleSearch/urlContext tools — they have a separate, much lower
     // quota (e.g. 20 RPD) that exhausts quickly. Instead, use Gemini as text-only
     // with data we already gathered (transcripts, comments, YouTube channel metadata).
+    await failFastIfOverBudget("Pass 1", LLM_CALL_WORST_CASE_MS);
     try {
       console.log("[Gemini API] Calling Pass 1 (text-only, no search tools)...");
       const researchResponse = await generateWithModelFallback({
         contents: researchPrompt,
+        deadlineMs,
       });
 
       researchText = researchResponse.text || "No research findings generated.";
@@ -893,6 +967,7 @@ ${modeExtra}`;
         researchText = await callGroqFallback({
           prompt: researchPrompt,
           systemPrompt: "You are an elite Brand Sponsorship Research Team and Risk Assessment AI evaluating content creator viability.",
+          deadlineMs,
         });
       } catch (groqErr: any) {
         console.warn("Groq API also failed for Pass 1:", groqErr?.message || groqErr);
@@ -957,9 +1032,11 @@ CRITICAL REQUIREMENTS:
 `;
 
     let rawJsonText = "";
+    await failFastIfOverBudget("Pass 2", LLM_CALL_WORST_CASE_MS);
     try {
       const synthesisResponse = await generateWithModelFallback({
         contents: synthesisPrompt,
+        deadlineMs,
         config: {
           responseMimeType: "application/json",
           maxOutputTokens: 8192,
@@ -1084,6 +1161,7 @@ CRITICAL REQUIREMENTS:
         prompt: synthesisPrompt + "\n\nCRITICAL INSTRUCTION: Return ONLY a valid, parseable raw JSON object containing all required fields (creator_summary, brand_safety_score, risk_level, audience_insights, controversy_and_pr_history, competitor_and_sponsorship_history, nuanced_red_flags, positive_highlights, final_verdict, unreachable_urls). Do NOT include markdown codeblocks or commentary around the JSON.",
         systemPrompt: "You are an executive brand safety analyst synthesizing a 360-degree creator risk assessment in strict raw JSON format.",
         jsonMode: true,
+        deadlineMs,
       });
     }
 
@@ -1121,9 +1199,11 @@ CRITICAL REQUIREMENTS:
       // refunding the user's credit.
       try {
         console.warn("[Gemini API] Pass 2 output failed parse/validation; requesting one repair pass:", firstAttemptErr?.message);
+        await failFastIfOverBudget("repair pass", LLM_CALL_WORST_CASE_MS);
         const repairPrompt = `The previous synthesis output was not valid JSON or violated the required schema. Fix it and return ONLY valid JSON matching the original schema (creator_summary, brand_safety_score, risk_level, audience_insights with comment_sentiment_summary + toxic_recurring_themes, controversy_and_pr_history, competitor_and_sponsorship_history, nuanced_red_flags, positive_highlights, final_verdict with recommendation in ["Sponsor","Proceed with Caution","Blacklist"], unreachable_urls). Do not explain — output raw JSON only.\n\nINVALID OUTPUT:\n${rawJsonText.slice(0, 6000)}`;
         const repaired = await generateWithModelFallback({
           contents: repairPrompt,
+          deadlineMs,
           config: { responseMimeType: "application/json", maxOutputTokens: 8192 },
         });
         result = await parseAndValidate(repaired.text || "");
@@ -1303,6 +1383,12 @@ CRITICAL REQUIREMENTS:
     });
   } catch (error: any) {
     console.error("Analysis execution error:", error);
+    if (error?.timeBudgetExhausted) {
+      return NextResponse.json(
+        { error: "Analysis could not be completed within the time budget. Your credit was not consumed — please try again." },
+        { status: 502 }
+      );
+    }
     await refundEntitlement("analysis pipeline failed");
     return NextResponse.json(
       { error: "Failed to analyze the creator target. Please try again." },
