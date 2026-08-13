@@ -102,15 +102,23 @@ function LoginInner() {
     // FirebaseAuthError fragments carry error=FirebaseAuthError plus separate
     // errorCode / errorDescription params. Prefer errorCode over the generic
     // "FirebaseAuthError" marker, and surface the description when present.
+    // Parse the hash and the query string INDEPENDENTLY: a query part (e.g.
+    // the app's own /login?target=... CTA) must never leak into fragment
+    // values, and '?' is not a URLSearchParams delimiter inside a joined
+    // string. Fragment entries win; query entries fill gaps only.
     const raw = window.location.hash + window.location.search;
     if (!raw) return;
     console.debug('Returned from auth handler:', window.location.href);
-    const params = new URLSearchParams(
-      (window.location.hash || '').replace(/^#/, '?') + (window.location.search || '')
-    );
-    if (!params.has('error') && !params.has('errorCode')) return;
-    const codeParam = params.get('errorCode') || params.get('error') || '';
-    const desc = params.get('errorDescription') || '';
+    const merged = new URLSearchParams();
+    for (const [key, value] of new URLSearchParams(window.location.hash.replace(/^#/, '?'))) {
+      merged.set(key, value);
+    }
+    for (const [key, value] of new URLSearchParams(window.location.search)) {
+      if (!merged.has(key)) merged.set(key, value);
+    }
+    if (!merged.has('error') && !merged.has('errorCode')) return;
+    const codeParam = merged.get('errorCode') || merged.get('error') || '';
+    const desc = merged.get('errorDescription') || '';
     const code = codeParam.startsWith('auth/') ? codeParam : `auth/${codeParam}`;
     setError(describeHandlerError(code, desc));
     history.replaceState(null, '', window.location.pathname + window.location.search);

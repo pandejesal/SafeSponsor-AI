@@ -22,6 +22,14 @@ if (typeof window !== "undefined") {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
   db = getFirestore(app);
+  // The module-level appCheck singleton must not survive sign-out: once the
+  // provider is registered, the SDK awaits its token inside signInWithRedirect.
+  // A logout->login cycle in the same SPA page lifetime would otherwise
+  // re-introduce the reCAPTCHA wait on the next sign-in. Reset on sign-out so
+  // a fresh registration happens (gated) on the next signed-in session only.
+  auth.onAuthStateChanged((user) => {
+    if (!user) appCheck = null;
+  });
 }
 
 // App Check is registered lazily, NEVER at boot and NEVER while the user is
