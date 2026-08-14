@@ -23,10 +23,12 @@ import {
   DAILY_CAP_REASON,
   UsageLogEntry,
   checkPerAuditCostAlert,
+  decrementDailyCapCount,
   enforceDailyCap,
   getCostAlertThresholdUsd,
   getDayKey,
   getProDailyAuditCap,
+  perAuditCostUsd,
 } from "@/lib/usage";
 import { z } from "zod";
 
@@ -190,8 +192,50 @@ export async function POST(req: NextRequest) {
   // the quota was consumed.
   let consumedEntitlement: string | null = null;
   let activeUserRef: FirebaseFirestore.DocumentReference | null = null;
+  let activeUid: string | null = null;
+  // Hoisted so a failed audit can refund the daily-cap slot it claimed
+  // (usage_daily/{uid}_{day}). Null until a subscription audit claims a slot.
+  let activeDayKey: string | null = null;
+  // Hoisted so failure exits can still run the per-audit cost alert.
+  let activeTargetKey: string | null = null;
+  // Hoisted so the shared per-audit cost alert sees every LLM call of this
+  // audit even when the pipeline fails before the success-path reporting.
+  let auditUsageEntries: UsageLogEntry[] = [];
+
+  // Audit-failure refund of the subscription daily-cap slot (M1T3 counter).
+  // Failed Pro audits must NOT burn a cap slot: the 502 responses promise
+  // "credit was not consumed", so the increment from the quota transaction is
+  // rolled back (transactional read+decrement, never below 0). Failure to
+  // refund is logged and non-fatal — the audit result stands.
+  const refundDailyCapSlot = async (reason: string) => {
+    if (!activeDayKey || !activeUid) return;
+    const dayKey = activeDayKey;
+    activeDayKey = null;
+    const counterRef = adminDb.collection("usage_daily").doc(`${activeUid}_${dayKey}`);
+    try {
+      await adminDb.runTransaction(async (tx) => {
+        const snap = await tx.get(counterRef);
+        const count = snap.exists ? Number(snap.data()?.count || 0) : 0;
+        const next = decrementDailyCapCount(count);
+        if (next !== count) {
+          tx.update(counterRef, { count: next, updatedAt: new Date() });
+        }
+      });
+      console.warn(`[CAP SLOT REFUND] Refunded daily cap slot for ${activeUid}_${dayKey} (${reason})`);
+    } catch (refundErr: any) {
+      console.error(`[CAP SLOT REFUND FAILED] Could not refund daily cap slot for ${activeUid}_${dayKey}:`, refundErr?.message || refundErr);
+    }
+  };
+
   const refundEntitlement = async (reason: string) => {
-    if (!consumedEntitlement || consumedEntitlement === "subscription" || !activeUserRef) return;
+    if (!consumedEntitlement || !activeUserRef) return;
+    // Subscription claims never decrement credits — but they DO claim a daily
+    // cap slot, which must be refunded when the audit fails.
+    if (consumedEntitlement === "subscription") {
+      consumedEntitlement = null;
+      await refundDailyCapSlot(reason);
+      return;
+    }
     try {
       if (consumedEntitlement === "videoCredit") await activeUserRef.update({ videoCredits: FieldValue.increment(1) });
       else if (consumedEntitlement === "channelCredit") await activeUserRef.update({ channelCredits: FieldValue.increment(1) });
@@ -201,6 +245,30 @@ export async function POST(req: NextRequest) {
       consumedEntitlement = null;
     } catch (refundErr: any) {
       console.error(`[CREDIT REFUND FAILED] Could not refund ${consumedEntitlement}:`, refundErr?.message || refundErr);
+    }
+  };
+
+  // M1T4(b) per-audit cost alert, shared by success and failure exits: a
+  // failed audit can still have burned real LLM money (usage already logged
+  // via onUsage), so the alert must fire whenever the summed estCostUsd of
+  // this audit's calls crossed the threshold — not only on success.
+  const emitPerAuditCostAlert = async (targetKey: string | null) => {
+    const totalUsd = perAuditCostUsd(auditUsageEntries);
+    if (!checkPerAuditCostAlert(totalUsd, getCostAlertThresholdUsd())) return;
+    console.error(
+      `[COST ALERT] Audit for targetKey=${targetKey || "unknown"} (uid=${activeUid || "unknown"}) cost $${totalUsd.toFixed(4)} — above threshold $${getCostAlertThresholdUsd().toFixed(2)}`
+    );
+    try {
+      await adminDb.collection("usage_alerts").add({
+        type: "per-audit-cost",
+        ...(activeUid ? { uid: activeUid } : {}),
+        ...(targetKey ? { targetKey } : {}),
+        estCostUsd: totalUsd,
+        thresholdUsd: getCostAlertThresholdUsd(),
+        ts: new Date().toISOString(),
+      });
+    } catch (alertErr: any) {
+      console.warn("[COST ALERT] Failed to persist per-audit alert:", alertErr?.message || alertErr);
     }
   };
 
@@ -242,6 +310,7 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+    activeUid = uid;
 
     const contentLength = req.headers.get("content-length");
     if (contentLength && parseInt(contentLength, 10) > 1024 * 1024) {
@@ -314,12 +383,13 @@ export async function POST(req: NextRequest) {
     const force_refresh = inputData.force_refresh === true;
     const audit_focus = inputData.audit_focus || "standard";
     const targetKey = normalizeTargetKey(target);
+    activeTargetKey = targetKey;
     const userDocRef = adminDb.collection('users').doc(uid);
 
     // Per-audit usage accumulator (M1T1/M1T4): every LLM call of this audit is
-    // pushed here so the audit's total estCostUsd can be checked against the
-    // per-audit cost-alert threshold before responding.
-    const auditUsageEntries: UsageLogEntry[] = [];
+    // pushed into the hoisted array (visible to the shared cost-alert emitter
+    // even on failure exits) so the audit's total estCostUsd can be checked
+    // against the per-audit cost-alert threshold before responding.
     const reportAuditUsage = async (entry: UsageLogEntry) => {
       auditUsageEntries.push(entry);
       await persistUsageLog(entry);
@@ -530,6 +600,8 @@ export async function POST(req: NextRequest) {
             return { allowed: false, type: "none" as const, reason: capCheck.reason };
           }
           tx.set(dailyCounterRef, { count: capCheck.nextCount, uid, day: dayKey, updatedAt: new Date() }, { merge: true });
+          // Remember the claimed slot so a failed audit can refund it.
+          activeDayKey = dayKey;
           return { allowed: true, type: "subscription" as const };
         }
 
@@ -619,6 +691,9 @@ export async function POST(req: NextRequest) {
         // Fail fast: charge NOTHING when every AI provider failed. Synthesizing a
         // dossier from a failure string would bill the user for a fabricated report.
         await refundEntitlement("Pass 1 produced no research output");
+        // Failed calls still cost money — alert if this audit crossed the
+        // per-audit cost threshold despite the failure.
+        await emitPerAuditCostAlert(activeTargetKey);
         return NextResponse.json(
           { error: "The AI analysis service is temporarily unavailable. Your credit was not consumed — please try again shortly." },
           { status: 502 }
@@ -626,6 +701,7 @@ export async function POST(req: NextRequest) {
       }
       // synthesis_unparseable — repair pass failed too.
       await refundEntitlement("Pass 2 output could not be parsed or validated");
+      await emitPerAuditCostAlert(activeTargetKey);
       return NextResponse.json(
         { error: "Unverifiable model output: unable to parse JSON response." },
         { status: 502 }
@@ -708,24 +784,9 @@ export async function POST(req: NextRequest) {
 
     // M1T4(b): per-audit cost alert. Basis = sum of estCostUsd of every LLM
     // call in this audit (research + synthesis + repair), keyed by targetKey.
-    const perAuditCostUsd = auditUsageEntries.reduce((sum, e) => sum + (e.estCostUsd || 0), 0);
-    if (checkPerAuditCostAlert(perAuditCostUsd, getCostAlertThresholdUsd())) {
-      console.error(
-        `[COST ALERT] Audit for targetKey=${targetKey} (uid=${uid}) cost $${perAuditCostUsd.toFixed(4)} — above threshold $${getCostAlertThresholdUsd().toFixed(2)}`
-      );
-      try {
-        await adminDb.collection("usage_alerts").add({
-          type: "per-audit-cost",
-          uid,
-          targetKey,
-          estCostUsd: perAuditCostUsd,
-          thresholdUsd: getCostAlertThresholdUsd(),
-          ts: new Date().toISOString(),
-        });
-      } catch (alertErr: any) {
-        console.warn("[COST ALERT] Failed to persist per-audit alert:", alertErr?.message || alertErr);
-      }
-    }
+    // Shared emitter: failure exits call the same check (failed audits can
+    // still have incurred real LLM cost).
+    await emitPerAuditCostAlert(activeTargetKey);
 
     return NextResponse.json({
       id: reportId,
@@ -735,12 +796,16 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Analysis execution error:", error);
     if (error?.timeBudgetExhausted) {
+      // refundEntitlement already ran inside failFastIfOverBudget before the
+      // throw — emit the alert for whatever LLM cost was already incurred.
+      await emitPerAuditCostAlert(activeTargetKey);
       return NextResponse.json(
         { error: "Analysis could not be completed within the time budget. Your credit was not consumed — please try again." },
         { status: 502 }
       );
     }
     await refundEntitlement("analysis pipeline failed");
+    await emitPerAuditCostAlert(activeTargetKey);
     return NextResponse.json(
       { error: "Failed to analyze the creator target. Please try again." },
       { status: 500 }

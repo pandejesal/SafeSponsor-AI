@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAuthHeader } from "@/lib/firebase-admin";
+import { verifyAuthHeader, verifyAppCheckHeader } from "@/lib/firebase-admin";
 import { adminDb } from "@/lib/firebase-admin";
 import { FieldValue } from "firebase-admin/firestore";
 import { getDodoPayments } from "@/lib/dodopayments";
@@ -9,6 +9,16 @@ export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
+    // App Check posture matches /api/checkout: only App-Check-verified
+    // clients may trigger payment-verification side effects.
+    const appCheckResult = await verifyAppCheckHeader(req);
+    if (!appCheckResult.valid) {
+      return NextResponse.json(
+        { error: "Unauthorized client request (App Check failed)." },
+        { status: 401 }
+      );
+    }
+
     const uid = await verifyAuthHeader(req);
     if (!uid) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
@@ -88,6 +98,8 @@ export async function POST(req: NextRequest) {
       // M3T2: the intro offer is first-purchase only — stamp the flag so a
       // future checkout never re-applies the $99 discount code.
       entitlementUpdate.introProClaimed = true;
+      // T6: clear the checkout in-flight marker — the intro has been claimed.
+      entitlementUpdate.introPending = false;
       entitlementUpdate.subscription = {
         status: "active",
         expiresAt: expiresAt.toISOString(),

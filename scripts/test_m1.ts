@@ -1,18 +1,23 @@
 // M1 gate: unit tests for cost accounting + guardrails (run: npm run test:m1).
 // Pure tests against lib/usage.ts — no network, no Firestore, no Admin SDK.
 import assert from "node:assert/strict";
+import * as fs from "fs";
+import * as path from "path";
 import {
   DAILY_CAP_REASON,
   UsageLogEntry,
   aggregateUsageByUid,
   checkPerAuditCostAlert,
   checkWeeklyCostAlert,
+  decrementDailyCapCount,
   enforceDailyCap,
   estimateCostUsd,
   getCostAlertThresholdUsd,
   getDayKey,
   getProDailyAuditCap,
   getWeekKey,
+  nextWeekStartIso,
+  perAuditCostUsd,
   weekStartIso,
   weeklyCostAlertThreshold,
 } from "../lib/usage";
@@ -159,6 +164,140 @@ test("aggregateUsageByUid groups calls, tokens, cost, and models per uid", () =>
   // Failed call with no uid buckets to "unknown".
   assert.strictEqual(agg["unknown"].calls, 1);
   assert.strictEqual(Object.keys(agg).length, 3);
+});
+
+// ---- T2: daily-cap slot refund on audit failure (fix audit) ----
+test("decrementDailyCapCount never goes below zero", () => {
+  assert.strictEqual(decrementDailyCapCount(5), 4);
+  assert.strictEqual(decrementDailyCapCount(1), 0);
+  assert.strictEqual(decrementDailyCapCount(0), 0);
+  assert.strictEqual(decrementDailyCapCount(NaN as any), 0);
+  assert.strictEqual(decrementDailyCapCount(-3), 0);
+});
+
+test("simulated Pro audit failure: claim consumes one slot, refund restores it", () => {
+  // Mirrors the route: quota tx claims a slot (usedToday 49 -> 50), the
+  // pipeline fails, refundDailyCapSlot decrements back to 49.
+  const cap = getProDailyAuditCap();
+  let counter = 49;
+  const claim = enforceDailyCap(counter, cap);
+  assert.ok(claim.allowed);
+  if (claim.allowed) counter = claim.nextCount;
+  assert.strictEqual(counter, 50, "success claim consumes exactly one slot");
+  counter = decrementDailyCapCount(counter);
+  assert.strictEqual(counter, 49, "failed audit refunds the slot back to 49");
+
+  // A refund at the floor must not go negative (e.g. double refund, counter
+  // already deleted).
+  assert.strictEqual(decrementDailyCapCount(0), 0);
+
+  // Success path unchanged: exactly one slot consumed, next claim allowed at
+  // 49, denied at 50.
+  const claim2 = enforceDailyCap(49, cap);
+  assert.ok(claim2.allowed);
+  if (claim2.allowed) assert.strictEqual(claim2.nextCount, 50);
+  const claim3 = enforceDailyCap(50, cap);
+  assert.ok(!claim3.allowed, "counter back at cap denies the next claim");
+});
+
+// ---- T3: per-audit cost alert fires for FAILED audits too (fix audit) ----
+test("failed audit with summed estCostUsd over threshold triggers the alert decision", () => {
+  // A research_failed audit can still have burned real LLM cost on earlier
+  // calls. perAuditCostUsd sums ALL entries (success or not) — the route's
+  // shared emitter uses exactly this basis before writing usage_alerts.
+  const failedAuditEntries: Pick<UsageLogEntry, "estCostUsd">[] = [
+    { estCostUsd: 0.12 },
+    { estCostUsd: 0.11 },
+    { estCostUsd: 0.09 },
+  ];
+  const total = perAuditCostUsd(failedAuditEntries);
+  closeTo(total, 0.32, 1e-9);
+  assert.strictEqual(checkPerAuditCostAlert(total, 0.3), true, "failed audit above $0.30 must alert");
+
+  const below: Pick<UsageLogEntry, "estCostUsd">[] = [{ estCostUsd: 0.2 }, { estCostUsd: 0.09 }];
+  assert.strictEqual(checkPerAuditCostAlert(perAuditCostUsd(below), 0.3), false, "below threshold must not alert");
+
+  // Zero-cost failure (no LLM calls made) never alerts.
+  assert.strictEqual(perAuditCostUsd([]), 0);
+  assert.strictEqual(checkPerAuditCostAlert(0, 0.3), false);
+});
+
+// ---- T7: weekly rollup upper bound (fix audit) ----
+test("nextWeekStartIso is the exclusive upper bound of the week", () => {
+  assert.strictEqual(nextWeekStartIso("20260810-week"), "2026-08-17T00:00:00.000Z");
+  assert.strictEqual(nextWeekStartIso("20260803-week"), "2026-08-10T00:00:00.000Z");
+  // Lower bound < upper bound; a Sunday log belongs to the week, next Monday
+  // does not.
+  const weekStart = Date.parse(weekStartIso("20260810-week"));
+  const nextStart = Date.parse(nextWeekStartIso("20260810-week"));
+  assert.ok(weekStart < nextStart);
+  assert.strictEqual(new Date("2026-08-16T23:59:59.000Z").getTime() >= weekStart, true);
+  assert.strictEqual(new Date("2026-08-16T23:59:59.000Z").getTime() < nextStart, true);
+  assert.strictEqual(new Date("2026-08-17T00:00:00.000Z").getTime() < nextStart, false);
+  assert.throws(() => nextWeekStartIso("not-a-week"), /Invalid week key/);
+});
+
+// ---- T1: firestore.rules protects the intro flags (fix audit) ----
+test("firestore.rules sensitiveFields blocks client writes to introProClaimed/introPending", () => {
+  const rules = fs.readFileSync(path.join(__dirname, "..", "firestore.rules"), "utf8");
+  const m = rules.match(/sensitiveFields\s*=\s*\[([^\]]*)\]/);
+  assert.ok(m, "sensitiveFields array must exist in firestore.rules");
+  const fields = m[1].split(",").map((f) => f.trim().replace(/^'|'$/g, "").replace(/^"|"$/g, "")).filter(Boolean);
+  assert.ok(fields.includes("introProClaimed"), "introProClaimed must be in sensitiveFields");
+  assert.ok(fields.includes("introPending"), "introPending must be in sensitiveFields");
+
+  // Simulate the rule semantics: a client update touching a sensitive field
+  // must be denied; an update touching only safe fields must pass.
+  const touched = (payload: Record<string, unknown>, existing: Record<string, unknown>) =>
+    Object.keys(payload).filter((k) => !(k in existing) || payload[k] !== existing[k]);
+  const isTouchingSensitive = (affected: string[]) => affected.some((k) => fields.includes(k));
+
+  assert.strictEqual(isTouchingSensitive(touched({ introProClaimed: false }, {})), true, "resetting introProClaimed must be denied");
+  assert.strictEqual(isTouchingSensitive(touched({ introPending: false }, {})), true, "resetting introPending must be denied");
+  assert.strictEqual(isTouchingSensitive(touched({ displayName: "New" }, { displayName: "Old" })), false, "safe fields still update");
+  assert.strictEqual(isTouchingSensitive(touched({ introProClaimed: true }, { introProClaimed: true })), false, "unchanged sensitive value passes diff");
+});
+
+// ---- T4: $99 banner is config-gated end-to-end (fix audit) ----
+test("check-credits exposes introAvailable only from server env; banner gates on it", () => {
+  const route = fs.readFileSync(path.join(__dirname, "..", "app", "api", "check-credits", "route.ts"), "utf8");
+  assert.ok(route.includes("introAvailable"), "check-credits must return introAvailable");
+  assert.ok(
+    route.includes('Boolean(process.env.DODO_PAYMENTS_DISCOUNT_CODE_PRO_INTRO)'),
+    "introAvailable must derive from the server-side env var (no client-visible code value)"
+  );
+  // The env var name appears exactly once (the derivation) — never inside the
+  // response body, so the code value cannot leak to the client.
+  const envRefs = route.split("DODO_PAYMENTS_DISCOUNT_CODE_PRO_INTRO").length - 1;
+  assert.strictEqual(envRefs, 1, "env var referenced exactly once (derivation only), never in the response");
+  // Both response shapes (fresh user + existing user) must carry the field.
+  assert.strictEqual((route.match(/introAvailable/g) || []).length >= 3, true, "field present in both response branches + derivation");
+
+  const dashboard = fs.readFileSync(path.join(__dirname, "..", "app", "dashboard", "page.tsx"), "utf8");
+  assert.ok(
+    dashboard.includes("{!introBannerDismissed && userCredits.introAvailable && ("),
+    "banner render condition must combine dismissal with introAvailable (never promises $99 when unconfigured)"
+  );
+  // The banner section already sits inside the !hasSubscription block — the
+  // combination !hasSubscription && introAvailable is the render condition.
+  assert.ok(dashboard.includes("userCredits.introAvailable"), "introAvailable must flow into the banner condition");
+});
+
+// ---- T5/T6: verify-payment App Check + checkout intro serialization (fix audit) ----
+test("verify-payment enforces App Check like checkout", () => {
+  const route = fs.readFileSync(path.join(__dirname, "..", "app", "api", "verify-payment", "route.ts"), "utf8");
+  assert.ok(route.includes("verifyAppCheckHeader"), "verify-payment must call verifyAppCheckHeader");
+  assert.ok(route.includes("Unauthorized client request (App Check failed)"), "invalid App Check must reject 401");
+});
+
+test("checkout serializes the intro claim in a transaction and clears pending on grant", () => {
+  const checkout = fs.readFileSync(path.join(__dirname, "..", "app", "api", "checkout", "route.ts"), "utf8");
+  assert.ok(checkout.includes("runTransaction"), "intro read+apply must run inside runTransaction");
+  assert.ok(checkout.includes("introPending"), "checkout must stamp introPending before creating the session");
+  const verify = fs.readFileSync(path.join(__dirname, "..", "app", "api", "verify-payment", "route.ts"), "utf8");
+  assert.ok(verify.includes("introPending = false"), "grant path must clear introPending");
+  const webhook = fs.readFileSync(path.join(__dirname, "..", "app", "api", "webhook", "route.ts"), "utf8");
+  assert.ok(webhook.includes("introPending: false"), "webhook grant path must clear introPending");
 });
 
 // ---- M1T5: env config defaults ----

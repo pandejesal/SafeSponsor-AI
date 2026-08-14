@@ -13,7 +13,11 @@ service cloud.firestore {
     }
 
     function isNotTouchingSensitiveFields() {
-      let sensitiveFields = ['email', 'hasSubscription', 'subscription', 'freeAnalysisUsed', 'reportCredits', 'videoCredits', 'channelCredits', 'plan', 'paymentProvider', 'lastPaymentId', 'role', 'admin', 'credits'];
+      // introProClaimed/introPending are server-stamped (checkout/webhook/
+      // verify-payment) — a client resetting introProClaimed to false could
+      // replay the $99 first-purchase intro forever, so they are protected
+      // like the other entitlement fields.
+      let sensitiveFields = ['email', 'hasSubscription', 'subscription', 'freeAnalysisUsed', 'reportCredits', 'videoCredits', 'channelCredits', 'plan', 'paymentProvider', 'lastPaymentId', 'role', 'admin', 'credits', 'introProClaimed', 'introPending'];
       return resource == null
         ? !request.resource.data.keys().hasAny(sensitiveFields)
         : !request.resource.data.diff(resource.data).affectedKeys().hasAny(sensitiveFields);

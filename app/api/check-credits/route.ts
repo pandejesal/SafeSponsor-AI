@@ -11,6 +11,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
+    // M3T2 intro offer is config-gated server-side: expose only a boolean so
+    // the client never learns the code value itself. When the env var is
+    // unset, the $99 banner must not render (checkout would charge $149).
+    const introAvailable = Boolean(process.env.DODO_PAYMENTS_DISCOUNT_CODE_PRO_INTRO);
+
     const userDoc = await adminDb.collection("users").doc(uid).get();
     if (!userDoc.exists) {
       return NextResponse.json({
@@ -20,6 +25,7 @@ export async function GET(req: NextRequest) {
         subscriptionExpiresAt: null,
         cancelAtPeriodEnd: false,
         plan: null,
+        introAvailable,
       });
     }
 
@@ -35,6 +41,7 @@ export async function GET(req: NextRequest) {
       subscriptionExpiresAt: expiresAt,
       cancelAtPeriodEnd: sub?.cancelAtPeriodEnd === true,
       plan: data.plan || null,
+      introAvailable,
     });
   } catch (error: any) {
     console.error("[CHECK CREDITS] Error:", error?.message || error);

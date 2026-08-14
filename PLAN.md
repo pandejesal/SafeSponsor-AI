@@ -148,3 +148,104 @@ This quarter: harden unit economics (cost tracking + caps), add a benchmark-driv
 5. Dossier schema additions backward-compatible; old cached dossiers still render.
 6. README updated: pricing, env vars, benchmark + usage scripts, takedown/export endpoints.
 7. Critic pass: a fresh agent reads this file + the diff and finds no contradictions or gaps.
+
+## 7. Next Phase — Ops & GTM (post M1–M5)
+
+> Status: M1–M5 implemented (commit e5738c1), audited, fixed, all checks green (build/lint/tests/benchmark 96/96). This phase runs **two parallel tracks**: Operations (hardening) and GTM (first users). Dodo stays in **test mode** — the 90-day success metric is **completed test checkouts + signed-up users**, not real revenue. Live flip only after ops readiness (N5 gate).
+
+### 7.1 Decisions (grilled 2026-08-14)
+
+| ID | Decision |
+|---|---|
+| N-D1 | Ops scope: monitoring + backups + runbook + **sole-prop legal** (no LLC; LLC at $10–20k revenue) |
+| N-D2 | Parallel tracks; revenue proof = test checkouts; live flip gated on ops completion |
+| N-D3 | Monitoring = free tier: `/api/health` + UptimeRobot (50 checks) + Sentry free + Vercel dashboard |
+| N-D4 | Backups = scheduled GCP Firestore backups (~$10–20/mo) + monthly export script + one restore drill |
+| N-D5 | **Score teaser**: sign-in required, **1 per account**, full pipeline run, output = score + risk_level + 2–3 red-flag headers ONLY; result **discarded** (no storage — purchase re-runs). **Repurposes the existing `freeAnalysisUsed` free-analysis entitlement as the teaser cap** — there is exactly ONE free pipeline run per uid total, and its output is the trimmed teaser, not a full dossier. This removes the pre-existing free full-dossier flow (was one free full dossier stored to history + `global_audits`); the $8 upsell is the only path to a full dossier for free-tier users |
+| N-D6 | Teaser upsell: "$8 unlock full dossier" primary, $149 Pro secondary |
+| N-D7 | Teaser placement: homepage hero + dashboard tab (shared 1-cap counter) |
+| N-D8 | SEO: 5 static pages (homepage + 4 per-platform "creator brand safety check"), each embedding the teaser |
+| N-D9 | Launch: soft launch + 20 cold outreach emails to DTC brand marketers + 3 community posts |
+| N-D10 | Ops order: Monitor → Backup → Runbook → Legal docs |
+
+### 7.2 Milestones (N1–N6)
+
+#### N1 — Score Teaser
+
+**Check**: `npm run build && npm run lint` + `npm run test:n1` (new script).
+
+| Task | Depends | Description | Acceptance |
+|---|---|---|---|
+| N1T1 | — | Teaser output mode in pipeline: new flag `teaser=true` → **forces a fresh run (bypasses cache/seed read path)**, dossier returned with score, risk_level, and 2–3 top red-flag headers ONLY (all detail fields stripped); result **not** written to history or `global_audits`; **skips the entire normal entitlement-claim transaction** (no credit decrement, no subscription cap slot, no daily cap counter change — only the `freeAnalysisUsed` cap from N1T2 applies); **takedown tombstone check still enforced** (mirror M4T2) even though the result is discarded; `usage_logs` + `usage_alerts` (cost visibility) STILL apply to teaser runs. Also: create `scripts/test_n1.ts` and add `"test:n1": "tsx scripts/test_n1.ts"` to package.json (mirror M1T3) | `teaser=true` output has no full dossier fields and never serves cached/seed full dossiers; no history/global_audits write for teaser runs; no credit/slot/cap-counter consumption; tombstoned creators denied; cost rows still logged; unit test in `scripts/test_n1.ts`; `npm run test:n1` runs |
+| N1T2 | N1T1 | 1-per-account teaser cap: **repurpose `freeAnalysisUsed` as the teaser cap** — atomic `runTransaction` check+set (mirror M1T3 pattern); cap applies to EVERY uid (no paid-user exemption; paid users simply don't see the teaser CTA — UI-level); second teaser → 429/`{error:"Free teaser already used"}`. **Also: gate the cache/seed read path** (`route.ts` ~L468, currently `!isPaidUser`) on paid entitlement — any user WITHOUT a paid entitlement (teaser-exhausted or never-teasered) skips seed/`global_audits` cache reads entirely (fall through to quota denial 402/429), so stored full dossiers are never served to free-tier users through the normal analyze path | Cap enforces once per uid atomically; free users (any state) get no seed/cache full dossiers (quota denial only); unit tested |
+| N1T3 | N1T2 | Homepage hero teaser: input (handle/URL) + "Check any creator free" CTA → runs teaser → result card (score + flags) → upsell buttons ($8 full dossier primary, $149 Pro secondary) | Hero flow works end-to-end; upsell routes to checkout with plan preset |
+| N1T4 | N1T2 | Dashboard tab teaser (same shared cap counter as hero) | Tab works; cap shared — hero use blocks tab use and vice versa |
+| N1T5 | N1T3 | Teaser result page: "Unlock full dossier for $8" button → `/api/checkout` plan=single (dossier re-runs on purchase) | Purchase path re-runs pipeline, returns full dossier to history + cache |
+
+#### N2 — SEO Landing Pages
+
+**Check**: `npm run build && npm run lint` + manual: 5 URLs render, sitemap updated.
+
+| Task | Depends | Description | Acceptance |
+|---|---|---|---|
+| N2T1 | N1T3 | Homepage SEO pass: title/description/H1 target "creator brand safety check", teaser embedded, schema.org markup | Homepage meta + structured data correct |
+| N2T2 | N2T1 | Static page `/brand-safety/youtube`: copy + embedded teaser (YouTube pre-selected hint) | Page renders; teaser functional from page |
+| N2T3 | N2T1 | Static page `/brand-safety/tiktok` | Same as N2T2 |
+| N2T4 | N2T1 | Static pages `/brand-safety/instagram`, `/brand-safety/twitch` | Same as N2T2 |
+| N2T5 | N2T2–N2T4 | Update `app/sitemap.ts` to include all 5 pages; internal links between pages | All 5 URLs in sitemap; crawlable |
+
+#### N3 — Monitoring
+
+**Check**: `npm run build && npm run lint` + curl `/api/health` returns 200 JSON.
+
+| Task | Depends | Description | Acceptance |
+|---|---|---|---|
+| N3T1 | — | `GET /api/health`: no-auth, returns `{ok:true, ts}` + Firestore ping (best-effort, fail-open) | 200 JSON under 1s; no secret exposure |
+| N3T2 | N3T1 | UptimeRobot: monitor on `/api/health` (50 free checks) + docs note in **README** (runbook N5T1 will link it) | Monitor configured; README documents it |
+| N3T3 | — | Sentry free tier: `@sentry/nextjs` init (DSN via `NEXT_PUBLIC_SENTRY_DSN` env, unset = disabled), capture route errors | Errors appear in Sentry when DSN set; no-op when unset; build/lint clean |
+
+#### N4 — Backups
+
+**Check**: restore drill log (documented output file).
+
+| Task | Depends | Description | Acceptance |
+|---|---|---|---|
+| N4T1 | — | Scheduled GCP Firestore backups for all collections (`users`, `global_audits`, `usage_*`, `takedown_*`, `rate_limits`); daily, 30-day retention; documented in **README** (runbook N5T1 will link it) | Backup schedule active; documented; cost note in README |
+| N4T2 | — | `scripts/export_firestore.ts`: admin SDK export of all collections to local JSON (used as free monthly belt-and-braces) | Script runs; output JSON valid; `npm run export:db` script added |
+| N4T3 | N4T1 | Restore drill: restore latest backup to a scratch collection, verify counts match, write `docs/restore-drill-<date>.md` | Drill log documents procedure + verification result |
+
+#### N5 — Runbook & Legal
+
+**Check**: docs exist; Terms/Privacy pages render.
+
+| Task | Depends | Description | Acceptance |
+|---|---|---|---|
+| N5T1 | N3T3 | `docs/runbook.md`: incident tiers, alert responses (uptime/cost/error), rollback (git revert + redeploy), support contact, escalation to user | Runbook covers cost alert, downtime, webhook failure, takedown SLA breach |
+| N5T2 | N5T1 | Support inbox: contact form or email alias documented in runbook + site footer | Contact path exists and is documented |
+| N5T3 | — | Refresh `app/(legal)/terms` + `app/(legal)/privacy`: teaser (1-free, sign-in), takedown process, test-mode payment notice, sole-prop operator identity | Legal pages updated and consistent with actual behavior |
+| N5T4 | N5T3 | Sole-prop record-keeping note in runbook: tax-relevant docs (revenue from Dodo payouts) | Documented |
+
+**N5 gate — live-mode flip checklist** (executed only after N1–N5 done): test E2E checkout in test mode → set Dodo live keys + live product IDs + live webhook secret → verify a $0 test → `ENFORCE_APP_CHECK=true` → monitor 48h. Not part of the 90-day milestone; triggered by user decision.
+
+#### N6 — Soft Launch
+
+**Check**: manual: launch log with dates/links.
+
+| Task | Depends | Description | Acceptance |
+|---|---|---|---|
+| N6T1 | N1T3, N2T5 | Cold outreach: 20 DTC brand marketers, template mentioning free teaser link, tracked in a sheet | 20 personalized emails sent; replies logged |
+| N6T2 | N1T3, N2T5 | Community posts: r/influencermarketing, one creator Discord, X thread — teaser link + use-case framing | 3 posts live with links |
+| N6T3 | N6T1, N6T2 | Success tracking: signed-up users + completed test checkouts (check-credits/usage queries), weekly review note in `docs/launch-log.md` | Metrics collected weekly for 90 days; log updated |
+
+### 7.3 Definition of Done (Next phase)
+
+1. Teaser live: hero + dashboard, 1-cap enforced, result discarded, $8 upsell path works end-to-end.
+2. 5 SEO pages live, sitemap updated.
+3. `/api/health` + UptimeRobot + Sentry operational; runbook + support inbox documented.
+4. Backups scheduled + drill completed with log.
+5. Terms/Privacy refreshed; sole-prop record-keeping documented.
+6. Soft launch executed: 20 emails + 3 posts + weekly metric log.
+7. All checks green: `npm run build`, `npm run lint`, `npm run test:m1/m4/m5`, `npm run test:n1`, `npm run benchmark` (≥90/90).
+8. Critic pass on the full diff before launch wave.
+
+

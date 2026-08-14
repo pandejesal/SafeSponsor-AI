@@ -108,6 +108,10 @@ function DashboardInner() {
     hasSubscription: boolean;
     subscriptionExpiresAt: string | null;
     cancelAtPeriodEnd: boolean;
+    // Server-derived: true only when DODO_PAYMENTS_DISCOUNT_CODE_PRO_INTRO is
+    // configured, so the $99 banner never promises a price checkout can't
+    // deliver. Falsy when unconfigured OR the field is missing (old server).
+    introAvailable: boolean;
   } | null>(null);
   const [cancellingSub, setCancellingSub] = useState(false);
   const [cancelStep, setCancelStep] = useState<0 | 1 | 2 | 3>(0); // 0=closed, 1=reason, 2=confirm, 3=typing
@@ -205,7 +209,7 @@ function DashboardInner() {
 
   useEffect(() => {
     if (!user) {
-      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null, cancelAtPeriodEnd: false });
+      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null, cancelAtPeriodEnd: false, introAvailable: false });
       return;
     }
     const fetchCredits = async () => {
@@ -229,6 +233,9 @@ function DashboardInner() {
               hasSubscription: data.hasSubscription || false,
               subscriptionExpiresAt: data.subscriptionExpiresAt || null,
               cancelAtPeriodEnd: serverCancel,
+              // Falsy when unconfigured or absent from an older server — the
+              // $99 banner stays hidden rather than over-promising.
+              introAvailable: data.introAvailable === true,
             };
           });
         }
@@ -2081,8 +2088,10 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
             </div>
 
-            {/* M3T3 — inline intro offer banner (non-blocking, no modal, no auto-pop) */}
-            {!introBannerDismissed && (
+            {/* M3T3 — inline intro offer banner (non-blocking, no modal, no auto-pop).
+                Renders only when the server says the intro is actually configured
+                (introAvailable) — an unconfigured deploy must never promise $99. */}
+            {!introBannerDismissed && userCredits.introAvailable && (
               <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
                 isDark ? "bg-cyan-950/40 border-cyan-500/40" : "bg-cyan-50 border-cyan-300"
               }`}>

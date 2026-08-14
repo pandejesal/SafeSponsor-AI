@@ -6,6 +6,7 @@ import {
   checkWeeklyCostAlert,
   getProDailyAuditCap,
   getWeekKey,
+  nextWeekStartIso,
   weeklyCostAlertThreshold,
   weekStartIso,
 } from "@/lib/usage";
@@ -44,9 +45,12 @@ export async function GET(request: NextRequest) {
     }
 
     const weekStart = weekStartIso(weekKey);
+    // Exclusive upper bound: future-dated logs (client clock skew) must never
+    // inflate the current week's rollup.
     const snap = await adminDb
       .collection("usage_logs")
       .where("ts", ">=", weekStart)
+      .where("ts", "<", nextWeekStartIso(weekKey))
       .get();
     const entries: UsageLogEntry[] = snap.docs.map((d) => ({ ...(d.data() as UsageLogEntry), id: d.id }));
 

@@ -294,6 +294,8 @@ export async function POST(req: NextRequest) {
           // M3T2: the intro offer is first-purchase only — stamp the flag so a
           // future checkout never re-applies the $99 discount code.
           introProClaimed: true,
+          // T6: clear the checkout in-flight marker — the intro has been claimed.
+          introPending: false,
           subscription: {
             status: "active",
             expiresAt: expiresAt.toISOString(),

@@ -50,6 +50,21 @@ export function weekStartIso(weekKey: string): string {
   return `${m[1]}-${m[2]}-${m[3]}T00:00:00.000Z`;
 }
 
+// Exclusive upper bound of a week — used to bound the rollup query so
+// future-dated logs (client clock skew, bad NTP) never inflate the current
+// week. nextWeekStartIso("20260810-week") = "2026-08-17T00:00:00.000Z".
+export function nextWeekStartIso(weekKey: string): string {
+  return new Date(Date.parse(weekStartIso(weekKey)) + 7 * 24 * 60 * 60 * 1000).toISOString();
+}
+
+// Refund half of a daily-cap claim: the analyze route increments
+// usage_daily/{uid}_{day} when a Pro audit starts, and decrements it (never
+// below 0) when the audit fails — failed audits must not burn a cap slot.
+export function decrementDailyCapCount(currentCount: number): number {
+  const n = Number.isFinite(currentCount) ? currentCount : 0;
+  return Math.max(0, Math.floor(n) - 1);
+}
+
 // Exact 429 message the analyze route returns when a Pro user hits the cap.
 export const DAILY_CAP_REASON = "Daily audit limit reached";
 
@@ -77,6 +92,13 @@ export function checkWeeklyCostAlert(weeklyTotalUsd: number, proDailyCap: number
 
 export function checkPerAuditCostAlert(totalEstUsd: number, thresholdUsd: number): boolean {
   return totalEstUsd >= thresholdUsd;
+}
+
+// Per-audit cost basis (M1T4b): sum of estCostUsd across every LLM call of
+// ONE audit — including calls from audits that later failed, since failed
+// calls can still have burned real money.
+export function perAuditCostUsd(entries: Pick<UsageLogEntry, "estCostUsd">[]): number {
+  return entries.reduce((sum, e) => sum + (e.estCostUsd || 0), 0);
 }
 
 export interface UidRollup {

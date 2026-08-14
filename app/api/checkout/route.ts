@@ -102,16 +102,38 @@ export async function POST(req: NextRequest) {
     // grant, so the intro applies exactly once per user; a second purchase bills
     // the full $149. If the env var is unset, or the flag read fails, we fail open
     // to the full price (never risk granting the intro twice).
+    // T6 — concurrent double-intro window: the read+apply happens inside ONE
+    // Firestore transaction that also stamps `introPending`. Two parallel first
+    // checkouts can no longer both read introProClaimed=false: the loser sees
+    // introPending and pays full price. A stale pending marker (checkout never
+    // completed) self-heals after INTRO_PENDING_TTL_MS so an abandoned session
+    // does not permanently block the offer.
     let discountCodes: string[] | undefined;
     if (plan === "subscription") {
       const introCode = process.env.DODO_PAYMENTS_DISCOUNT_CODE_PRO_INTRO;
       if (introCode) {
+        const INTRO_PENDING_TTL_MS = 30 * 60 * 1000;
         try {
-          const userSnap = await adminDb.collection("users").doc(uid).get();
-          const claimed = userSnap.exists ? (userSnap.data() || {}).introProClaimed === true : false;
-          if (!claimed) {
+          const userRef = adminDb.collection("users").doc(uid);
+          const introClaimed = await adminDb.runTransaction(async (tx) => {
+            const userSnap = await tx.get(userRef);
+            const data = userSnap.exists ? userSnap.data() || {} : {};
+            if (data.introProClaimed === true) return false;
+            const pendingAt = typeof data.introPendingAt === "string" ? new Date(data.introPendingAt).getTime() : NaN;
+            const pendingStale = !Number.isFinite(pendingAt) || Date.now() - pendingAt > INTRO_PENDING_TTL_MS;
+            if (data.introPending === true && !pendingStale) return false;
+            tx.set(userRef, {
+              introPending: true,
+              introPendingAt: new Date().toISOString(),
+              updatedAt: new Date(),
+            }, { merge: true });
+            return true;
+          });
+          if (introClaimed) {
             discountCodes = [introCode];
             console.log(`[CHECKOUT] Applying Pro intro discount code for uid ${uid} (first purchase).`);
+          } else {
+            console.log(`[CHECKOUT] Intro already claimed or in flight for uid ${uid}; full price.`);
           }
         } catch (introErr: any) {
           console.warn(`[CHECKOUT] introProClaimed check failed for uid ${uid}; proceeding at full price.`, introErr?.message || introErr);
