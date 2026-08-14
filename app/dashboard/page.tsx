@@ -16,7 +16,7 @@ import {
   Ban, Sparkles, DollarSign, Zap,
   Check, Filter, Clock, BarChart2,
   ListOrdered, Play, XCircle, Download, CheckCircle, FileText, Loader2,
-  ArrowUpDown, RotateCcw, RefreshCcw
+  ArrowUpDown, RotateCcw, RefreshCcw, X
 } from "lucide-react";
 
 // Heavy dossier/history sections are lazy-loaded so the dashboard's initial
@@ -73,6 +73,27 @@ function DashboardInner() {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  // M3T3 — pre-checkout intro banner ($99 first month). Dismissible, shows once
+  // per session: the dismissal is persisted to localStorage so it never re-opens
+  // after the user closes it, and it never auto-pops.
+  const [introBannerDismissed, setIntroBannerDismissed] = useState(false);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("ssa_intro_banner_dismissed") === "1") {
+        setIntroBannerDismissed(true);
+      }
+    } catch {
+      // Storage unavailable — keep showing the banner.
+    }
+  }, []);
+  const dismissIntroBanner = () => {
+    try {
+      localStorage.setItem("ssa_intro_banner_dismissed", "1");
+    } catch {
+      // Storage unavailable — dismiss for this render only.
+    }
+    setIntroBannerDismissed(true);
+  };
   const [auditComplete, setAuditComplete] = useState(false);
 
   const [result, setResult] = useState<AnalysisResult | null>(null);
@@ -1036,7 +1057,7 @@ Report Generated via SafeSponsor AI Research Engine
               >
                 <div>
                   <h4 className="font-bold text-sm">Single Video Report</h4>
-                  <p className="text-xs text-orange-500">$10 one-time</p>
+                  <p className="text-xs text-orange-500">$8 one-time</p>
                 </div>
                 <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-cyan-400' : 'text-blue-900'}`}>
                   Buy 1 Report <ChevronRight className="w-3 h-3" />
@@ -1052,7 +1073,7 @@ Report Generated via SafeSponsor AI Research Engine
               >
                 <div>
                   <h4 className="font-bold text-sm">Channel Audit</h4>
-                  <p className="text-xs text-orange-600">$25 one-time</p>
+                  <p className="text-xs text-orange-600">$19 one-time</p>
                 </div>
                 <span className="text-xs font-bold text-orange-600 flex items-center gap-1">
                   Buy Channel Report <ChevronRight className="w-3 h-3" />
@@ -1069,7 +1090,7 @@ Report Generated via SafeSponsor AI Research Engine
                 <div className="absolute top-0 right-0 bg-orange-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl">PRO</div>
                 <div>
                   <h4 className="font-bold text-sm">Unlimited Pro</h4>
-                  <p className={`text-xs ${isDark ? 'text-orange-300' : 'text-slate-300'}`}>$199 / month</p>
+                  <p className={`text-xs ${isDark ? 'text-orange-300' : 'text-slate-300'}`}>$149 / month</p>
                 </div>
                 <span className="text-xs font-bold text-orange-400 flex items-center gap-1">
                   Subscribe Unlimited <ChevronRight className="w-3 h-3" />
@@ -2060,6 +2081,43 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
             </div>
 
+            {/* M3T3 — inline intro offer banner (non-blocking, no modal, no auto-pop) */}
+            {!introBannerDismissed && (
+              <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
+                isDark ? "bg-cyan-950/40 border-cyan-500/40" : "bg-cyan-50 border-cyan-300"
+              }`}>
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  <Sparkles className={`w-5 h-5 shrink-0 mt-0.5 sm:mt-0 ${isDark ? "text-cyan-300" : "text-cyan-700"}`} />
+                  <p className={`text-sm font-semibold ${isDark ? "text-cyan-100" : "text-cyan-900"}`}>
+                    Get Pro for <span className="text-orange-500">$99</span> your first month
+                    <span className={`block text-xs font-normal ${isDark ? "text-cyan-300/70" : "text-cyan-700/80"}`}>
+                      One-time intro offer for new Pro subscribers &middot; $149/mo after your first month.
+                    </span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => handleCheckout("subscription")}
+                    disabled={loadingPlan !== null}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 ${
+                      isDark ? "bg-cyan-500 text-zinc-950 hover:bg-cyan-400" : "bg-cyan-600 text-white hover:bg-cyan-700"
+                    }`}
+                  >
+                    {loadingPlan === "subscription" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get Pro $99/mo"}
+                  </button>
+                  <button
+                    onClick={dismissIntroBanner}
+                    aria-label="Dismiss intro offer"
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      isDark ? "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" : "text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+                    }`}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="grid sm:grid-cols-3 gap-4">
               <button 
                 onClick={() => handleCheckout("single")}
@@ -2071,7 +2129,7 @@ Report Generated via SafeSponsor AI Research Engine
                 }`}
               >
                 <div className="space-y-1">
-                  <div className={`text-2xl font-black ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>$10</div>
+                  <div className={`text-2xl font-black ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>$8</div>
                   <h4 className="font-bold text-sm">Single Video Report</h4>
                   <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                     One-time purchase. Analyze a single YouTube video or creator profile with a full 360° brand safety dossier.
@@ -2092,7 +2150,7 @@ Report Generated via SafeSponsor AI Research Engine
                 }`}
               >
                 <div className="space-y-1">
-                  <div className={`text-2xl font-black ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>$25</div>
+                  <div className={`text-2xl font-black ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>$19</div>
                   <h4 className="font-bold text-sm">Channel Audit</h4>
                   <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                     One-time purchase. Deep channel-level brand safety analysis covering audience, competitors, and content history.
@@ -2114,7 +2172,7 @@ Report Generated via SafeSponsor AI Research Engine
               >
                 <div className="absolute top-0 right-0 bg-orange-600 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-bl-xl">BEST VALUE</div>
                 <div className="space-y-1">
-                  <div className={`text-2xl font-black ${isDark ? 'text-orange-300' : 'text-white'}`}>$199<small className="text-sm font-medium">/mo</small></div>
+                  <div className={`text-2xl font-black ${isDark ? 'text-orange-300' : 'text-white'}`}>$149<small className="text-sm font-medium">/mo</small></div>
                   <h4 className="font-bold text-sm">Unlimited Pro</h4>
                   <p className={`text-xs ${isDark ? 'text-orange-200/60' : 'text-blue-200'}`}>
                     Monthly subscription. Unlimited creator audits, batch processing, priority analysis, and full export capabilities.

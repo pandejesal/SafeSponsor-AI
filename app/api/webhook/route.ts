@@ -291,6 +291,9 @@ export async function POST(req: NextRequest) {
         tx.set(userRef, {
           ...entitlementUpdate,
           hasSubscription: true,
+          // M3T2: the intro offer is first-purchase only — stamp the flag so a
+          // future checkout never re-applies the $99 discount code.
+          introProClaimed: true,
           subscription: {
             status: "active",
             expiresAt: expiresAt.toISOString(),

@@ -565,7 +565,7 @@ function LandingContent() {
                 Perfect for vetting a single creator&apos;s video or short before publishing.
               </p>
               <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold">$10</span>
+                <span className="text-5xl font-extrabold">$8</span>
                 <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ single report</span>
               </div>
               <ul className="space-y-3 mb-8 text-sm">
@@ -593,7 +593,7 @@ function LandingContent() {
               }`}
             >
               {loadingPlan === "single" ? <Activity className="w-5 h-5 animate-spin" /> : <DollarSign className="w-5 h-5" />}
-              <span>Buy Single Report ($10)</span>
+              <span>Buy Single Report ($8)</span>
             </button>
           </motion.div>
 
@@ -618,7 +618,7 @@ function LandingContent() {
                 Analyze a creator&apos;s full channel history and audience toxicity across top videos.
               </p>
               <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold">$25</span>
+                <span className="text-5xl font-extrabold">$19</span>
                 <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ channel audit</span>
               </div>
               <ul className="space-y-3 mb-8 text-sm">
@@ -650,7 +650,7 @@ function LandingContent() {
               }`}
             >
               {loadingPlan === "channel" ? <Activity className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />}
-              <span>Buy Channel Report ($25)</span>
+              <span>Buy Channel Report ($19)</span>
             </button>
           </motion.div>
 
@@ -667,7 +667,7 @@ function LandingContent() {
                 Designed for influencer marketing agencies and e-commerce PR teams.
               </p>
               <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold">$199</span>
+                <span className="text-5xl font-extrabold">$149</span>
                 <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ month</span>
               </div>
               <ul className="space-y-3 mb-8 text-sm">
@@ -699,7 +699,7 @@ function LandingContent() {
               }`}
             >
               {loadingPlan === "subscription" ? <Activity className="w-5 h-5 animate-spin" /> : <Award className="w-5 h-5" />}
-              <span>Subscribe Unlimited Pro ($199)</span>
+              <span>Subscribe Unlimited Pro ($149)</span>
             </button>
           </motion.div>
         </div>

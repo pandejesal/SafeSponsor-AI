@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyAuthHeader, verifyAppCheckHeader } from "@/lib/firebase-admin";
+import { adminDb } from "@/lib/firebase-admin";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
@@ -93,6 +94,31 @@ export async function POST(req: NextRequest) {
     const isLive = process.env.DODO_PAYMENTS_MODE === "live" || process.env.DODO_PAYMENTS_MODE === "live_mode";
     const baseUrl = isLive ? "https://live.dodopayments.com" : "https://test.dodopayments.com";
 
+    // M3T2 — First-purchase Pro intro ($99 vs $149): Dodo supports pre-applied
+    // discount codes on checkout sessions (`discount_codes`, applied in order at
+    // session creation). We use a flat $50-off code created in the Dodo dashboard
+    // instead of a separate intro product. The webhook / verify-payment stamp
+    // `introProClaimed` on the user doc after the first successful subscription
+    // grant, so the intro applies exactly once per user; a second purchase bills
+    // the full $149. If the env var is unset, or the flag read fails, we fail open
+    // to the full price (never risk granting the intro twice).
+    let discountCodes: string[] | undefined;
+    if (plan === "subscription") {
+      const introCode = process.env.DODO_PAYMENTS_DISCOUNT_CODE_PRO_INTRO;
+      if (introCode) {
+        try {
+          const userSnap = await adminDb.collection("users").doc(uid).get();
+          const claimed = userSnap.exists ? (userSnap.data() || {}).introProClaimed === true : false;
+          if (!claimed) {
+            discountCodes = [introCode];
+            console.log(`[CHECKOUT] Applying Pro intro discount code for uid ${uid} (first purchase).`);
+          }
+        } catch (introErr: any) {
+          console.warn(`[CHECKOUT] introProClaimed check failed for uid ${uid}; proceeding at full price.`, introErr?.message || introErr);
+        }
+      }
+    }
+
     const response = await fetch(`${baseUrl}/checkouts`, {
       method: "POST",
       headers: {
@@ -106,11 +132,13 @@ export async function POST(req: NextRequest) {
             quantity: 1,
           }
         ],
+        ...(discountCodes ? { discount_codes: discountCodes } : {}),
         ...(customerEmail ? { customer: { email: customerEmail, ...(customerName ? { name: customerName } : {}) } } : {}),
         return_url: `${appUrl}/dashboard?dodo_success=true&plan=${plan}`,
         metadata: {
           uid,
           plan,
+          ...(discountCodes ? { introApplied: "true" } : {}),
         }
       })
     });

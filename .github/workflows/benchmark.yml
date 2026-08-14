@@ -1,0 +1,34 @@
+name: Benchmark
+
+on:
+  pull_request:
+    paths:
+      - "app/api/analyze/**"
+      - "lib/analyze-pipeline.ts"
+      - "lib/mocks.ts"
+      - "scripts/benchmarks/**"
+      - "package.json"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/analyze/**"
+      - "lib/analyze-pipeline.ts"
+      - "lib/mocks.ts"
+      - "scripts/benchmarks/**"
+      - "package.json"
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run benchmark (offline, mock providers)
+        run: npm run benchmark
+        env:
+          LLM_MOCK_MODE: "true"
+          MOCK_YOUTUBE_FETCHES: "true"

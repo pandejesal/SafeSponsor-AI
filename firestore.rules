@@ -48,5 +48,19 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow write: if false;
     }
+
+    // M1 usage instrumentation collections - server-only (Admin SDK), never client-accessible
+    match /usage_logs/{logId} {
+      allow read, write: if false;
+    }
+    match /usage_rollups/{rollupId} {
+      allow read, write: if false;
+    }
+    match /usage_daily/{counterId} {
+      allow read, write: if false;
+    }
+    match /usage_alerts/{alertId} {
+      allow read, write: if false;
+    }
   }
 }

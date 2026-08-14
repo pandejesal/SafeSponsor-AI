@@ -79,19 +79,19 @@ export default function RootLayout({
                 {
                   "@type": "Offer",
                   "name": "Single Report",
-                  "price": "10",
+                  "price": "8",
                   "priceCurrency": "USD"
                 },
                 {
                   "@type": "Offer",
                   "name": "Channel Report",
-                  "price": "25",
+                  "price": "19",
                   "priceCurrency": "USD"
                 },
                 {
                   "@type": "Offer",
                   "name": "Unlimited Pro",
-                  "price": "199",
+                  "price": "149",
                   "priceCurrency": "USD",
                   "billingIncrement": "P1M"
                 }

@@ -85,6 +85,9 @@ export async function POST(req: NextRequest) {
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + 1);
       entitlementUpdate.hasSubscription = true;
+      // M3T2: the intro offer is first-purchase only — stamp the flag so a
+      // future checkout never re-applies the $99 discount code.
+      entitlementUpdate.introProClaimed = true;
       entitlementUpdate.subscription = {
         status: "active",
         expiresAt: expiresAt.toISOString(),
