@@ -9,3 +9,7 @@ coverage/
 
 .vercel
 .env*
+
+# Swarm/agent runtime artifacts (regenerable session state, evidence, runs)
+.swarm/
+!PLAN.md
