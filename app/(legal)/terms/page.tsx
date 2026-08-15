@@ -27,7 +27,7 @@ export default function TermsPage() {
             for sponsorship decisions. Results are informational and do not constitute legal or financial advice.
           </p>
           <p>
-            SafeSponsor AI is operated by a sole proprietor. The contact details in Section 11 are the
+            SafeSponsor AI is operated by a sole proprietor. The contact details in Section 12 are the
             operator&apos;s business contact.
           </p>
 
@@ -68,7 +68,7 @@ export default function TermsPage() {
           <p>
             If you are a creator whose brand safety assessment is displayed by the platform, you may
             request removal of that assessment. Send a takedown request to the contact address in
-            Section 11 identifying the creator profile and the assessment in question. We will review
+            Section 12 identifying the creator profile and the assessment in question. We will review
             the request and, where warranted, remove or restrict the assessment within 48 hours of
             confirmation. Assessments removed via takedown are not re-served or re-generated.
           </p>

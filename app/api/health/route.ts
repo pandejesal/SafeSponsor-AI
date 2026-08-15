@@ -27,5 +27,6 @@ export async function GET(_req: NextRequest) {
     ts,
     db: dbOk ? "ok" : "degraded",
     dbMs,
+    paymentsMode: process.env.DODO_PAYMENTS_MODE === "live" || process.env.DODO_PAYMENTS_MODE === "live_mode" ? "live" : "test",
   });
 }

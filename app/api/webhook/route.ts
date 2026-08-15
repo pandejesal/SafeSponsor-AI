@@ -127,17 +127,31 @@ export async function POST(req: NextRequest) {
         const lookup = await adminDb.collection("users").where("lastSubscriptionId", "==", subscriptionId).limit(1).get();
         if (!lookup.empty) {
           uid = lookup.docs[0].id;
-          console.log(`[UID RESOLUTION] Resolved uid ${uid} from subscriptionId ${subscriptionId}.`);
+          console.log(`[UID RESOLUTION] Resolved uid ${uid.slice(0, 8)} from subscriptionId ${subscriptionId}.`);
         }
       } catch (lookupErr: any) {
         console.warn(`[UID RESOLUTION] Subscription fallback lookup failed for ${subscriptionId}:`, lookupErr?.message || lookupErr);
       }
     }
 
-    // Enforce strict Idempotency by recording the unique webhook event ID or eventType_paymentId
-    const idempotencyKey = webhookHeaderId
-      ? `wh_${webhookHeaderId}`
-      : `${eventType}_${paymentId || Date.now()}`;
+    // P-M1: reject events whose uid cannot be resolved BEFORE recording
+    // idempotency. A processed record committed for an unresolvable event is
+    // never deleted and Dodo never retries — the event would be lost forever.
+    if (!uid) {
+      console.warn(`[SECURITY WARN] Webhook event ${eventType} skipped: Metadata UID missing from payload and no subscription mapping found.`);
+      return NextResponse.json({ received: true, warning: "UID metadata missing" });
+    }
+
+    // SEC-L4: webhook-id is mandatory per the standardwebhooks spec. The
+    // previous Date.now() idempotency fallback was non-idempotent — a retry
+    // would mint a fresh key and double-grant.
+    if (!webhookHeaderId) {
+      console.error(`[SECURITY REJECTION] Webhook event ${eventType} missing webhook-id header; rejecting so Dodo retries with a stable id.`);
+      return NextResponse.json({ error: "Missing webhook-id header" }, { status: 401 });
+    }
+
+    // Enforce strict Idempotency by recording the unique webhook event ID
+    const idempotencyKey = `wh_${webhookHeaderId}`;
 
     let idempotencyRefPath: string | null = null;
     if (idempotencyKey) {
@@ -215,11 +229,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true, warning: "Unknown plan type" });
     }
 
-    if (!uid) {
-      console.warn(`[SECURITY WARN] Webhook event ${eventType} skipped: Metadata UID missing from payload and no subscription mapping found.`);
-      return NextResponse.json({ received: true, warning: "UID metadata missing" });
-    }
-
     const userRef = adminDb.collection("users").doc(uid);
 
     try {
@@ -227,13 +236,23 @@ export async function POST(req: NextRequest) {
       await adminDb.runTransaction(async (tx) => {
         const userSnap = await tx.get(userRef);
         if (!userSnap.exists) {
-          console.log(`[ENTITLEMENT REVOCATION] User doc ${uid} does not exist, skipping credit decrement.`);
+          console.log(`[ENTITLEMENT REVOCATION] User doc ${uid.slice(0, 8)} does not exist, skipping credit decrement.`);
           return;
         }
         const userData = userSnap.data() || {};
         const creditKey = plan === "single" ? "videoCredits" : "channelCredits";
         const currentVal = typeof userData[creditKey] === "number" ? userData[creditKey] : 0;
         const clampedVal = Math.max(0, currentVal - 1);
+
+        // P-M2: record the refunded payment so /api/verify-payment can never
+        // re-claim it, even if lastPaymentId has since advanced.
+        if (eventType === "refund.succeeded" && paymentId) {
+          tx.set(adminDb.collection("refunded_payments").doc(paymentId), {
+            uid,
+            refundedAt: new Date(),
+            eventId: webhookHeaderId || null,
+          }, { merge: true });
+        }
 
         tx.set(userRef, {
           ...entitlementUpdate,
@@ -249,12 +268,19 @@ export async function POST(req: NextRequest) {
       await adminDb.runTransaction(async (tx) => {
         const userSnap = await tx.get(userRef);
         if (!userSnap.exists) {
-          console.log(`[ENTITLEMENT REVOCATION] User doc ${uid} does not exist, skipping subscription revocation.`);
+          console.log(`[ENTITLEMENT REVOCATION] User doc ${uid.slice(0, 8)} does not exist, skipping subscription revocation.`);
           return;
+        }
+        if (eventType === "refund.succeeded" && paymentId) {
+          tx.set(adminDb.collection("refunded_payments").doc(paymentId), {
+            uid,
+            refundedAt: new Date(),
+            eventId: webhookHeaderId || null,
+          }, { merge: true });
         }
         tx.set(userRef, entitlementUpdate, { merge: true });
       });
-      console.log(`[ENTITLEMENT REVOCATION] Subscription revoked for user ${uid} via event: ${eventType}`);
+      console.log(`[ENTITLEMENT REVOCATION] Subscription revoked for user ${uid.slice(0, 8)} via event: ${eventType}`);
     } else if (plan === "subscription") {
       // Subscription grants: extend from the latest expiry, but never double-extend
       // when payment.succeeded + subscription.active (or subscription.renewed) arrive
@@ -268,7 +294,7 @@ export async function POST(req: NextRequest) {
         // credited THIS payment, skip. Renewals carry a fresh payment_id each
         // cycle, so this cannot block legitimate renewals.
         if (paymentId && userData.lastPaymentId === paymentId) {
-          console.log(`[ENTITLEMENT SKIP] Payment ${paymentId} already credited for user ${uid} (verify-payment).`);
+          console.log(`[ENTITLEMENT SKIP] Payment ${paymentId} already credited for user ${uid.slice(0, 8)} (verify-payment).`);
           return;
         }
 
@@ -302,7 +328,7 @@ export async function POST(req: NextRequest) {
           },
         }, { merge: true });
       });
-      console.log(`[ENTITLEMENT CONFIRMED] Subscription granted/extended for user ${uid} via event: ${eventType}`);
+      console.log(`[ENTITLEMENT CONFIRMED] Subscription granted/extended for user ${uid.slice(0, 8)} via event: ${eventType}`);
     } else {
       // Single/channel credit grants: run in a transaction and skip if this
       // payment was already credited by /api/verify-payment.
@@ -310,19 +336,19 @@ export async function POST(req: NextRequest) {
         const userSnap = await tx.get(userRef);
         const userData = userSnap.exists ? userSnap.data() || {} : {};
         if (paymentId && userData.lastPaymentId === paymentId) {
-          console.log(`[ENTITLEMENT SKIP] Payment ${paymentId} already credited for user ${uid} (verify-payment).`);
+          console.log(`[ENTITLEMENT SKIP] Payment ${paymentId} already credited for user ${uid.slice(0, 8)} (verify-payment).`);
           return;
         }
         tx.set(userRef, entitlementUpdate, { merge: true });
       });
-      console.log(`[ENTITLEMENT CONFIRMED] User ${uid} updated for event: ${eventType} (plan: ${plan})`);
+      console.log(`[ENTITLEMENT CONFIRMED] User ${uid.slice(0, 8)} updated for event: ${eventType} (plan: ${plan})`);
     }
     } catch (grantErr: any) {
       // If the entitlement write fails AFTER the idempotency record was created,
       // delete the record so Dodo's retry re-processes the event. Without this,
       // the event would be skipped forever and the customer never gets their
       // credits/subscription.
-      console.error(`[ENTITLEMENT WRITE FAILURE] Grant failed for user ${uid} (${eventType}); clearing idempotency record so a retry can reprocess.`, grantErr?.message || grantErr);
+      console.error(`[ENTITLEMENT WRITE FAILURE] Grant failed for user ${uid.slice(0, 8)} (${eventType}); clearing idempotency record so a retry can reprocess.`, grantErr?.message || grantErr);
       if (idempotencyRefPath) {
         try {
           await adminDb.doc(idempotencyRefPath).delete();

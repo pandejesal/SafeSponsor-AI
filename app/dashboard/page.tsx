@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { db, auth, getAppCheckToken } from "@/lib/firebase";
 import { collection, query, orderBy, onSnapshot, doc, limit } from "firebase/firestore";
 import { Navbar } from "@/components/Navbar";
+import { TestModeBadge } from "@/components/TestModeBadge";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
 import type { AnalysisResult, HistoryItem } from "./dossier-viewer";
@@ -2318,6 +2319,7 @@ Report Generated via SafeSponsor AI Research Engine
                     ? "You have no credits remaining. Purchase a plan to continue generating dossiers."
                     : `${userCredits.videoCredits} video + ${userCredits.channelCredits} channel credits remaining.`}
                 </p>
+                <TestModeBadge />
               </div>
             </div>
 

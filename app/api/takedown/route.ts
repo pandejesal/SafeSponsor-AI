@@ -15,7 +15,7 @@ const takedownBodySchema = z.object({
 
 export async function POST(req: NextRequest) {
   const appCheckOk = await verifyAppCheckHeader(req);
-  if (!appCheckOk) {
+  if (!appCheckOk.valid) {
     return NextResponse.json({ error: "App Check verification failed" }, { status: 403 });
   }
   const uid = await verifyAuthHeader(req);
@@ -53,41 +53,49 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Dedupe: one pending request per targetKey.
-    const pendingQuery = await adminDb
-      .collection("takedown_requests")
-      .where("targetKey", "==", targetKey)
-      .where("status", "==", "pending")
-      .limit(1)
-      .get();
-    if (!pendingQuery.empty) {
-      const existing = pendingQuery.docs[0];
+    // Dedupe + create atomically: a transaction prevents two concurrent POSTs
+    // for the same targetKey from both passing the empty-pending check.
+    const now = new Date();
+    const createResult = await adminDb.runTransaction(async (tx) => {
+      const pendingQuery = await tx.get(
+        adminDb
+          .collection("takedown_requests")
+          .where("targetKey", "==", targetKey)
+          .where("status", "==", "pending")
+          .limit(1)
+      );
+      if (!pendingQuery.empty) {
+        return { existing: pendingQuery.docs[0].id };
+      }
+      const docRef = adminDb.collection("takedown_requests").doc();
+      tx.set(docRef, {
+        targetKey,
+        target,
+        requesterUid: uid,
+        requesterName: requesterName || "",
+        requesterEmail: requesterEmail || "",
+        details: details || "",
+        status: "pending",
+        createdAt: now.toISOString(),
+        slaDeadline: slaDeadlineIso(now.getTime()),
+      });
+      return { created: docRef.id };
+    });
+
+    if (createResult.existing) {
       return NextResponse.json(
         {
           error: "already_pending",
           message: "A request for this target is already pending.",
-          id: existing.id,
+          id: createResult.existing,
         },
         { status: 409 }
       );
     }
 
-    const now = new Date();
-    const docRef = await adminDb.collection("takedown_requests").add({
-      targetKey,
-      target,
-      requesterUid: uid,
-      requesterName: requesterName || "",
-      requesterEmail: requesterEmail || "",
-      details: details || "",
-      status: "pending",
-      createdAt: now.toISOString(),
-      slaDeadline: slaDeadlineIso(now.getTime()),
-    });
-
     return NextResponse.json(
       {
-        id: docRef.id,
+        id: createResult.created,
         status: "pending",
         targetKey,
         slaDeadline: slaDeadlineIso(now.getTime()),

@@ -74,7 +74,7 @@ export default function RootLayout({
               "url": "https://safe-sponsor-ai.vercel.app",
               "applicationCategory": "BusinessApplication",
               "operatingSystem": "Web",
-              "description": "AI-powered brand safety analysis and risk scoring for YouTube & Instagram creators.",
+              "description": "AI-powered brand safety analysis and risk scoring for YouTube, TikTok, Instagram & Twitch creators.",
               "offers": [
                 {
                   "@type": "Offer",

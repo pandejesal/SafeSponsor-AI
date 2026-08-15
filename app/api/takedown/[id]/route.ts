@@ -19,7 +19,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   const appCheckOk = await verifyAppCheckHeader(req);
-  if (!appCheckOk) {
+  if (!appCheckOk.valid) {
     return NextResponse.json({ error: "App Check verification failed" }, { status: 403 });
   }
   const uid = await verifyAuthHeader(req);
@@ -50,7 +50,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   const appCheckOk = await verifyAppCheckHeader(req);
-  if (!appCheckOk) {
+  if (!appCheckOk.valid) {
     return NextResponse.json({ error: "App Check verification failed" }, { status: 403 });
   }
   const uid = await verifyAuthHeader(req);

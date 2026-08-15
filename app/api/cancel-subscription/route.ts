@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       { merge: true }
     );
 
-    console.log(`[CANCEL SUB] User ${uid} subscription ${subscriptionId} scheduled for cancellation. Access until: ${expiresAt}`);
+    console.log(`[CANCEL SUB] User ${uid.slice(0, 8)} subscription ${subscriptionId} scheduled for cancellation. Access until: ${expiresAt}`);
 
     return NextResponse.json({
       success: true,

@@ -18,7 +18,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden. Admin access required." }, { status: 403 });
     }
 
-    const { target_key } = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+    const { target_key } = (body as { target_key?: unknown }) || {};
     if (!target_key || typeof target_key !== "string") {
       return NextResponse.json({ error: "target_key required" }, { status: 400 });
     }

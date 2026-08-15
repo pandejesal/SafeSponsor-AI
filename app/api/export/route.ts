@@ -21,7 +21,7 @@ async function listAllDocs(query: FirebaseFirestore.Query): Promise<FirebaseFire
 
 export async function GET(req: NextRequest) {
   const appCheckOk = await verifyAppCheckHeader(req);
-  if (!appCheckOk) {
+  if (!appCheckOk.valid) {
     return NextResponse.json({ error: "App Check verification failed" }, { status: 403 });
   }
   const uid = await verifyAuthHeader(req);

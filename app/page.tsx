@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getAppCheckToken } from '@/lib/firebase';
 import { Navbar } from '@/components/Navbar';
+import { TestModeBadge } from '@/components/TestModeBadge';
 import { useTheme } from '@/components/ThemeProvider';
 import { motion } from 'motion/react';
 import { 
@@ -409,7 +410,7 @@ function LandingContent() {
             className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-6"
           >
             {[
-              { metric: "7-Day Cache", label: "Zero-Cost Repeat Audits" },
+              { metric: "90-Day Cache", label: "Zero-Cost Repeat Audits" },
               { metric: "50 Comments", label: "Toxicity Audit / Video" },
               { metric: "360° Grounding", label: "Web Search Verification" },
               { metric: "60-Second", label: "Executive Dossier Turnaround" },
@@ -710,6 +711,9 @@ function LandingContent() {
           <p className={`text-xs font-medium mt-2 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
             Secure payment via Dodo Payments. Cancel anytime.
           </p>
+          <div className="flex justify-center">
+            <TestModeBadge />
+          </div>
         </div>
 
         {checkoutError && (
