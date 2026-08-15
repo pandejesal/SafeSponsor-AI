@@ -492,8 +492,11 @@ function LandingContent() {
               </div>
             </div>
 
-            {/* Grid Breakdown Mock */}
-            <div className="grid md:grid-cols-3 gap-6 pt-6">
+            {/* Grid Breakdown Mock — BLURRED preview: the score header above
+                stays visible, but the full dossier detail is gated until a
+                purchase (honest progressive disclosure). */}
+            <div className="relative pt-6">
+            <div className="grid md:grid-cols-3 gap-6 blur-[5px] select-none pointer-events-none">
               {/* Box 1: Comment Sentiment Audit */}
               <div className={`p-5 rounded-lg border space-y-3 ${
                 isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-slate-50 border-slate-200'
@@ -552,6 +555,29 @@ function LandingContent() {
                   <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-medium">Exclusivity Verified</span>
                 </div>
               </div>
+            </div>
+
+            <div className="absolute inset-0 flex items-center justify-center p-6">
+              <div className={`text-center p-6 rounded-xl border shadow-xl max-w-sm ${
+                isDark ? 'bg-zinc-950/95 border-zinc-700' : 'bg-white/95 border-slate-300'
+              }`}>
+                <Lock className="w-8 h-8 mx-auto mb-3 text-orange-500" />
+                <p className="text-sm font-bold mb-1">The full breakdown is blurred</p>
+                <p className={`text-xs leading-relaxed mb-4 ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                  Comment toxicity, transcript scan, and exclusivity checks are part of the full 360° dossier — unlock it with a report, or run a free score first.
+                </p>
+                <a
+                  href="/login"
+                  className={`inline-block w-full py-3 px-5 rounded-xl font-bold text-sm transition-all ${
+                    isDark
+                      ? 'bg-orange-600 hover:bg-orange-500 text-white'
+                      : 'bg-orange-600 hover:bg-orange-700 text-white'
+                  }`}
+                >
+                  Try a Free Score First
+                </a>
+              </div>
+            </div>
             </div>
           </motion.div>
         </div>
@@ -770,21 +796,13 @@ function LandingContent() {
             </button>
           </motion.div>
 
-          {/* PLAN 2 (HIGHLIGHTED) */}
+          {/* PLAN 2 */}
           <motion.div 
             whileHover={{ y: -4 }}
-            className={`rounded-xl border p-8 flex flex-col justify-between relative shadow-2xl ${
-              isDark 
-                ? 'bg-gradient-to-b from-zinc-900 to-zinc-950 border-cyan-500/50 ring-1 ring-cyan-500/30' 
-                : 'bg-white border-orange-500/50 ring-2 ring-orange-500/20'
+            className={`rounded-xl border p-8 flex flex-col justify-between ${
+              isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
             }`}
           >
-            <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-              isDark ? 'bg-cyan-500 text-zinc-950' : 'bg-orange-600 text-white'
-            }`}>
-              POPULAR FOR BRANDS
-            </div>
-
             <div>
               <h3 className="text-2xl font-bold mb-2">Channel / Profile Report</h3>
               <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
@@ -816,10 +834,10 @@ function LandingContent() {
             <button
               onClick={() => handleCheckout("channel")}
               disabled={loadingPlan !== null}
-              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg ${
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                 isDark 
-                  ? 'bg-cyan-500 hover:bg-cyan-400 text-zinc-950' 
-                  : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+                  ? 'bg-zinc-800 hover:bg-zinc-700 text-white' 
+                  : 'bg-slate-900 hover:bg-slate-800 text-white'
               }`}
             >
               {loadingPlan === "channel" ? <Activity className="w-5 h-5 animate-spin" /> : <ShieldAlert className="w-5 h-5" />}
@@ -827,17 +845,25 @@ function LandingContent() {
             </button>
           </motion.div>
 
-          {/* PLAN 3 */}
+          {/* PLAN 3 (HIGHLIGHTED — default Pro pre-selection with $8 anchor) */}
           <motion.div 
             whileHover={{ y: -4 }}
-            className={`rounded-xl border p-8 flex flex-col justify-between ${
-              isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            className={`rounded-xl border p-8 flex flex-col justify-between relative shadow-2xl ${
+              isDark 
+                ? 'bg-gradient-to-b from-zinc-900 to-zinc-950 border-cyan-500/50 ring-1 ring-cyan-500/30' 
+                : 'bg-white border-orange-500/50 ring-2 ring-orange-500/20'
             }`}
           >
+            <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+              isDark ? 'bg-cyan-500 text-zinc-950' : 'bg-orange-600 text-white'
+            }`}>
+              POPULAR FOR AGENCIES
+            </div>
+
             <div>
               <h3 className="text-2xl font-bold mb-2">Unlimited Pro</h3>
               <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
-                Designed for influencer marketing agencies and e-commerce PR teams.
+                Designed for influencer marketing agencies and e-commerce PR teams. Start from a single $8 report — upgrade anytime.
               </p>
               <div className="mb-8 flex items-baseline gap-1">
                 <span className="text-5xl font-extrabold">$149</span>
@@ -875,6 +901,12 @@ function LandingContent() {
               <span>Subscribe Unlimited Pro ($149)</span>
             </button>
           </motion.div>
+        </div>
+
+        <div className="text-center mt-8">
+          <p className={`text-xs font-medium ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
+            Not sure? Start with a single $8 report — upgrade to Unlimited Pro anytime. Cancel whenever.
+          </p>
         </div>
       </section>
 
