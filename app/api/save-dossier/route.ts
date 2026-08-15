@@ -5,10 +5,16 @@ import { z } from "zod";
 export const runtime = "nodejs";
 export const maxDuration = 15;
 
-// Server-side schema for the dossier report body. Core fields are type-checked
-// and length-bounded; unknown keys are preserved (.passthrough()) so report
-// evolution does not silently drop data, but garbage payloads are rejected.
-const sourceSchema = z.object({ title: z.string().max(500), url: z.string().max(1000) });
+// Server-side schema for the dossier report body. Core fields (guaranteed by
+// the analyze producer: creator_summary non-empty string, brand_safety_score
+// clamped number, risk_level string, data_quality enum) are type-checked and
+// length-bounded; nested report shapes vary between producers and are kept
+// permissive (array/unknown) so valid payloads never 400, while non-object
+// payloads, missing cores, and out-of-bounds strings are rejected (400).
+const sourceSchema = z.object({
+  title: z.string().max(500).optional(),
+  url: z.string().max(1000),
+});
 
 const saveDossierSchema = z
   .object({
@@ -17,15 +23,15 @@ const saveDossierSchema = z
     creator_summary: z.string().max(200000),
     brand_safety_score: z.number().min(-1).max(100),
     risk_level: z.string().max(50),
-    audience_insights: z.record(z.string(), z.unknown()).optional(),
-    controversy_and_pr_history: z.record(z.string(), z.unknown()).optional(),
+    audience_insights: z.unknown().optional(),
+    controversy_and_pr_history: z.unknown().optional(),
     competitor_and_sponsorship_history: z.array(z.unknown()).optional(),
     nuanced_red_flags: z.array(z.unknown()).optional(),
-    positive_highlights: z.array(z.string()).optional(),
-    final_verdict: z.record(z.string(), z.unknown()).optional(),
-    unreachable_urls: z.array(z.string()).optional(),
+    positive_highlights: z.array(z.unknown()).optional(),
+    final_verdict: z.unknown().optional(),
+    unreachable_urls: z.array(z.unknown()).optional(),
     brand_name: z.string().max(300).optional(),
-    competitor_brands: z.array(z.string()).optional(),
+    competitor_brands: z.array(z.unknown()).optional(),
     grounding_sources: z.array(sourceSchema).optional(),
     is_cached: z.boolean().optional(),
     cached_at: z.string().max(40).optional(),

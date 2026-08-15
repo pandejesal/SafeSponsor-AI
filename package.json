@@ -14,6 +14,8 @@
     "test:m1": "tsx scripts/test_m1.ts",
     "test:m4": "tsx scripts/test_m4.ts",
     "test:m5": "tsx scripts/test_m5.ts",
+    "test:n1": "tsx scripts/test_n1.ts",
+    "export:db": "tsx scripts/export_firestore.ts",
     "benchmark": "tsx scripts/benchmarks/eval.ts"
   },
   "overrides": {
@@ -22,6 +24,7 @@
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@hookform/resolvers": "^5.2.1",
+    "@sentry/nextjs": "^10.70.0",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

@@ -6,12 +6,12 @@ import { AuthProvider } from '@/components/AuthProvider';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://safe-sponsor-ai.vercel.app'),
-  title: { default: 'SafeSponsor AI | Creator Brand Safety & Sponsorship Vetting', template: '%s | SafeSponsor AI' },
-  description: 'AI-powered brand safety analysis and risk scoring for YouTube & Instagram creators, video transcripts, and community comment sentiment.',
-  keywords: ['brand safety', 'creator vetting', 'sponsorship analysis', 'YouTube sponsor', 'Instagram creator', 'brand risk assessment', 'influencer marketing'],
+  title: { default: 'SafeSponsor AI | Creator Brand Safety Check & Sponsorship Vetting', template: '%s | SafeSponsor AI' },
+  description: 'Free AI creator brand safety check: score YouTube, TikTok, Instagram & Twitch creators for sponsorship risk — controversies, toxic comments, scam history, competitor conflicts — before you sign.',
+  keywords: ['brand safety check', 'creator vetting', 'sponsorship analysis', 'YouTube sponsor', 'TikTok creator check', 'Instagram creator', 'Twitch streamer', 'brand risk assessment', 'influencer marketing', 'creator due diligence'],
   openGraph: {
-    title: 'SafeSponsor AI | Creator Brand Safety & Sponsorship Vetting',
-    description: 'AI-powered brand safety analysis and risk scoring for YouTube & Instagram creators, video transcripts, and community comment sentiment.',
+    title: 'SafeSponsor AI | Creator Brand Safety Check & Sponsorship Vetting',
+    description: 'Free AI creator brand safety check: score YouTube, TikTok, Instagram & Twitch creators for sponsorship risk before you sign.',
     url: 'https://safe-sponsor-ai.vercel.app',
     siteName: 'SafeSponsor AI',
     type: 'website',
@@ -27,8 +27,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'SafeSponsor AI | Creator Brand Safety & Sponsorship Vetting',
-    description: 'AI-powered brand safety analysis and risk scoring for YouTube & Instagram creators, video transcripts, and community comment sentiment.',
+    title: 'SafeSponsor AI | Creator Brand Safety Check & Sponsorship Vetting',
+    description: 'Free AI creator brand safety check: score YouTube, TikTok, Instagram & Twitch creators for sponsorship risk before you sign.',
     images: ['/og.svg'],
   },
   robots: {

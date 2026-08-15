@@ -38,21 +38,107 @@ function LandingContent() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [heroInputUrl, setHeroInputUrl] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [teaser, setTeaser] = useState<{
+    status: 'idle' | 'loading' | 'done' | 'used' | 'error';
+    score?: number;
+    riskLevel?: string;
+    flags?: { category: string; description: string }[];
+    error?: string;
+  }>({ status: 'idle' });
 
   const isDark = theme === 'dark';
 
+  // N1T3 — hero teaser: a free, once-per-account headline check (score +
+  // risk level + top red-flag headers only). Requires sign-in; result is
+  // discarded server-side, so a purchase re-runs the full pipeline.
+  const runTeaser = async (targetStr: string) => {
+    if (!user) {
+      router.push(`/login?target=${encodeURIComponent(targetStr)}`);
+      return;
+    }
+    setTeaser({ status: 'loading' });
+    try {
+      const token = await user.getIdToken();
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
+      }
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ target: targetStr, teaser: true }),
+      });
+      const data = await res.json();
+      if (res.status === 429) {
+        setTeaser({ status: 'used', error: data.error || 'Free teaser already used' });
+        return;
+      }
+      if (!res.ok) {
+        setTeaser({ status: 'error', error: data.error || 'Failed to run the free check. Please try again.' });
+        return;
+      }
+      setTeaser({
+        status: 'done',
+        score: data.brand_safety_score,
+        riskLevel: data.risk_level,
+        flags: Array.isArray(data.top_red_flags) ? data.top_red_flags : [],
+      });
+    } catch (err) {
+      console.error("Teaser error:", err);
+      setTeaser({ status: 'error', error: 'Failed to connect. Please try again.' });
+    }
+  };
+
   const handleHeroAudit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (heroInputUrl.trim()) {
-      if (user) {
-        router.push(`/dashboard?target=${encodeURIComponent(heroInputUrl.trim())}`);
-      } else {
-        router.push(`/login?target=${encodeURIComponent(heroInputUrl.trim())}`);
-      }
+    const t = heroInputUrl.trim();
+    if (t) {
+      runTeaser(t);
     } else {
       router.push(user ? '/dashboard' : '/login');
     }
   };
+
+  const teaserScoreColor = (score: number) =>
+    score >= 80
+      ? (isDark ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
+      : score >= 60
+        ? (isDark ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' : 'bg-amber-50 text-amber-700 border border-amber-200')
+        : (isDark ? 'bg-red-500/15 text-red-300 border border-red-500/30' : 'bg-red-50 text-red-700 border border-red-200');
+
+  // N1T3/N1T5 — teaser upsell: $8 full dossier primary, $149 Pro secondary.
+  const renderTeaserUpsell = () => (
+    <div className="flex flex-col sm:flex-row gap-3">
+      <button
+        type="button"
+        onClick={() => handleCheckout('single')}
+        className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:scale-[1.02] ${
+          isDark
+            ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-orange-950/50'
+            : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+        }`}
+      >
+        <Lock className="w-4 h-4" />
+        $8 — Unlock the Full Dossier
+      </button>
+      <button
+        type="button"
+        onClick={() => handleCheckout('subscription')}
+        className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border hover:scale-[1.02] ${
+          isDark
+            ? 'bg-zinc-950 text-zinc-200 border-zinc-700 hover:border-cyan-500/50'
+            : 'bg-white text-slate-800 border-slate-300 hover:border-blue-500'
+        }`}
+      >
+        <ShieldCheck className="w-4 h-4" />
+        $149/mo — Go Unlimited Pro
+      </button>
+    </div>
+  );
 
   const handleCheckout = async (plan: string) => {
     if (!user) {
@@ -114,7 +200,7 @@ function LandingContent() {
     },
     {
       q: "Is there a free trial?",
-      a: "You can run a free demo audit on select seeded creator profiles before purchasing. Each paid plan includes credits to analyze real creators."
+      a: "Every account gets one free brand safety check: the headline score plus the top red-flag headers, no card required. Full dossiers are available on paid plans."
     },
     {
       q: "Can I cancel my subscription anytime?",
@@ -205,16 +291,99 @@ function LandingContent() {
               </div>
               <button
                 type="submit"
-                className={`py-3.5 px-7 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shrink-0 hover:scale-[1.02] ${
+                disabled={teaser.status === 'loading'}
+                className={`py-3.5 px-7 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shrink-0 hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 ${
                   isDark
                     ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:from-orange-500 hover:to-orange-400 shadow-orange-950/50'
                     : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
                 }`}
               >
-                <span>Run Instant Audit</span>
+                <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/20">Free</span>
+                <span>{teaser.status === 'loading' ? 'Scanning Creator…' : 'Check Any Creator Free'}</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
+
+            {teaser.status === 'loading' && (
+              <div className={`max-w-2xl mx-auto mt-6 p-5 rounded-xl border shadow-xl ${
+                isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white border-slate-200'
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+                  <p className="text-sm font-semibold text-slate-500 dark:text-zinc-400">
+                    Running a full AI safety scan of this creator — one free check per account…
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {teaser.status === 'done' && teaser.score !== undefined && (
+              <div className={`max-w-2xl mx-auto mt-6 p-6 rounded-xl border shadow-xl text-left ${
+                isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white border-slate-200'
+              }`}>
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Brand Safety Score</p>
+                    <div className="flex items-end gap-3 mt-1">
+                      <span className="text-5xl font-black leading-none">{teaser.score}</span>
+                      <span className={`text-sm font-bold px-2 py-1 rounded-lg ${teaserScoreColor(teaser.score)}`}>
+                        {teaser.riskLevel}
+                      </span>
+                    </div>
+                  </div>
+                  <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${
+                    isDark ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-blue-50 text-blue-900 border-blue-200'
+                  }`}>
+                    Free preview — full dossier requires a purchase
+                  </span>
+                </div>
+
+                {teaser.flags && teaser.flags.length > 0 && (
+                  <div className="mt-5">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Top Red Flags</p>
+                    <ul className="space-y-2">
+                      {teaser.flags.map((f, i) => (
+                        <li key={i} className={`flex items-start gap-2 text-sm rounded-lg px-3 py-2 ${
+                          isDark ? 'bg-zinc-950 border border-zinc-800' : 'bg-slate-50 border border-slate-200'
+                        }`}>
+                          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
+                          <span>
+                            <span className="font-bold">{f.category}</span>
+                            {f.description ? (
+                              <span className="text-slate-500 dark:text-zinc-400"> — {f.description}</span>
+                            ) : null}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="mt-6 pt-5 border-t border-slate-200 dark:border-zinc-800">
+                  {renderTeaserUpsell()}
+                </div>
+              </div>
+            )}
+
+            {teaser.status === 'used' && (
+              <div className={`max-w-2xl mx-auto mt-6 p-6 rounded-xl border shadow-xl text-center ${
+                isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white border-slate-200'
+              }`}>
+                <p className="font-black text-lg">You&apos;ve already used your free check</p>
+                <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  Unlock the full dossier to see the complete safety breakdown.
+                </p>
+                {renderTeaserUpsell()}
+              </div>
+            )}
+
+            {teaser.status === 'error' && (
+              <div className={`max-w-2xl mx-auto mt-6 p-5 rounded-xl border shadow-xl text-left ${
+                isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white border-slate-200'
+              }`}>
+                <p className="font-bold text-red-600 dark:text-red-400">{teaser.error}</p>
+              </div>
+            )}
             <button
               type="button"
               onClick={() => router.push(user ? '/dashboard' : '/login')}
@@ -772,6 +941,7 @@ function LandingContent() {
             <a href="#faq" className="hover:underline">FAQ</a>
             <a href="/privacy" className="hover:underline">Privacy</a>
             <a href="/terms" className="hover:underline">Terms</a>
+            <a href="mailto:pandejesal@gmail.com" className="hover:underline">Support</a>
             <button onClick={() => router.push('/login')} className="hover:underline">Sign In</button>
           </div>
         </div>

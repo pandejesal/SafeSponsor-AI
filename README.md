@@ -224,6 +224,36 @@ depth was extended too: up to 100 comments per video and code-derived
 
 See [SecurityArchitecture](SecurityArchitecture.md) for the full threat-model breakdown.
 
+## Monitoring & Ops (N3)
+
+- **Health endpoint:** `GET /api/health` returns `{ok, ts, db, dbMs}` — no auth, public by
+  design; Firestore ping is best-effort and fail-open. Used by uptime monitors.
+- **UptimeRobot (free tier):** monitor `https://safe-sponsor-ai.vercel.app/api/health` with a
+  60s interval and alert on down + recovery. (Free plan covers 50 monitors — one is enough.)
+- **Sentry (free tier):** `@sentry/nextjs` is wired (server + client + global error boundary +
+  request-level `onRequestError`). It ships errors **only when a DSN is configured**:
+  - `SENTRY_DSN` (server) and `NEXT_PUBLIC_SENTRY_DSN` (client) — unset = completely disabled.
+  - `tracesSampleRate: 0.1`, environment follows `VERCEL_ENV`.
+- **Cost alerts (in-app):** per-audit and weekly cost alerts are written to `usage_alerts` and
+  fire at `$0.30`/audit and 75% of the weekly worst-case budget — these are the primary
+  spend tripwires; the weekly `usage` rollup route is the place to check them.
+- **Runbook:** incident response (uptime / cost / error / webhook / takedown-SLA) is documented
+  in `docs/runbook.md` (planned N5).
+
+## Backups (N4)
+
+- **Primary — scheduled GCP Firestore backups (daily, 30-day retention):** set up once in the
+  Firebase console → Firestore → Backups → Schedule backups, selecting the database and a
+  Cloud Storage bucket (~$10–20/mo). This covers `users`, `global_audits`, `usage_*`,
+  `takedown_*`, `rate_limits` (top-level collections only; subcollections are included).
+- **Fallback — free monthly export:** `npm run export:db` (requires `FIREBASE_SERVICE_ACCOUNT`
+  env JSON) writes `backups/firestore-export-<timestamp>.json` with every collection and the
+  `users/{uid}/history` subcollections. Run monthly as belt-and-braces.
+- **Restore drill (do once):** restore the latest backup into a scratch database
+  (`firebase restore` with a `-n scratch` database target), verify document counts match the
+  export log, then delete the scratch database. Record the result in
+  `docs/restore-drill-<date>.md`.
+
 ## Repository
 
 ```

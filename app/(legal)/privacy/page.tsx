@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <main className="max-w-3xl mx-auto px-4 py-16 sm:py-24">
         <h1 className="text-3xl font-bold mb-8">Privacy Policy</h1>
         <div className="space-y-6 text-zinc-400 text-sm leading-relaxed">
-          <p><em>Last updated: August 4, 2026</em></p>
+          <p><em>Last updated: August 15, 2026</em></p>
 
           <h2 className="text-lg font-semibold text-zinc-200 pt-4">1. Information We Collect</h2>
           <p>
@@ -20,8 +20,13 @@ export default function PrivacyPage() {
             and payment information processed through our payment provider (Dodo Payments). We do not store credit card details directly.
           </p>
           <p>
-            When you run a brand safety audit, we process publicly available YouTube video data, channel metadata, 
-            video transcripts, and public comment data. This data is cached for 7 days to improve performance.
+            When you run a brand safety audit, we process publicly available video data, channel metadata, 
+            video transcripts, and public comment data. Audit results are cached in a shared, indexed
+            cache to serve paying users quickly (fresh for 90 days, refreshed until 180 days).
+          </p>
+          <p>
+            The free score teaser runs the same analysis but its result is <strong>not stored</strong>:
+            we keep only the fact that your account used its one free check.
           </p>
 
           <h2 className="text-lg font-semibold text-zinc-200 pt-4">2. How We Use Your Information</h2>
@@ -34,32 +39,41 @@ export default function PrivacyPage() {
           <p>
             Your account data and audit history are stored in Firebase (Google Cloud). 
             Audit results are retained until you delete them or your account is terminated.
+            Operational logs (usage and cost records) are retained for cost management and
+            are not sold or shared.
           </p>
 
-          <h2 className="text-lg font-semibold text-zinc-200 pt-4">4. Third-Party Services</h2>
+          <h2 className="text-lg font-semibold text-zinc-200 pt-4">4. Creator Assessments & Takedowns</h2>
+          <p>
+            Brand safety assessments reference publicly available information about creator profiles.
+            If you are a creator and believe an assessment is inaccurate or should be removed, you may
+            submit a takedown request (see our Terms of Service). Removed assessments are not re-served.
+          </p>
+
+          <h2 className="text-lg font-semibold text-zinc-200 pt-4">5. Third-Party Services</h2>
           <p>
             We use Firebase (Google), Dodo Payments, and Vercel to operate our platform. 
             Each service has its own privacy policy governing data handling.
           </p>
 
-          <h2 className="text-lg font-semibold text-zinc-200 pt-4">5. Data Security</h2>
+          <h2 className="text-lg font-semibold text-zinc-200 pt-4">6. Data Security</h2>
           <p>
             We implement industry-standard security measures including HTTPS encryption, 
             Firebase App Check, and server-side authentication verification.
           </p>
 
-          <h2 className="text-lg font-semibold text-zinc-200 pt-4">6. Your Rights</h2>
+          <h2 className="text-lg font-semibold text-zinc-200 pt-4">7. Your Rights</h2>
           <p>
             You can request deletion of your account and all associated data by contacting us. 
             You can also export your audit history from the dashboard.
           </p>
 
-          <h2 className="text-lg font-semibold text-zinc-200 pt-4">7. Changes to This Policy</h2>
+          <h2 className="text-lg font-semibold text-zinc-200 pt-4">8. Changes to This Policy</h2>
           <p>
             We may update this policy from time to time. Significant changes will be communicated via email.
           </p>
 
-          <h2 className="text-lg font-semibold text-zinc-200 pt-4">8. Contact</h2>
+          <h2 className="text-lg font-semibold text-zinc-200 pt-4">9. Contact</h2>
           <p>
             For privacy-related inquiries, contact us at{' '}
             <a href="mailto:pandejesal@gmail.com" className="text-cyan-400 hover:underline">

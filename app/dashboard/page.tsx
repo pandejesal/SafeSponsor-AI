@@ -16,7 +16,7 @@ import {
   Ban, Sparkles, DollarSign, Zap,
   Check, Filter, Clock, BarChart2,
   ListOrdered, Play, XCircle, Download, CheckCircle, FileText, Loader2,
-  ArrowUpDown, RotateCcw, RefreshCcw, X
+  ArrowUpDown, RotateCcw, RefreshCcw, X, Lock, ShieldCheck
 } from "lucide-react";
 
 // Heavy dossier/history sections are lazy-loaded so the dashboard's initial
@@ -58,7 +58,7 @@ function DashboardInner() {
   const [auditFocus, setAuditFocus] = useState<"standard" | "deep_compliance" | "exclusivity_matrix">("standard");
 
   // Batch Multi-URL Queue States
-  const [auditMode, setAuditMode] = useState<'single' | 'batch'>('single');
+  const [auditMode, setAuditMode] = useState<'single' | 'batch' | 'free'>('single');
   const [batchUrlsInput, setBatchUrlsInput] = useState('');
   const [batchItems, setBatchItems] = useState<BatchQueueItem[]>([]);
   const [isBatchProcessing, setIsBatchProcessing] = useState(false);
@@ -112,6 +112,9 @@ function DashboardInner() {
     // configured, so the $99 banner never promises a price checkout can't
     // deliver. Falsy when unconfigured OR the field is missing (old server).
     introAvailable: boolean;
+    // N1T2 — 1-per-account teaser cap shared with the homepage hero. True
+    // after the free check has been run from either surface.
+    freeTeaserUsed: boolean;
   } | null>(null);
   const [cancellingSub, setCancellingSub] = useState(false);
   const [cancelStep, setCancelStep] = useState<0 | 1 | 2 | 3>(0); // 0=closed, 1=reason, 2=confirm, 3=typing
@@ -209,7 +212,7 @@ function DashboardInner() {
 
   useEffect(() => {
     if (!user) {
-      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null, cancelAtPeriodEnd: false, introAvailable: false });
+      setUserCredits({ videoCredits: 0, channelCredits: 0, hasSubscription: false, subscriptionExpiresAt: null, cancelAtPeriodEnd: false, introAvailable: false, freeTeaserUsed: false });
       return;
     }
     const fetchCredits = async () => {
@@ -236,6 +239,7 @@ function DashboardInner() {
               // Falsy when unconfigured or absent from an older server — the
               // $99 banner stays hidden rather than over-promising.
               introAvailable: data.introAvailable === true,
+              freeTeaserUsed: data.freeTeaserUsed === true,
             };
           });
         }
@@ -295,6 +299,93 @@ function DashboardInner() {
       setLoadingPlan(null);
     }
   };
+
+  // N1T4 — dashboard teaser tab. Same 1-per-account cap as the homepage hero
+  // (server-enforced via freeAnalysisUsed), so using one surface blocks the
+  // other. Result is the trimmed headline verdict only.
+  const [teaserInput, setTeaserInput] = useState("");
+  const [teaserResult, setTeaserResult] = useState<{
+    status: 'idle' | 'loading' | 'done' | 'used' | 'error';
+    score?: number;
+    riskLevel?: string;
+    flags?: { category: string; description: string }[];
+    error?: string;
+  }>({ status: 'idle' });
+
+  const runTeaser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const t = teaserInput.trim();
+    if (!t || !user) return;
+    setTeaserResult({ status: 'loading' });
+    try {
+      const token = await user.getIdToken();
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
+      }
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ target: t, teaser: true }),
+      });
+      const data = await res.json();
+      if (res.status === 429) {
+        setUserCredits(prev => prev ? { ...prev, freeTeaserUsed: true } : prev);
+        setTeaserResult({ status: 'used', error: data.error || 'Free teaser already used' });
+        return;
+      }
+      if (!res.ok) {
+        setTeaserResult({ status: 'error', error: data.error || 'Failed to run the free check. Please try again.' });
+        return;
+      }
+      setUserCredits(prev => prev ? { ...prev, freeTeaserUsed: true } : prev);
+      setTeaserResult({
+        status: 'done',
+        score: data.brand_safety_score,
+        riskLevel: data.risk_level,
+        flags: Array.isArray(data.top_red_flags) ? data.top_red_flags : [],
+      });
+    } catch (err) {
+      console.error("Teaser error:", err);
+      setTeaserResult({ status: 'error', error: 'Failed to connect. Please try again.' });
+    }
+  };
+
+  // N1T5 — teaser upsell: $8 full dossier primary, $149 Pro secondary.
+  const renderTeaserUpsell = () => (
+    <div className="flex flex-col sm:flex-row gap-3">
+      <button
+        type="button"
+        onClick={() => handleCheckout('single')}
+        disabled={!!loadingPlan}
+        className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 ${
+          isDark
+            ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-orange-950/50'
+            : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+        }`}
+      >
+        <Lock className="w-4 h-4" />
+        {loadingPlan === 'single' ? 'Opening checkout…' : '$8 — Unlock the Full Dossier'}
+      </button>
+      <button
+        type="button"
+        onClick={() => handleCheckout('subscription')}
+        disabled={!!loadingPlan}
+        className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 ${
+          isDark
+            ? 'bg-zinc-950 text-zinc-200 border-zinc-700 hover:border-cyan-500/50'
+            : 'bg-white text-slate-800 border-slate-300 hover:border-blue-500'
+        }`}
+      >
+        <ShieldCheck className="w-4 h-4" />
+        {loadingPlan === 'subscription' ? 'Opening checkout…' : '$149/mo — Go Unlimited Pro'}
+      </button>
+    </div>
+  );
 
   const handleCancelSubscription = async () => {
     // Defense-in-depth: re-validate the typed confirmation even if the
@@ -1154,6 +1245,22 @@ Report Generated via SafeSponsor AI Research Engine
                   NEW
                 </span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setAuditMode('free')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 relative ${
+                  auditMode === 'free'
+                    ? (isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm' : 'bg-emerald-600 text-white shadow-sm')
+                    : (isDark ? 'bg-zinc-950 text-zinc-400 border border-zinc-800 hover:text-zinc-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>Free Score Preview</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500 text-white">
+                  FREE
+                </span>
+              </button>
             </div>
           </div>
 
@@ -1434,9 +1541,135 @@ Report Generated via SafeSponsor AI Research Engine
                   </button>
                 </div>
               </form>
-            </>
+            </>) : auditMode === 'free' ? (
+            /* N1T4 — Free Score Preview tab: shares the 1-per-account teaser
+               cap with the homepage hero (server-enforced via freeAnalysisUsed).
+               Output is the trimmed headline verdict; the full dossier requires
+               a purchase (N1T5). */
+            <div className="space-y-6">
+              <div className={`p-4 rounded-xl border ${isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+                <p className="text-sm font-bold">Free creator score preview</p>
+                <p className={`text-xs mt-1 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  One free check per account (shared with the homepage). You get the brand safety score, risk level, and top red-flag headers — the full dossier requires a purchase.
+                </p>
+              </div>
+
+              {teaserResult.status === 'loading' ? (
+                <div className={`p-5 rounded-xl border ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
+                    <p className={`text-sm font-semibold ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                      Running a full AI safety scan of this creator…
+                    </p>
+                  </div>
+                </div>
+              ) : teaserResult.status === 'done' && teaserResult.score !== undefined ? (
+                <div className={`p-6 rounded-xl border ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <div>
+                      <p className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>Brand Safety Score</p>
+                      <div className="flex items-end gap-3 mt-1">
+                        <span className="text-5xl font-black leading-none">{teaserResult.score}</span>
+                        <span className={`text-sm font-bold px-2 py-1 rounded-lg ${
+                          teaserResult.score >= 80
+                            ? (isDark ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
+                            : teaserResult.score >= 60
+                              ? (isDark ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' : 'bg-amber-50 text-amber-700 border border-amber-200')
+                              : (isDark ? 'bg-red-500/15 text-red-300 border border-red-500/30' : 'bg-red-50 text-red-700 border border-red-200')
+                        }`}>
+                          {teaserResult.riskLevel}
+                        </span>
+                      </div>
+                    </div>
+                    <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${
+                      isDark ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-blue-50 text-blue-900 border-blue-200'
+                    }`}>
+                      Free preview — full dossier requires a purchase
+                    </span>
+                  </div>
+
+                  {teaserResult.flags && teaserResult.flags.length > 0 && (
+                    <div className="mt-5">
+                      <p className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>Top Red Flags</p>
+                      <ul className="space-y-2">
+                        {teaserResult.flags.map((f, i) => (
+                          <li key={i} className={`flex items-start gap-2 text-sm rounded-lg px-3 py-2 ${
+                            isDark ? 'bg-zinc-950 border border-zinc-800' : 'bg-slate-50 border border-slate-200'
+                          }`}>
+                            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
+                            <span>
+                              <span className="font-bold">{f.category}</span>
+                              {f.description ? (
+                                <span className="text-slate-500 dark:text-zinc-400"> — {f.description}</span>
+                              ) : null}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="mt-6 pt-5 border-t border-slate-200 dark:border-zinc-800">
+                    {renderTeaserUpsell()}
+                  </div>
+                </div>
+              ) : teaserResult.status === 'used' ? (
+                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                  <p className="font-black text-lg">You&apos;ve already used your free check</p>
+                  <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    Unlock the full dossier to see the complete safety breakdown.
+                  </p>
+                  {renderTeaserUpsell()}
+                </div>
+              ) : teaserResult.status === 'error' ? (
+                <div className={`p-5 rounded-xl border ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                  <p className="font-bold text-red-600 dark:text-red-400">{teaserResult.error}</p>
+                </div>
+              ) : userCredits?.freeTeaserUsed ? (
+                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                  <p className="font-black text-lg">You&apos;ve already used your free check</p>
+                  <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    Unlock the full dossier to see the complete safety breakdown.
+                  </p>
+                  {renderTeaserUpsell()}
+                </div>
+              ) : (
+                <form onSubmit={runTeaser} className="space-y-4">
+                  <div>
+                    <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
+                      <Zap className="w-4 h-4 text-emerald-500" />
+                      Creator Handle, Channel, or Video/Post URL
+                    </label>
+                    <div className="mt-2 flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={teaserInput}
+                        onChange={(e) => setTeaserInput(e.target.value)}
+                        placeholder="e.g. youtube.com/@creator or @handle"
+                        className={`flex-1 px-4 py-3 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 transition ${
+                          isDark
+                            ? 'bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-500 focus:ring-emerald-500/40'
+                            : 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400 focus:ring-emerald-500/30'
+                        }`}
+                      />
+                      <button
+                        type="submit"
+                        disabled={!teaserInput.trim()}
+                        className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shrink-0 hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 ${
+                          isDark
+                            ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-emerald-950/50'
+                            : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-200'
+                        }`}
+                      >
+                        <Zap className="w-4 h-4" />
+                        Run Free Check
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </div>
           ) : (
-            /* Batch Multi-URL Queue Form */
             <form onSubmit={handleProcessBatch} className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${

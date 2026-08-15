@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb, verifyAuthHeader, verifyAppCheckHeader } from "@/lib/firebase-admin";
 import { getSeededAudit } from "@/lib/seeded_audits";
+import { buildTeaserReport } from "@/lib/teaser";
 import {
   BUDGET_MARGIN_MS,
   createMockLlmProvider,
@@ -185,6 +186,8 @@ const analyzeSchema = z.object({
     z.array(z.string().max(100)),
     z.string().max(500)
   ]).optional(),
+  // N1T1 — teaser mode: fresh pipeline run whose trimmed result is discarded.
+  teaser: z.boolean().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -240,7 +243,6 @@ export async function POST(req: NextRequest) {
       if (consumedEntitlement === "videoCredit") await activeUserRef.update({ videoCredits: FieldValue.increment(1) });
       else if (consumedEntitlement === "channelCredit") await activeUserRef.update({ channelCredits: FieldValue.increment(1) });
       else if (consumedEntitlement === "reportCredit") await activeUserRef.update({ reportCredits: FieldValue.increment(1) });
-      else if (consumedEntitlement === "free") await activeUserRef.update({ freeAnalysisUsed: false });
       console.warn(`[CREDIT REFUND] Refunded ${consumedEntitlement} (${reason})`);
       consumedEntitlement = null;
     } catch (refundErr: any) {
@@ -381,6 +383,7 @@ export async function POST(req: NextRequest) {
     const target = rawTarget.trim().slice(0, 500);
     const brand_name = (inputData.brand_name || "Sponsoring Brand").trim().slice(0, 100);
     const force_refresh = inputData.force_refresh === true;
+    const teaser = inputData.teaser === true;
     const audit_focus = inputData.audit_focus || "standard";
     const targetKey = normalizeTargetKey(target);
     activeTargetKey = targetKey;
@@ -446,6 +449,118 @@ export async function POST(req: NextRequest) {
     }
 
     // -------------------------------------------------------------
+    // TEASER MODE (N1) — "Check any creator free", once per account.
+    // A fresh pipeline run whose result is DISCARDED: never written to user
+    // history or global_audits, and no normal entitlement claim happens (no
+    // credit decrement, no subscription cap slot, no daily-cap counter — only
+    // the freeAnalysisUsed cap below applies). usage_logs + per-audit cost
+    // alerts still apply so the run's real LLM cost stays visible. Tombstoned
+    // creators are denied outright (fail-safe mirror of M4T2). This branch
+    // returns before the quota transaction and the cache read path below.
+    // -------------------------------------------------------------
+    if (teaser) {
+      // N1T1 — takedown tombstones block teaser runs BEFORE the cap is
+      // consumed: a withdrawn creator must not be re-analyzed, and a denial
+      // must not burn the user's one free check.
+      if (await isTombstoned(targetKey)) {
+        console.log(`[TEASER] Denied tombstoned targetKey ${targetKey}`);
+        return NextResponse.json(
+          { error: "This creator cannot be analyzed." },
+          { status: 404 }
+        );
+      }
+
+      // N1T2 — 1-per-account cap, repurposing freeAnalysisUsed. Atomic
+      // check+set (mirror of the M1T3 counter pattern): concurrent teaser
+      // requests cannot both pass. Applies to EVERY uid, paid or not — paid
+      // users simply never see the teaser CTA (UI-level gating).
+      const teaserGrant = await adminDb.runTransaction(async (tx) => {
+        const snap = await tx.get(userDocRef);
+        const used = snap.exists && (snap.data() || {}).freeAnalysisUsed === true;
+        if (used) return { allowed: false };
+        tx.set(userDocRef, {
+          freeAnalysisUsed: true,
+          teaserUsedAt: new Date().toISOString(),
+          updatedAt: new Date(),
+        }, { merge: true });
+        return { allowed: true };
+      }).catch((grantErr: any) => {
+        console.error("[TEASER] Cap check transaction failed:", grantErr?.message || grantErr);
+        return null;
+      });
+
+      if (teaserGrant === null) {
+        return NextResponse.json(
+          { error: "Teaser verification error. Please try again." },
+          { status: 500 }
+        );
+      }
+      if (!teaserGrant.allowed) {
+        return NextResponse.json(
+          { error: "Free teaser already used" },
+          { status: 429 }
+        );
+      }
+
+      const llmProvider = process.env.LLM_MOCK_MODE === "true"
+        ? createMockLlmProvider()
+        : createRealLlmProvider({ uid, targetKey, onUsage: reportAuditUsage });
+      const videoFetcher = process.env.MOCK_YOUTUBE_FETCHES === "true"
+        ? createMockVideoFetcher()
+        : createRealVideoFetcher();
+
+      const teaserOutcome = await runAnalyzePipeline({
+        target,
+        brandName: brand_name,
+        auditFocus: audit_focus,
+        competitorBrands: competitor_brands,
+        additionalUrls: additional_urls,
+        aliases: creator_known_aliases,
+        targetKey,
+        isChannelAudit: isChannelHandle,
+        deadlineMs,
+        checkBudget: failFastIfOverBudget,
+        llm: llmProvider,
+        video: videoFetcher,
+      });
+
+      if (!teaserOutcome.ok) {
+        // Nothing was consumed (no entitlement claim), but the failed LLM
+        // calls still cost real money — the per-audit cost alert must fire.
+        await emitPerAuditCostAlert(activeTargetKey);
+        // Roll the teaser cap back: a failed run must not burn the user's
+        // one free check (mirror of the refundEntitlement pattern).
+        await adminDb.runTransaction(async (tx) => {
+          const snap = await tx.get(userDocRef);
+          const d = snap.data() || {};
+          if (d.freeAnalysisUsed === true) {
+            tx.update(userDocRef, {
+              freeAnalysisUsed: FieldValue.delete(),
+              teaserUsedAt: FieldValue.delete(),
+            });
+          }
+        }).catch((rollbackErr: any) => {
+          console.error("[TEASER] Cap rollback failed:", rollbackErr?.message || rollbackErr);
+        });
+        if (teaserOutcome.reason === "research_failed") {
+          return NextResponse.json(
+            { error: "The AI analysis service is temporarily unavailable. Please try again shortly." },
+            { status: 502 }
+          );
+        }
+        return NextResponse.json(
+          { error: "Unverifiable model output: unable to parse JSON response." },
+          { status: 502 }
+        );
+      }
+
+      // N1T1 — trimmed headline verdict only; the result is discarded
+      // (no history/global_audits write), so a purchase re-runs the pipeline.
+      await emitPerAuditCostAlert(activeTargetKey);
+      return NextResponse.json(buildTeaserReport(teaserOutcome.reportData));
+    }
+
+    // -------------------------------------------------------------
     // GLOBAL DATABASE CACHE CHECK
     // If another user previously audited this same creator target,
     // retrieve from Firestore global_audits instantly (saves API costs).
@@ -465,7 +580,11 @@ export async function POST(req: NextRequest) {
                        (typeof userData.reportCredits === "number" && userData.reportCredits > 0);
     const isPaidUser = isSubscribed || hasCredits;
 
-    if (!force_refresh && targetKey && !isPaidUser) {
+    // N1T2 — cache/seed full dossiers are served ONLY to users with a paid
+    // entitlement. Free-tier users (never-teasered or teaser-exhausted) skip
+    // the seed + global_audits read entirely and fall through to the quota
+    // denial below, so stored full dossiers are never handed to them.
+    if (!force_refresh && targetKey && isPaidUser) {
       // M4T2 — a creator takedown blocks ALL cached serving of the key,
       // including the in-memory seed dossiers. Fail-safe: if the tombstone
       // check errors, treat the key as tombstoned and skip the cache.
@@ -582,7 +701,6 @@ export async function POST(req: NextRequest) {
         const videoCredits = typeof userData.videoCredits === "number" ? userData.videoCredits : 0;
         const channelCredits = typeof userData.channelCredits === "number" ? userData.channelCredits : 0;
         const reportCredits = typeof userData.reportCredits === "number" ? userData.reportCredits : 0;
-        const freeUsed = userData.freeAnalysisUsed === true;
 
         // M1T3: per-user, per-day audit counter. Paid (subscription) users skip
         // the global cache by design, so EVERY audit they run counts against the
@@ -609,14 +727,14 @@ export async function POST(req: NextRequest) {
           if (channelCredits > 0) {
             tx.set(userDocRef, { channelCredits: channelCredits - 1, updatedAt: new Date() }, { merge: true });
             return { allowed: true, type: "channelCredit" as const };
-          } else if (!freeUsed) {
-            tx.set(userDocRef, { freeAnalysisUsed: true, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "free" as const };
           } else {
             return { allowed: false, type: "none" as const, reason: "Channel Report credit required. Please purchase a Channel Report or Unlimited Pro subscription." };
           }
         } else {
-          // Single video audit
+          // Single video audit. NOTE: freeAnalysisUsed is no longer granted
+          // here (N1T2) — it is the 1-per-account teaser cap only. The $8
+          // Single Report is the only path to a full dossier for free-tier
+          // users; the teaser is the only free pipeline run.
           if (videoCredits > 0) {
             tx.set(userDocRef, { videoCredits: videoCredits - 1, updatedAt: new Date() }, { merge: true });
             return { allowed: true, type: "videoCredit" as const };
@@ -626,9 +744,6 @@ export async function POST(req: NextRequest) {
           } else if (channelCredits > 0) {
             tx.set(userDocRef, { channelCredits: channelCredits - 1, updatedAt: new Date() }, { merge: true });
             return { allowed: true, type: "channelCredit" as const };
-          } else if (!freeUsed) {
-            tx.set(userDocRef, { freeAnalysisUsed: true, updatedAt: new Date() }, { merge: true });
-            return { allowed: true, type: "free" as const };
           } else {
             return { allowed: false, type: "none" as const, reason: "Analysis credit required. Please purchase a Single Report or Unlimited Pro subscription." };
           }

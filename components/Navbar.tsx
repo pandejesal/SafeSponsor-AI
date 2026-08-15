@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { Sun, Moon, ArrowRight, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
@@ -13,7 +13,6 @@ import { auth } from '@/lib/firebase';
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const { user } = useAuth();
-  const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -26,7 +25,12 @@ export function Navbar() {
       if (auth) {
         await signOut(auth);
       }
-      router.push('/login');
+      // Full reload, not a client-side navigation: once initialized, the App
+      // Check provider stays registered on the FirebaseApp for the page
+      // lifetime (no public unregister API), and signInWithRedirect awaits its
+      // token whenever it is registered. A fresh page after logout guarantees
+      // the next sign-in never waits on reCAPTCHA (FR-4).
+      window.location.href = '/login';
     } catch (err) {
       console.error('Error signing out', err);
     }

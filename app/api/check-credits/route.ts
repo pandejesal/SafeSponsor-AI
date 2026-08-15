@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
         cancelAtPeriodEnd: false,
         plan: null,
         introAvailable,
+        freeTeaserUsed: false,
       });
     }
 
@@ -42,6 +43,7 @@ export async function GET(req: NextRequest) {
       cancelAtPeriodEnd: sub?.cancelAtPeriodEnd === true,
       plan: data.plan || null,
       introAvailable,
+      freeTeaserUsed: data.freeAnalysisUsed === true,
     });
   } catch (error: any) {
     console.error("[CHECK CREDITS] Error:", error?.message || error);
