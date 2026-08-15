@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { signInWithRedirect, getRedirectResult, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
@@ -67,30 +67,13 @@ function LoginInner() {
     }
   }, [loading, user, router]);
 
-  // Path 2: Consume the pending redirect sign-in result after returning from Google.
-  useEffect(() => {
-    let active = true;
-    getRedirectResult(auth!)
-      .then((result) => {
-        if (!active) return;
-        if (result?.user) {
-          goToDashboard(router);
-        }
-      })
-      .catch((err: any) => {
-        console.error('Redirect sign-in error:', err);
-        clearPendingRedirectState();
-        if (!active) return;
-        if (err?.code) {
-          setError(describeHandlerError(err.code, err?.message));
-        } else {
-          setError(err?.message || 'Sign-in failed. Please try again.');
-        }
-      });
-    return () => {
-      active = false;
-    };
-  }, [router]);
+  // Path 2: (removed) sign-in used to complete via the Firebase hosted
+  // redirect handler (authDomain/__/auth/handler). That handler fetches
+  // /__/firebase/init.json to bootstrap, which 404s for projects deployed
+  // WITHOUT Firebase Hosting (this app runs on Vercel) - so redirect sign-in
+  // could never complete. Sign-in now uses signInWithPopup (below), which
+  // opens accounts.google.com directly and never touches the firebaseapp.com
+  // origin.
 
   // Path 3: The Firebase auth handler can bounce straight back to this page
   // without registering a redirect result (App Check/reCAPTCHA failure on the
@@ -129,18 +112,18 @@ function LoginInner() {
     setError(null);
     const provider = new GoogleAuthProvider();
     try {
-      // Redirect flow is the PRIMARY sign-in path. Full-page navigation to
-      // Google avoids the cross-origin popup handshake (vercel.app ->
-      // firebaseapp.com) that needs third-party cookies and fails with
-      // auth/internal-error when they are blocked. No explicit
-      // PopupRedirectResolver is passed: the SDK's default resolver must stay
-      // consistent with getRedirectResult or the pending-state match fails.
+      // POPUP flow is the PRIMARY sign-in path. The previous redirect flow
+      // (authDomain/__/auth/handler) is broken for Vercel-hosted projects: the
+      // handler page boots by fetching /__/firebase/init.json, which 404s when
+      // the project has no Firebase Hosting site - the OAuth round-trip never
+      // completes and the user is silently returned signed-out. The popup opens
+      // accounts.google.com directly and posts the result back to this page,
+      // with no firebaseapp.com dependency (and no third-party-cookie
+      // requirement on the popup side).
       //
       // App Check is NOT registered while the user is signed out (see
-      // lib/firebase.ts), so this navigation no longer waits on a reCAPTCHA
-      // Enterprise token - the ~30s hang and cryptic auth/network-request-failed
-      // that caused are gone from the sign-in path (FR-4).
-      await signInWithRedirect(auth!, provider);
+      // lib/firebase.ts), so the popup is not held up by reCAPTCHA Enterprise.
+      await signInWithPopup(auth!, provider);
     } catch (err: any) {
       console.error('Google sign-in error:', err);
       const code = err?.code || '';

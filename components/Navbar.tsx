@@ -27,9 +27,10 @@ export function Navbar() {
       }
       // Full reload, not a client-side navigation: once initialized, the App
       // Check provider stays registered on the FirebaseApp for the page
-      // lifetime (no public unregister API), and signInWithRedirect awaits its
-      // token whenever it is registered. A fresh page after logout guarantees
-      // the next sign-in never waits on reCAPTCHA (FR-4).
+      // lifetime (no public unregister API), and any subsequent sign-in
+      // (signInWithPopup/Redirect) awaits its token whenever it is registered.
+      // A fresh page after logout guarantees the next sign-in never waits on
+      // reCAPTCHA (FR-4).
       window.location.href = '/login';
     } catch (err) {
       console.error('Error signing out', err);
