@@ -71,11 +71,41 @@ Alert contact: email. No SMS on the free tier.
 
 > Audit open item 2. Sign-in works on prod (E2E run6 10/10 PASS) → `safe-sponsor-ai.vercel.app` is effectively present. Visual confirmation: Firebase console → Authentication → Settings → Authorized domains; confirm `safe-sponsor-ai.vercel.app` (and the auth domain from Firebase Hosting) are listed.
 
-## 7. Dodo product prices (user, not agent-executable)
+## 7. Dodo products & webhook (DONE on new account; Vercel env update is user-action)
 
-> Audit E2E-4 / S-003 / S-006. API key is scoped away from product management (401 on `/products/{id}`), so it must be done in the Dodo dashboard:
-- Set Single Report = $8, Channel Report = $19, Pro = $149 USD.
-- Give the Pro product a name (currently null).
-- Verify the intro discount code is exactly $50 off.
+> Audit E2E-4 / S-003 / S-006. The original Dodo account was lost; the user created a NEW
+> account and handed over a products-scoped test-mode API key. Products were created
+> programmatically on the new account (scripts/dodo-create-products.js) at the correct
+> USD prices, and the test-mode webhook endpoint was created (scripts/dodo-setup-webhook.js):
 
-After the fix: rerun `node .swarm/e2e/e2e5.js` (needs `NODE_PATH` pointing at a folder with playwright; driver kept at `.swarm/e2e/e2e5.js`).
+| Product | Price | Product ID (test) |
+|---|---|---|
+| Single Report | $8.00 USD one-time | `pdt_0NlWuG9SbcATQxHLyYawW` |
+| Channel Report | $19.00 USD one-time | `pdt_0NlWuGIhziGGhxd8beRPc` |
+| Pro | $149.00 USD / month (named) | `pdt_0NlWuRCCHHazsop6t4iup` |
+
+- Checkout-session creation verified against these IDs (scripts/dodo-checkout-probe.js
+  → 200 + test checkout URL).
+- Webhook endpoint `ep_3I0QiPxfxfuWAoVX0lIw8iIKBjm` → `https://safe-sponsor-ai.vercel.app/api/webhook`,
+  filtered to the 6 events the app handles; signing secret (38 chars) wired into
+  `.env.local` as `DODO_PAYMENTS_WEBHOOK_SECRET`.
+- `.env.local` now holds: `DODO_PAYMENTS_API_KEY` (new), `DODO_PAYMENTS_MODE=test_mode`,
+  the 3 product IDs, and the webhook secret.
+
+**User action (deploy)**: paste these 6 values into Vercel → Project → Settings → Environment
+Variables (Production), then redeploy. Copy values from `.env.local` — do not commit `.env.local`.
+1. `DODO_PAYMENTS_API_KEY` (new key)
+2. `DODO_PAYMENTS_MODE=test_mode`
+3. `DODO_PAYMENTS_PRODUCT_ID_SINGLE=pdt_0NlWuG9SbcATQxHLyYawW`
+4. `DODO_PAYMENTS_PRODUCT_ID_CHANNEL=pdt_0NlWuGIhziGGhxd8beRPc`
+5. `DODO_PAYMENTS_PRODUCT_ID_SUBSCRIPTION=pdt_0NlWuRCCHHazsop6t4iup`
+6. `DODO_PAYMENTS_WEBHOOK_SECRET` (from `.env.local`)
+
+Verify the intro discount code is exactly $50 off (S-006) in the Dodo dashboard.
+
+**Before live go-live**: repeat this setup in LIVE mode — live API key, live product IDs
+(still $8/$19/$149), a live webhook endpoint + secret — and update Vercel again.
+
+After deploy: rerun `node .swarm/e2e/e2e5.js` (needs `NODE_PATH` pointing at a folder with
+playwright; driver kept at `.swarm/e2e/e2e5.js`). NOTE: the browser profile/creds used for
+sign-in were deleted in the space cleanup — re-seed the signed-in browser profile first.
