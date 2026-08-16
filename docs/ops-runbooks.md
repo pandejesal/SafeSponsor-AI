@@ -101,11 +101,17 @@ Alert contact: email. No SMS on the free tier.
 
 Re-run this when `.env.local` changes: `node scripts/vercel-env-sync.js && vercel --prod --yes`.
 
+**Verified on production (2026-08-16)**: browser profile re-seeded (`.swarm/e2e/reseed.js`
+— one manual Google sign-in), then `node .swarm/e2e/checkout-api-check.js` → `POST
+/api/checkout` for all 3 plans returned 200 with `test.checkout.dodopayments.com/session/cks_…`
+URLs using real auth headers. Full `e2e5.js` run: 7 PASS / 0 FAIL (S1/C1/P1 card clicks
+partial — driver timing, contract verified via the API check).
+
 Verify the intro discount code is exactly $50 off (S-006) in the Dodo dashboard.
 
 **Before live go-live**: repeat this setup in LIVE mode — live API key, live product IDs
 (still $8/$19/$149), a live webhook endpoint + secret — and update Vercel again.
 
 After deploy: rerun `node .swarm/e2e/e2e5.js` (needs `NODE_PATH` pointing at a folder with
-playwright; driver kept at `.swarm/e2e/e2e5.js`). NOTE: the browser profile/creds used for
-sign-in were deleted in the space cleanup — re-seed the signed-in browser profile first.
+playwright; driver kept at `.swarm/e2e/e2e5.js`). If the signed-in profile is missing,
+run `node .swarm/e2e/reseed.js` first and complete the Google sign-in once.
