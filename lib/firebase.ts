@@ -1,6 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider, AppCheck, getToken } from 'firebase/app-check';
 import config from '../firebase-applet-config.json';
 
@@ -15,13 +14,11 @@ const firebaseConfig = {
 
 let app: FirebaseApp | undefined;
 let auth: Auth | undefined;
-let db: Firestore | undefined;
 let appCheck: AppCheck | null = null;
 
 if (typeof window !== "undefined") {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
-  db = getFirestore(app);
 }
 
 // App Check is registered lazily, NEVER at boot and NEVER while the user is
@@ -73,5 +70,5 @@ export async function getAppCheckToken(): Promise<string | null> {
   }
 }
 
-export { app, auth, db, appCheck };
+export { app, auth, appCheck };
 

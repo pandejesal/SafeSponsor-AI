@@ -4,8 +4,7 @@ import { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import dynamic from "next/dynamic";
 import { AuthProvider, useAuth } from "@/components/AuthProvider";
 import { useRouter, useSearchParams } from "next/navigation";
-import { db, auth, getAppCheckToken } from "@/lib/firebase";
-import { collection, query, orderBy, onSnapshot, doc, limit } from "firebase/firestore";
+import { auth, getAppCheckToken } from "@/lib/firebase";
 import { Navbar } from "@/components/Navbar";
 import { TestModeBadge } from "@/components/TestModeBadge";
 import { useTheme } from "@/components/ThemeProvider";
@@ -183,32 +182,36 @@ function DashboardInner() {
   }, [user, authLoading, router, searchParams]);
 
   useEffect(() => {
-    if (!user || !db) {
+    if (!user) {
       setHistory([]);
       setLoadingHistory(false);
       return;
     }
+    let cancelled = false;
     setLoadingHistory(true);
-    const q = query(
-      collection(db, "users", user.uid, "history"),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    );
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const hist: HistoryItem[] = [];
-      snapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        hist.push({ id: docSnap.id, target: data.target || data.url || "Creator Audit", ...data } as HistoryItem);
-      });
-      setHistory(hist);
-      setHistoryError(null);
-      setLoadingHistory(false);
-    }, (error) => {
-      console.error("Firestore history snapshot error:", error);
-      setHistoryError("Failed to load audit history.");
-      setLoadingHistory(false);
-    });
-    return () => unsubscribe();
+    const loadHistory = async () => {
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/history', {
+          headers: { 'Authorization': `Bearer ${token}` },
+        });
+        if (cancelled) return;
+        if (!res.ok) throw new Error(String(res.status));
+        const data = await res.json();
+        if (cancelled) return;
+        setHistory(Array.isArray(data.history) ? data.history : []);
+        setHistoryError(null);
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Audit history load error:", err);
+          setHistoryError("Failed to load audit history.");
+        }
+      } finally {
+        if (!cancelled) setLoadingHistory(false);
+      }
+    };
+    loadHistory();
+    return () => { cancelled = true; };
   }, [user]);
 
   useEffect(() => {
