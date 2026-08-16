@@ -1,1 +1,8 @@
-{}
+{
+  "worktree": {
+    "policy": "disabled"
+  },
+  "council": {
+    "enabled": true
+  }
+}

@@ -42,7 +42,7 @@ function describeHandlerError(code: string, desc?: string): string {
     'auth/appcheck-failed': 'App Check verification failed while processing the sign-in. This usually means reCAPTCHA was blocked by an ad blocker or privacy extension - allow google.com and gstatic.com on this site, then try again.',
     'auth/unauthorized-domain': 'This domain is not authorized for Google sign-in. Add it to Firebase Auth \u2192 Settings \u2192 Authorized Domains, then try again.',
     'auth/operation-not-allowed': 'The Google sign-in provider is disabled in Firebase Auth settings.',
-    'auth/network-request-failed': 'A network request to Firebase failed during sign-in.',
+    'auth/network-request-failed': 'Google sign-in could not be verified - check your internet connection, then retry. If it keeps failing, a privacy extension or ad blocker may be blocking google.com / gstatic.com, or App Check reCAPTCHA failed; allow those domains and try again.',
     'auth/cancelled-popup-request': 'The sign-in request was cancelled.',
   };
   const text = known[code] || `Sign-in failed: ${code}`;

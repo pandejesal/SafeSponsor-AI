@@ -34,7 +34,10 @@ import {
 import { z } from "zod";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+// Vercel Hobby caps serverless duration at 60s; declaring 120 (a Pro-tier
+// value) gets silently clamped and misleads — the internal OVERALL_BUDGET_MS
+// + BUDGET_MARGIN_MS keep the pipeline under the real ceiling anyway.
+export const maxDuration = 60;
 
 // Hard wall-clock budget for the whole pipeline (Vercel Hobby ~60s limit).
 const OVERALL_BUDGET_MS = 50000;

@@ -14,7 +14,7 @@ This quarter: harden unit economics (cost tracking + caps), add a benchmark-driv
 
 | Route | Method | Purpose | Notes |
 |---|---|---|---|
-| `analyze` | POST | Main pipeline: auth + app check → atomic quota claim → research (YouTube transcript/comments + channel metadata via YouTube Data API; Gemini text-only — no web search) → Gemini synthesis w/ fallback → save dossier + global cache | `runtime=nodejs`, `maxDuration=120`, hard `OVERALL_BUDGET_MS=50000`; input bounds: target 500, brand_name 100, competitor_brands 5×100, additional_urls 3×300, aliases 5×100; global cache is SKIPPED for paid/subscribed users (they pay for fresh analysis, route.ts ~L475); rate_limits 10/min per-user (~L352) |
+| `analyze` | POST | Main pipeline: auth + app check → atomic quota claim → research (YouTube transcript/comments + channel metadata via YouTube Data API; Gemini text-only — no web search) → Gemini synthesis w/ fallback → save dossier + global cache | `runtime=nodejs`, `maxDuration=60` (Vercel Hobby 60s clamp), hard `OVERALL_BUDGET_MS=50000`; input bounds: target 500, brand_name 100, competitor_brands 5×100, additional_urls 3×300, aliases 5×100; global cache is SKIPPED for paid/subscribed users (they pay for fresh analysis, route.ts ~L475); rate_limits 10/min per-user (~L352) |
 | `checkout` | POST | Validates App Check + auth, creates Dodo payment link | `plan` enum: `single` \| `channel` \| `subscription`; zero fail-open (502/500 on error) |
 | `verify-payment` | POST | Polls Dodo payments list (30d window, page 20) after redirect; grants entitlements on `succeeded` | Grants `videoCredits`/`channelCredits` or `subscription` + `expiresAt` |
 | `webhook` | POST | `standardwebhooks` signature verify + 5-min replay window + 1MB cap; grants/revokes entitlements atomically | Events: `payment.succeeded`, `subscription.active/renewed/cancelled/expired`, `refund.succeeded` |
@@ -67,7 +67,7 @@ This quarter: harden unit economics (cost tracking + caps), add a benchmark-driv
 
 | Constraint | Value |
 |---|---|
-| Analyze wall-clock budget | `OVERALL_BUDGET_MS = 50000` (Vercel Hobby ~60s; `maxDuration=120`) |
+| Analyze wall-clock budget | `OVERALL_BUDGET_MS = 50000` (Vercel Hobby ~60s; `maxDuration=60`) |
 | Single LLM call budget | `GEMINI_TIMEOUT_MS = 12000`, retries ≤ 1 (429 only), deadline pre-check |
 | Unrestricted model fallback | `gemini-3.6-flash → gemini-3.5-flash → gemini-3.1-flash-lite → GROQ` |
 | Pro audit cap | 50/day per user; counts ALL audits (paid users skip global cache by design, so no cache exemption) |

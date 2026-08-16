@@ -140,9 +140,10 @@ npm start
   [Vercel](https://vercel.com) (import your repo — it stays private) or Cloud Run.
 - **Firestore rules:** deploy `firestore.rules` or the created Firestore database to enforce
   per-user reads, user-write protection on sensitive entitlement fields, and read-only public cache.
-- **App Check:** enforced by default in production (opt-out with `ENFORCE_APP_CHECK=false`).
-  Provide `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` so the client can mint App Check tokens — otherwise
-  all API requests will be rejected with `401`.
+- **App Check:** opt-in enforcement (set `ENFORCE_APP_CHECK=true` to reject requests without a
+  valid token; a present-but-invalid token is always rejected regardless of the flag). Only turn
+  it on when `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` is set and reCAPTCHA is not blocked on users' browsers —
+  otherwise legitimate signed-in users get locked out of the API with `401`.
 
 ## Entitlements & Payments
 

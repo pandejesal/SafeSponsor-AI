@@ -101,6 +101,20 @@ function DashboardInner() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [historyError, setHistoryError] = useState<string | null>(null);
 
+  // Guards the batch audit loop against setState-after-unmount: the loop is
+  // async and may still be awaiting a fetch when the component unmounts, so
+  // every state write inside it is gated on this ref.
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    // Re-assert true on every setup so React StrictMode's dev-only
+    // mount -> cleanup -> mount cycle (and HMR remounts) does not leave the
+    // flag stuck at false and silently disable the batch loop in dev.
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   // User credits / subscription state
   const [userCredits, setUserCredits] = useState<{
     videoCredits: number;
@@ -607,7 +621,11 @@ youtube.com/@ijustine`
       const token = await user.getIdToken();
       const appCheckToken = await getAppCheckToken();
 
-      for (let i = 0; i < items.length; i++) {
+      // Per-item audit: fetch /api/analyze and update the item's status
+      // (processing -> completed/failed). All state writes are gated on
+      // isMountedRef so a late-resolving fetch cannot setState after unmount.
+      const runItem = async (i: number) => {
+        if (!isMountedRef.current) return;
         setBatchCurrentIndex(i);
 
         setBatchItems(prev => prev.map((item, idx) => 
@@ -647,6 +665,7 @@ youtube.com/@ijustine`
           }
 
           const data: AnalysisResult = await res.json();
+          if (!isMountedRef.current) return;
 
           setBatchItems(prev => prev.map((item, idx) => 
             idx === i 
@@ -660,18 +679,41 @@ youtube.com/@ijustine`
           }
 
         } catch (itemErr: any) {
+          if (!isMountedRef.current) return;
           setBatchItems(prev => prev.map((item, idx) => 
             idx === i 
               ? { ...item, status: 'failed', error: itemErr.message || 'Audit error', progressMessage: undefined }
               : item
           ));
         }
+      };
+
+      // Bounded concurrency of exactly 2: two workers pull items off the
+      // queue, so at most two /api/analyze calls are in flight at once.
+      const workerCount = Math.min(2, items.length);
+      let nextIndex = 0;
+      const worker = async () => {
+        while (isMountedRef.current) {
+          const i = nextIndex;
+          if (i >= items.length) break;
+          nextIndex = i + 1;
+          await runItem(i);
+        }
+      };
+      const workers: Promise<void>[] = [];
+      for (let w = 0; w < workerCount; w++) {
+        workers.push(worker());
       }
+      await Promise.all(workers);
     } catch (err: any) {
-      setAnalysisError(err.message || "Batch process encountered an error.");
+      if (isMountedRef.current) {
+        setAnalysisError(err.message || "Batch process encountered an error.");
+      }
     } finally {
-      setIsBatchProcessing(false);
-      setBatchCurrentIndex(-1);
+      if (isMountedRef.current) {
+        setIsBatchProcessing(false);
+        setBatchCurrentIndex(-1);
+      }
     }
   };
 

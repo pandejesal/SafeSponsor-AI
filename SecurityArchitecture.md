@@ -19,7 +19,7 @@ The application enforces a zero-trust model where every client request is authen
 
 ### Key Controls
 1. **Firebase Authentication**: Client requests carry a short-lived Firebase ID Token in the `Authorization: Bearer <token>` header. Edge routes verify token signature and claims via `adminAuth.verifyIdToken()`.
-2. **Firebase App Check Integration**: Configured in `lib/firebase-admin.ts` to verify `X-Firebase-AppCheck` headers (enforced fail-closed by default in production; opt-out via `ENFORCE_APP_CHECK=false`), providing automated bot protection alongside mandatory Firebase Bearer ID Token authentication.
+2. **Firebase App Check Integration**: Configured in `lib/firebase-admin.ts` to verify `X-Firebase-AppCheck` headers (opt-in enforcement — when `ENFORCE_APP_CHECK=true`, requests without a valid token are rejected; a present-but-invalid token is always rejected regardless of the flag), providing automated bot protection alongside mandatory Firebase Bearer ID Token authentication.
 3. **No Client Write Privileges on Entitlements**: Client Firestore security rules strictly forbid write access to sensitive entitlement fields (`hasSubscription`, `freeAnalysisUsed`, `reportCredits`, `plan`, `paymentProvider`, `lastPaymentId`, `role`, `admin`, `credits`). All entitlement mutations occur strictly via server-side Admin SDK (`adminDb`).
 
 ---
