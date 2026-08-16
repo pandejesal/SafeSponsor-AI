@@ -92,14 +92,14 @@ Alert contact: email. No SMS on the free tier.
 - `.env.local` now holds: `DODO_PAYMENTS_API_KEY` (new), `DODO_PAYMENTS_MODE=test_mode`,
   the 3 product IDs, and the webhook secret.
 
-**User action (deploy)**: paste these 6 values into Vercel → Project → Settings → Environment
-Variables (Production), then redeploy. Copy values from `.env.local` — do not commit `.env.local`.
-1. `DODO_PAYMENTS_API_KEY` (new key)
-2. `DODO_PAYMENTS_MODE=test_mode`
-3. `DODO_PAYMENTS_PRODUCT_ID_SINGLE=pdt_0NlWuG9SbcATQxHLyYawW`
-4. `DODO_PAYMENTS_PRODUCT_ID_CHANNEL=pdt_0NlWuGIhziGGhxd8beRPc`
-5. `DODO_PAYMENTS_PRODUCT_ID_SUBSCRIPTION=pdt_0NlWuRCCHHazsop6t4iup`
-6. `DODO_PAYMENTS_WEBHOOK_SECRET` (from `.env.local`)
+**Done — Vercel env + redeploy (2026-08-16, via CLI)**: Vercel CLI 59.1.3 installed
+(`npm i -g vercel`), logged in, `vercel link --project safe-sponsor-ai --yes`,
+`scripts/vercel-env-sync.js` replaced the 6 vars in Production with the values from
+`.env.local`, and `vercel --prod --yes` deployed: `dpl_5VWu51mv5MYJ2rKGnjc8YjShP5S7` →
+`https://safe-sponsor-ai.vercel.app`. Verified: `/api/health` →
+`{"ok":true,"db":"ok","paymentsMode":"test"}` and homepage 200.
+
+Re-run this when `.env.local` changes: `node scripts/vercel-env-sync.js && vercel --prod --yes`.
 
 Verify the intro discount code is exactly $50 off (S-006) in the Dodo dashboard.
 
