@@ -22,6 +22,13 @@ import {
 // Worst-case cost of the transcript/comment fetch phase: two sequential
 // capped fetches per video (transcript then comments), parallel across videos.
 export const FETCH_PHASE_WORST_CASE_MS = 20000;
+// Worst-case cost of the channel-resolve phase: three sequential YouTube
+// Data API fetches, each capped at 10s (CHANNEL_RESOLVE_FETCH_TIMEOUT_MS).
+export const CHANNEL_RESOLVE_WORST_CASE_MS = 30000;
+// Single YouTube Data API fetch cap inside resolveChannel. Without this a
+// stalled API could hang past the Vercel Hobby 60s wall, killing the
+// invocation before the route's catch/refund runs.
+const CHANNEL_RESOLVE_FETCH_TIMEOUT_MS = 10000;
 // Worst-case cost of a single LLM call (Gemini/Groq timeout + retry backoff).
 export const LLM_CALL_WORST_CASE_MS = 15000;
 // Reserve for the tail (JSON post-processing + Firestore writes) + safety margin.
@@ -449,6 +456,14 @@ export function createRealVideoFetcher(): VideoFetcher {
   return {
     async resolveChannel(target: string): Promise<ChannelResolveResult> {
       const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+      // Cap every YouTube Data API call at 10s. Without this a stalled API
+      // could hang past the Vercel Hobby 60s wall, killing the invocation
+      // before the route's catch/refund runs (user charged, no audit).
+      const channelResolveFetch = (url: string, label: string): Promise<Response> => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), CHANNEL_RESOLVE_FETCH_TIMEOUT_MS);
+        return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(timeoutId));
+      };
       let channelMetadata = "";
       let videoUrls: string[] = [];
       let channelResolveFailed = false;
@@ -467,7 +482,7 @@ export function createRealVideoFetcher(): VideoFetcher {
         const channelApiUrl = isRawChannelId
           ? `https://www.googleapis.com/youtube/v3/channels?part=id,snippet,statistics&id=${encodeURIComponent(handle)}&key=${youtubeApiKey}`
           : `https://www.googleapis.com/youtube/v3/channels?part=id,snippet,statistics&forHandle=@${encodeURIComponent(handle)}&key=${youtubeApiKey}`;
-        const channelRes = await fetch(channelApiUrl);
+        const channelRes = await channelResolveFetch(channelApiUrl, "YouTube channels API");
         if (!channelRes.ok) {
           const errBody = await channelRes.text();
           throw new Error(`YouTube channels API HTTP ${channelRes.status}: ${errBody.slice(0, 300)}`);
@@ -489,8 +504,9 @@ export function createRealVideoFetcher(): VideoFetcher {
           channelMetadata = `[Channel Metadata for ${target}]:\nTitle: ${channelTitle}\nDescription: ${channelDesc.slice(0, 2000)}\nSubscribers: ${subscriberCount}\nTotal Videos: ${videoCount}\n`;
 
           // Step 2: Fetch recent video IDs from the channel
-          const searchRes = await fetch(
-            `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&key=${youtubeApiKey}&part=id&order=date&maxResults=5&type=video`
+          const searchRes = await channelResolveFetch(
+            `https://www.googleapis.com/youtube/v3/search?channelId=${channelId}&key=${youtubeApiKey}&part=id&order=date&maxResults=5&type=video`,
+            "YouTube search API"
           );
           if (!searchRes.ok) {
             const dataBody = await searchRes.text();
@@ -509,8 +525,9 @@ export function createRealVideoFetcher(): VideoFetcher {
 
             // Step 3: Fetch video details (titles + descriptions) as context
             const videoIds = searchData.items.map((item: any) => item.id.videoId).join(",");
-            const detailsRes = await fetch(
-              `https://www.googleapis.com/youtube/v3/videos?key=${youtubeApiKey}&id=${videoIds}&part=snippet,statistics`
+            const detailsRes = await channelResolveFetch(
+              `https://www.googleapis.com/youtube/v3/videos?key=${youtubeApiKey}&id=${videoIds}&part=snippet,statistics`,
+              "YouTube videos API"
             );
             if (!detailsRes.ok) {
               console.warn(`[CHANNEL RESOLVE] Videos API HTTP ${detailsRes.status} for titles/descriptions (non-fatal)`);
@@ -743,6 +760,9 @@ export async function runAnalyzePipeline(params: AnalyzePipelineParams): Promise
   let resolvedUrls = allUrls;
   let channelResolveFailed = false;
   if (isChannelAudit) {
+    // resolveChannel runs BEFORE the fetch-phase budget check, so it must be
+    // budget-guarded on its own (worst case: 3 sequential 10s-capped calls).
+    await checkBudget("channel resolve", CHANNEL_RESOLVE_WORST_CASE_MS);
     const resolved = await video.resolveChannel(target);
     channelResolveFailed = resolved.channelResolveFailed;
     channelMetadata = resolved.channelMetadata;
