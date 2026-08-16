@@ -13,3 +13,4 @@ coverage/
 # Swarm/agent runtime artifacts (regenerable session state, evidence, runs)
 .swarm/
 !PLAN.md
+hosting/.firebase/
