@@ -28,7 +28,9 @@ import {
   ChevronDown, 
   ArrowRight,
   TrendingUp,
-  Award
+  Award,
+  Check,
+  X
 } from 'lucide-react';
 
 function LandingContent() {
@@ -37,6 +39,7 @@ function LandingContent() {
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [billingCycle, setBillingCycle] = useState<'month' | 'year'>('month');
   const [heroInputUrl, setHeroInputUrl] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [teaser, setTeaser] = useState<{
@@ -178,6 +181,17 @@ function LandingContent() {
     }
   };
 
+  // Comparison table rows: "yes"/"no" render as check/cross icons.
+  const compareFeatures = [
+    { label: "Audit scope", values: ["1 video or short", "Full channel / profile", "Unlimited"] },
+    { label: "Transcript parsing", values: ["Full video", "Multi-video", "Unlimited"] },
+    { label: "Comment toxicity audit", values: ["50 comments", "Deep audit", "Unlimited"] },
+    { label: "Competitor conflict check", values: ["yes", "yes", "yes"] },
+    { label: "Contract safeguards generator", values: ["no", "yes", "yes"] },
+    { label: "Print-ready PDF dossier", values: ["no", "no", "yes"] },
+    { label: "Batch multi-URL queue", values: ["no", "no", "yes"] },
+  ];
+
   const faqs = [
     {
       q: "How does SafeSponsor AI perform brand safety vetting?",
@@ -214,13 +228,13 @@ function LandingContent() {
   ];
 
   return (
-    <div className={`min-h-screen font-sans transition-colors duration-300 ${
+    <div className={`min-h-screen font-sans pb-16 md:pb-0 transition-colors duration-300 ${
       isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-50 text-slate-900'
     }`}>
       <Navbar />
 
       {/* HERO SECTION */}
-      <section className="relative overflow-hidden pt-12 pb-24 md:pt-20 md:pb-32">
+      <section id="hero" className="relative overflow-hidden pt-12 pb-24 md:pt-20 md:pb-32">
         {/* Background decoration removed for clean design */}
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
@@ -740,6 +754,18 @@ function LandingContent() {
           <div className="flex justify-center">
             <TestModeBadge />
           </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-6">
+            {[
+              { icon: ShieldCheck, label: "Secure payments via Dodo Payments" },
+              { icon: CheckCircle2, label: "No card required for the free check" },
+              { icon: Lock, label: "Cancel anytime — no lock-in" },
+            ].map((t, i) => (
+              <span key={i} className={`flex items-center gap-1.5 text-xs font-semibold ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                <t.icon className="w-3.5 h-3.5 text-emerald-500" />
+                {t.label}
+              </span>
+            ))}
+          </div>
         </div>
 
         {checkoutError && (
@@ -750,7 +776,7 @@ function LandingContent() {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-3 md:grid-cols-2 gap-8 items-stretch">
+        <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-8 items-stretch">
           {/* PLAN 1 */}
           <motion.div 
             whileHover={{ y: -4 }}
@@ -865,9 +891,50 @@ function LandingContent() {
               <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                 Designed for influencer marketing agencies and e-commerce PR teams. Start from a single $8 report — upgrade anytime.
               </p>
+
+              {/* Billing cycle toggle (annual = 2 months free per pricing research) */}
+              <div className={`inline-flex items-center rounded-lg border p-1 mb-6 text-xs font-bold ${
+                isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-100 border-slate-200'
+              }`}>
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle('month')}
+                  aria-pressed={billingCycle === 'month'}
+                  className={`px-3.5 py-1.5 rounded-md transition-all ${
+                    billingCycle === 'month'
+                      ? (isDark ? 'bg-zinc-800 text-white' : 'bg-white text-slate-900 shadow-sm')
+                      : (isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700')
+                  }`}
+                >
+                  Monthly
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle('year')}
+                  aria-pressed={billingCycle === 'year'}
+                  className={`px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                    billingCycle === 'year'
+                      ? (isDark ? 'bg-zinc-800 text-white' : 'bg-white text-slate-900 shadow-sm')
+                      : (isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700')
+                  }`}
+                >
+                  Annual
+                  <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-orange-500/15 text-orange-500">SAVE 17%</span>
+                </button>
+              </div>
+
               <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold">$149</span>
-                <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ month</span>
+                <span className="text-5xl font-extrabold">{billingCycle === 'year' ? '$1,490' : '$149'}</span>
+                <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
+                  {billingCycle === 'year' ? '/ year' : '/ month'}
+                </span>
+                {billingCycle === 'year' && (
+                  <span className={`ml-2 text-xs font-bold px-2 py-1 rounded-md ${
+                    isDark ? 'bg-orange-500/15 text-orange-400' : 'bg-orange-100 text-orange-700'
+                  }`}>
+                    2 months free
+                  </span>
+                )}
               </div>
               <ul className="space-y-3 mb-8 text-sm">
                 <li className="flex items-center gap-2">
@@ -889,7 +956,7 @@ function LandingContent() {
               </ul>
             </div>
             <button
-              onClick={() => handleCheckout("subscription")}
+              onClick={() => handleCheckout(billingCycle === 'year' ? "subscription_annual" : "subscription")}
               disabled={loadingPlan !== null}
               className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                 isDark 
@@ -897,9 +964,52 @@ function LandingContent() {
                   : 'bg-blue-900 hover:bg-blue-950 text-white'
               }`}
             >
-              {loadingPlan === "subscription" ? <Activity className="w-5 h-5 animate-spin" /> : <Award className="w-5 h-5" />}
-              <span>Subscribe Unlimited Pro ($149)</span>
+              {loadingPlan === "subscription" || loadingPlan === "subscription_annual" ? <Activity className="w-5 h-5 animate-spin" /> : <Award className="w-5 h-5" />}
+              <span>Subscribe Unlimited Pro ({billingCycle === 'year' ? '$1,490/yr' : '$149/mo'})</span>
             </button>
+          </motion.div>
+
+          {/* PLAN 4 (ANCHOR — quote-only tier that makes the mid tiers look reasonable) */}
+          <motion.div
+            whileHover={{ y: -4 }}
+            className={`rounded-xl border p-8 flex flex-col justify-between ${
+              isDark ? 'bg-zinc-900/30 border-dashed border-zinc-700' : 'bg-slate-50 border-dashed border-slate-300'
+            }`}
+          >
+            <div>
+              <h3 className="text-2xl font-bold mb-2">Agency / Enterprise</h3>
+              <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                For teams running hundreds of creator placements with bespoke compliance requirements.
+              </p>
+              <div className="mb-8 flex items-baseline gap-1">
+                <span className={`text-5xl font-extrabold ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>Custom</span>
+              </div>
+              <ul className="space-y-3 mb-8 text-sm">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Volume & annual-commitment pricing</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>White-label dossiers & API access</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Dedicated onboarding & priority SLA</span>
+                </li>
+              </ul>
+            </div>
+            <a
+              href="mailto:pandejesal@gmail.com?subject=Agency%2FEnterprise%20Plan%20Inquiry%20%E2%80%94%20SafeSponsor%20AI"
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 border ${
+                isDark
+                  ? 'border-zinc-700 hover:border-zinc-500 text-zinc-300 hover:text-white'
+                  : 'border-slate-300 hover:border-slate-400 text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <ExternalLink className="w-5 h-5" />
+              <span>Contact Sales</span>
+            </a>
           </motion.div>
         </div>
 
@@ -907,6 +1017,68 @@ function LandingContent() {
           <p className={`text-xs font-medium ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
             Not sure? Start with a single $8 report — upgrade to Unlimited Pro anytime. Cancel whenever.
           </p>
+        </div>
+
+        {/* COMPARISON TABLE — structural pricing clarity (GoGoChimp: comparison
+            tables lift conversion 8-12% vs prose bullets) */}
+        <div className="mt-16 max-w-5xl mx-auto">
+          <h3 className="text-xl sm:text-2xl font-bold text-center mb-8">
+            Compare Plans at a Glance
+          </h3>
+          <div className={`overflow-x-auto rounded-xl border ${
+            isDark ? 'border-zinc-800' : 'border-slate-200'
+          }`}>
+            <table className="w-full text-sm min-w-[620px]">
+              <thead>
+                <tr className={`${isDark ? 'bg-zinc-900/80' : 'bg-slate-50'}`}>
+                  <th className="text-left px-6 py-4 font-bold">Feature</th>
+                  <th className={`px-4 py-4 text-center font-bold border-l ${
+                    isDark ? 'border-zinc-800' : 'border-slate-200'
+                  }`}>
+                    Single
+                    <span className={`block text-xs font-semibold mt-0.5 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>$8 / report</span>
+                  </th>
+                  <th className={`px-4 py-4 text-center font-bold border-l ${
+                    isDark ? 'border-zinc-800' : 'border-slate-200'
+                  }`}>
+                    Channel
+                    <span className={`block text-xs font-semibold mt-0.5 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>$19 / audit</span>
+                  </th>
+                  <th className={`px-4 py-4 text-center font-bold border-l ${
+                    isDark ? 'bg-cyan-500/10 border-zinc-800' : 'bg-orange-50 border-slate-200'
+                  }`}>
+                    Unlimited Pro
+                    <span className={`block text-xs font-semibold mt-0.5 ${isDark ? 'text-cyan-300' : 'text-orange-600'}`}>{billingCycle === 'year' ? '$1,490 / year' : '$149 / month'}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-800/40 dark:divide-zinc-800/40">
+                {compareFeatures.map((row, i) => (
+                  <tr key={i} className={i % 2 === 1 ? (isDark ? 'bg-zinc-900/40' : 'bg-slate-50/50') : ''}>
+                    <td className={`px-6 py-3.5 font-semibold ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
+                      {row.label}
+                    </td>
+                    {row.values.map((v, j) => (
+                      <td
+                        key={j}
+                        className={`px-4 py-3.5 text-center border-l ${
+                          isDark ? 'border-zinc-800' : 'border-slate-200'
+                        } ${j === 2 ? (isDark ? 'bg-cyan-500/[0.04]' : 'bg-orange-50/40') : ''}`}
+                      >
+                        {v === "yes" ? (
+                          <Check className="w-4 h-4 mx-auto text-emerald-500" />
+                        ) : v === "no" ? (
+                          <X className="w-4 h-4 mx-auto text-zinc-500 dark:text-zinc-600" />
+                        ) : (
+                          <span className={`font-medium ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>{v}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -982,6 +1154,32 @@ function LandingContent() {
           </div>
         </div>
       </footer>
+
+      {/* MOBILE STICKY CTA BAR (GoGoChimp: sticky pricing CTA lifts mobile
+          conversion 8-15%). Hidden on md+; root div has pb-16 on mobile so
+          content is never obscured. */}
+      <div className={`md:hidden fixed bottom-0 inset-x-0 z-50 border-t backdrop-blur-lg ${
+        isDark ? 'bg-zinc-950/85 border-zinc-800' : 'bg-white/90 border-slate-200'
+      }`}>
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' })}
+            className="flex-1 py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:from-orange-500 hover:to-orange-400 transition-all shadow-md"
+          >
+            Check Any Creator Free
+          </button>
+          <button
+            type="button"
+            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+            className={`flex-1 py-3 rounded-xl font-bold text-sm transition-colors ${
+              isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-white' : 'bg-slate-900 hover:bg-slate-800 text-white'
+            }`}
+          >
+            See Pricing
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

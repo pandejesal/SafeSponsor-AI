@@ -107,7 +107,9 @@ export async function POST(req: NextRequest) {
       (eventType === "payment.succeeded" && subscriptionId) ||
       (eventType === "refund.succeeded" && subscriptionId);
     if (isSubscriptionContextEvent) {
-      plan = "subscription";
+      // Preserve the annual variant when the checkout metadata carried it;
+      // any other subscription-scoped event resolves to the monthly plan.
+      plan = data?.metadata?.plan === "subscription_annual" ? "subscription_annual" : "subscription";
     }
 
     // Resolve UID: direct metadata first, then fall back to the stored
@@ -217,7 +219,7 @@ export async function POST(req: NextRequest) {
         };
       }
       console.log(`[ENTITLEMENT REVOCATION] Revoking subscription/credits access due to event: ${eventType} for plan: ${plan}`);
-    } else if (plan === "subscription") {
+    } else if (plan === "subscription" || plan === "subscription_annual") {
       entitlementUpdate.hasSubscription = true;
       entitlementUpdate.subscription = { status: "active", subscriptionId: subscriptionId || null };
     } else if (plan === "single") {
@@ -259,7 +261,7 @@ export async function POST(req: NextRequest) {
           [creditKey]: clampedVal,
         }, { merge: true });
       });
-    } else if (isRevocationEvent && plan === "subscription") {
+    } else if (isRevocationEvent && (plan === "subscription" || plan === "subscription_annual")) {
       // CRITICAL ORDERING FIX: subscription.cancelled / subscription.expired /
       // refund.succeeded (with subscription context) MUST hit the revocation
       // branch. Previously they fell through to the grant path below, which
@@ -281,7 +283,7 @@ export async function POST(req: NextRequest) {
         tx.set(userRef, entitlementUpdate, { merge: true });
       });
       console.log(`[ENTITLEMENT REVOCATION] Subscription revoked for user ${uid.slice(0, 8)} via event: ${eventType}`);
-    } else if (plan === "subscription") {
+    } else if (plan === "subscription" || plan === "subscription_annual") {
       // Subscription grants: extend from the latest expiry, but never double-extend
       // when payment.succeeded + subscription.active (or subscription.renewed) arrive
       // for the same billing period.
@@ -302,8 +304,14 @@ export async function POST(req: NextRequest) {
         const existingExpiryMs = existingSub?.expiresAt ? new Date(existingSub.expiresAt).getTime() : NaN;
         const hasValidExpiry = !isNaN(existingExpiryMs) && existingExpiryMs > 0;
         // Treat subscriptions expiring more than 20 days out as already granted
-        // for the current billing period (fresh grant or renewal already applied).
-        const alreadyActiveForPeriod = existingSub?.status === "active" && hasValidExpiry && existingExpiryMs > nowMs + 20 * 24 * 60 * 60 * 1000;
+        // for the current billing period (fresh grant or renewal already applied) —
+        // BUT only when the event belongs to the SAME stored subscription. A new
+        // purchase (different subscription_id, e.g. monthly->annual upgrade or a
+        // re-buy while a cancelled subscription still has access) must always
+        // extend, never be swallowed by the dedup guard.
+        const existingSubId = existingSub?.subscriptionId || userData.lastSubscriptionId || null;
+        const sameSubscriptionPeriod = subscriptionId ? existingSubId === subscriptionId : true;
+        const alreadyActiveForPeriod = existingSub?.status === "active" && hasValidExpiry && existingExpiryMs > nowMs + 20 * 24 * 60 * 60 * 1000 && sameSubscriptionPeriod;
 
         let expiresAt: Date;
         if (alreadyActiveForPeriod) {
@@ -311,20 +319,27 @@ export async function POST(req: NextRequest) {
         } else {
           const baseMs = hasValidExpiry ? Math.max(existingExpiryMs, nowMs) : nowMs;
           expiresAt = new Date(baseMs);
-          expiresAt.setMonth(expiresAt.getMonth() + 1);
+          if (plan === "subscription_annual") {
+            expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+          } else {
+            expiresAt.setMonth(expiresAt.getMonth() + 1);
+          }
         }
 
         tx.set(userRef, {
           ...entitlementUpdate,
           hasSubscription: true,
-          // M3T2: the intro offer is first-purchase only — stamp the flag so a
-          // future checkout never re-applies the $99 discount code.
-          introProClaimed: true,
-          // T6: clear the checkout in-flight marker — the intro has been claimed.
-          introPending: false,
+          // M3T2: the intro offer is first-purchase AND monthly-only — stamp
+          // the flag so a future checkout never re-applies the $99 discount
+          // code. (Annual purchases never carry the intro.)
+          ...(plan === "subscription" ? { introProClaimed: true, introPending: false } : {}),
           subscription: {
             status: "active",
             expiresAt: expiresAt.toISOString(),
+            // Preserve the subscription identity so the same-period dedup guard
+            // keeps working for this purchase's duplicate events (active/renewed)
+            // and future renewals.
+            subscriptionId: subscriptionId || existingSubId || undefined,
           },
         }, { merge: true });
       });

@@ -4,7 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
-  plan: z.enum(["single", "channel", "subscription"]),
+  plan: z.enum(["single", "channel", "subscription", "subscription_annual"]),
   customerEmail: z.string().email().max(255).optional().or(z.literal("")),
   customerName: z.string().max(100).optional().or(z.literal("")),
 });
@@ -75,6 +75,8 @@ export async function POST(req: NextRequest) {
       productId = process.env.DODO_PAYMENTS_PRODUCT_ID_CHANNEL || "";
     } else if (plan === "subscription") {
       productId = process.env.DODO_PAYMENTS_PRODUCT_ID_SUBSCRIPTION || "";
+    } else if (plan === "subscription_annual") {
+      productId = process.env.DODO_PAYMENTS_PRODUCT_ID_SUBSCRIPTION_ANNUAL || "";
     } else {
       return NextResponse.json({ error: "Invalid plan type specified" }, { status: 400 });
     }
@@ -88,7 +90,7 @@ export async function POST(req: NextRequest) {
         );
       }
       // Dev mode fallback
-      productId = plan === "single" ? "p_single_report" : plan === "channel" ? "p_channel_report" : "p_unlimited_sub";
+      productId = plan === "single" ? "p_single_report" : plan === "channel" ? "p_channel_report" : plan === "subscription" ? "p_unlimited_sub" : "p_unlimited_sub_annual";
     }
 
     const isLive = process.env.DODO_PAYMENTS_MODE === "live" || process.env.DODO_PAYMENTS_MODE === "live_mode";

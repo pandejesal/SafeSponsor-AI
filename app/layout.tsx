@@ -1,8 +1,16 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { Space_Grotesk } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
+
+// Display typeface for headings (self-hosted at build; swap fallback at runtime).
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://safe-sponsor-ai.vercel.app'),
@@ -46,7 +54,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className={`${spaceGrotesk.variable} dark`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -94,6 +102,13 @@ export default function RootLayout({
                   "price": "149",
                   "priceCurrency": "USD",
                   "billingIncrement": "P1M"
+                },
+                {
+                  "@type": "Offer",
+                  "name": "Unlimited Pro (Annual)",
+                  "price": "1490",
+                  "priceCurrency": "USD",
+                  "billingIncrement": "P1Y"
                 }
               ]
             }),

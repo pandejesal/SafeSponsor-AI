@@ -26,11 +26,16 @@ export async function GET(req: NextRequest) {
         cancelAtPeriodEnd: false,
         plan: null,
         introAvailable,
+        introClaimed: false,
         freeTeaserUsed: false,
       });
     }
 
     const data = userDoc.data() || {};
+    // introClaimed tells the client the user already used the intro (webhook/
+    // verify-payment stamped introProClaimed) — the banner must not promise
+    // $99 to a user checkout would bill at $149.
+    const introClaimed = data.introProClaimed === true;
     const sub = data.subscription && typeof data.subscription === "object" ? data.subscription : null;
     const expiresAt = sub?.expiresAt || null;
     const isSubActive = data.hasSubscription === true && expiresAt && new Date(expiresAt).getTime() > Date.now();
@@ -43,6 +48,7 @@ export async function GET(req: NextRequest) {
       cancelAtPeriodEnd: sub?.cancelAtPeriodEnd === true,
       plan: data.plan || null,
       introAvailable,
+      introClaimed,
       freeTeaserUsed: data.freeAnalysisUsed === true,
     });
   } catch (error: any) {

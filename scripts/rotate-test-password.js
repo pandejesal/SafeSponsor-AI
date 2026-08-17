@@ -5,6 +5,9 @@
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
+const { initializeApp, getApps, cert } = require("firebase-admin/app");
+const { getFirestore } = require("firebase-admin/firestore");
+const { getAuth } = require("firebase-admin/auth");
 
 const EMAIL = "pandejesal@gmail.com";
 const UID_FALLBACK = "BawpZULCjAOko5NEdIEGrustnYm1";
@@ -45,14 +48,6 @@ async function main() {
     process.exit(1);
   }
 
-  let admin;
-  try {
-    admin = require("firebase-admin");
-  } catch (e) {
-    console.error("[FAIL] firebase-admin not installed:", e.message);
-    process.exit(1);
-  }
-
   let serviceAccount;
   try {
     serviceAccount = JSON.parse(serviceAccountJson);
@@ -60,15 +55,15 @@ async function main() {
     console.error("[FAIL] FIREBASE_SERVICE_ACCOUNT is not valid JSON:", e.message);
     process.exit(1);
   }
-  if (admin.apps.length === 0) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      projectId: serviceAccount.projectId,
+  if (getApps().length === 0) {
+    initializeApp({
+      credential: cert(serviceAccount),
+      projectId: serviceAccount.project_id,
     });
   }
-  const db = admin.firestore();
-  const auth = admin.auth();
-  console.log("[OK] Admin SDK initialized (project: " + serviceAccount.projectId + ")");
+  const db = getFirestore();
+  const auth = getAuth();
+  console.log("[OK] Admin SDK initialized (project: " + serviceAccount.project_id + ")");
 
   // 1. Resolve the test user.
   let uid = null;

@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     }
 
     const plan = (rawBody as any)?.plan;
-    if (!plan || !["single", "channel", "subscription"].includes(plan)) {
+    if (!plan || !["single", "channel", "subscription", "subscription_annual"].includes(plan)) {
       return NextResponse.json({ error: "Invalid plan." }, { status: 400 });
     }
 
@@ -130,13 +130,16 @@ export async function POST(req: NextRequest) {
       entitlementUpdate.videoCredits = FieldValue.increment(1);
     } else if (plan === "channel") {
       entitlementUpdate.channelCredits = FieldValue.increment(1);
-    } else if (plan === "subscription") {
+    } else if (plan === "subscription" || plan === "subscription_annual") {
       entitlementUpdate.hasSubscription = true;
-      // M3T2: the intro offer is first-purchase only — stamp the flag so a
-      // future checkout never re-applies the $99 discount code.
-      entitlementUpdate.introProClaimed = true;
-      // T6: clear the checkout in-flight marker — the intro has been claimed.
-      entitlementUpdate.introPending = false;
+      // M3T2: the intro offer is first-purchase AND monthly-only — stamp the
+      // flag so a future checkout never re-applies the $99 discount code.
+      // (An annual purchase never carries the intro, so it must not stamp it.)
+      if (plan === "subscription") {
+        entitlementUpdate.introProClaimed = true;
+        // T6: clear the checkout in-flight marker — the intro has been claimed.
+        entitlementUpdate.introPending = false;
+      }
       // P-M5: keep the subscription->user mapping fresh so renewal/refund
       // payloads (which may omit metadata.uid) can still resolve this user.
       if (matchingPayment.subscription_id) {
@@ -151,21 +154,30 @@ export async function POST(req: NextRequest) {
         if (existing.lastPaymentId === paymentId) {
           throw new Error("already_granted");
         }
-        if (plan === "subscription") {
+        if (plan === "subscription" || plan === "subscription_annual") {
           // P-M4: extend from the latest expiry (webhook parity) instead of
           // resetting to now+1mo — a stale verify-payment call must never
-          // shorten an active subscription.
+          // shorten an active subscription. Annual extends by 12 months.
           const existingSub = existing.subscription && typeof existing.subscription === "object" ? existing.subscription : null;
           const existingExpiryMs = existingSub?.expiresAt ? new Date(existingSub.expiresAt).getTime() : NaN;
           const hasValidExpiry = !isNaN(existingExpiryMs) && existingExpiryMs > 0;
-          const alreadyActiveForPeriod = existingSub?.status === "active" && hasValidExpiry && existingExpiryMs > Date.now() + 20 * 24 * 60 * 60 * 1000;
+          // Same-period dedup must match the SAME subscription: a new purchase
+          // (different subscription_id — e.g. monthly->annual upgrade or re-buy
+          // while a cancelled sub still has access) always extends.
+          const existingSubId = existingSub?.subscriptionId || existing.lastSubscriptionId || null;
+          const sameSubscriptionPeriod = matchingPayment.subscription_id ? existingSubId === matchingPayment.subscription_id : true;
+          const alreadyActiveForPeriod = existingSub?.status === "active" && hasValidExpiry && existingExpiryMs > Date.now() + 20 * 24 * 60 * 60 * 1000 && sameSubscriptionPeriod;
           let expiresAt: Date;
           if (alreadyActiveForPeriod) {
             expiresAt = new Date(existingExpiryMs);
           } else {
             const baseMs = hasValidExpiry ? Math.max(existingExpiryMs, Date.now()) : Date.now();
             expiresAt = new Date(baseMs);
-            expiresAt.setMonth(expiresAt.getMonth() + 1);
+            if (plan === "subscription_annual") {
+              expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+            } else {
+              expiresAt.setMonth(expiresAt.getMonth() + 1);
+            }
           }
           entitlementUpdate.subscription = {
             status: "active",
