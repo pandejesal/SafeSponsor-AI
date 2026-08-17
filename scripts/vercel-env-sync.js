@@ -42,6 +42,7 @@ function vercel(args, input) {
 }
 
 function main() {
+  const target = process.env.SYNC_TARGET || "production";
   const env = loadEnv(path.join(__dirname, "..", ".env.local"));
   const missing = KEYS.filter((k) => !env[k] || env[k] === "[SENSITIVE]");
   if (missing.length) {
@@ -50,9 +51,9 @@ function main() {
   }
 
   for (const key of KEYS) {
-    const rm = vercel(["env", "rm", key, "production", "--yes"]);
-    console.log("[rm] " + key + " -> " + (rm.status === 0 ? "removed" : "not present (" + (rm.status || "?") + ")"));
-    const add = vercel(["env", "add", key, "production"], env[key] + "\n");
+    const rm = vercel(["env", "rm", key, target, "--yes"]);
+    console.log("[rm] " + key + " (" + target + ") -> " + (rm.status === 0 ? "removed" : "not present (" + (rm.status || "?") + ")"));
+    const add = vercel(["env", "add", key, target], env[key] + "\n");
     if (add.status !== 0) {
       console.error("[FAIL] " + key + " add failed: " + add.stderr + " " + add.stdout);
       process.exit(1);
