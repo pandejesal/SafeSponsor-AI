@@ -24,40 +24,29 @@ Covers the audit open items that need credentials/tools not available on the dev
 4. Record the new password somewhere safe; delete the old creds file if it still exists (`.swarm/e2e/.creds` was removed 2026-08-16).
 5. Pending Dodo test sessions (`cks_…`) expire by themselves in test mode — verify in the Dodo dashboard before launch.
 
-## 2. Restore drill
+## 2. Backup & restore (DECISION 2026-08-18: no Blaze — admin-SDK dump is the strategy)
 
-> Audit open item 3. Needs: `gcloud` CLI + a service account with Firestore admin.
+> Audit open item 3. The GCS export/import path (Blaze plan) is **permanently declined by the user**
+> (2026-08-18: "I dont want to do Blaze"). The verified admin-SDK JSONL dump below is the canonical
+> backup/restore procedure. gcloud 580.0.0 is installed and the SA key activates non-interactively,
+> but gcloud is **not needed** for this path (it exists only in case the GCS drill is ever revisited).
 
-**Ready (2026-08-18)** — everything up to the bucket is in place:
-- gcloud **580.0.0** installed via `winget install -e --id Google.CloudSDK --source winget`; binary at
-  `C:\Users\DELL\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd` (NOT on PATH in
-  existing shells — call by full path).
-- Non-interactive auth works (no `gcloud auth login` needed): the existing SA key at
-  `C:\Users\DELL\Downloads\safesponsor-ai-958cd-9ad3a3950b5a.json` was activated with
-  `gcloud auth activate-service-account --key-file=...` → `firebase-adminsdk-fbsvc@safesponsor-ai-958cd.iam.gserviceaccount.com`;
-  `gcloud config set project safesponsor-ai-958cd` done.
-- Database facts (`gcloud firestore databases list`): location **nam5** (US multi-region — the backup
-  bucket must also be multi-region `US`), edition STANDARD, PITR disabled (1h retention only).
+**Backup — `.swarm/backup-firestore.js`** (firebase-admin, no billing):
+1. Streams every collection to `backups/<stamp>/<collection>.jsonl` (doc id + data per line).
+2. Run: `node .swarm/backup-firestore.js` → prints per-collection counts + `BACKUP_OK`.
+3. Verified 2026-08-18: 5 collections / 89 docs dumped.
+4. Copy `backups/` somewhere off-machine periodically (it is gitignored — contains PII: emails,
+   transcripts, payment ids). Last good: `backups/2026-08-18-13-38-49`.
 
-**BLOCKED — external dependency (needs user action)**: `gcloud storage buckets create gs://…`
-fails with `HTTPError 403: The billing account for the owning project is disabled in state absent`.
-The project is on the Firebase **Spark (free) plan** — GCS bucket creation and Firestore
-export/import both require the **Blaze (pay-as-you-go) plan** (console: project settings → usage &
-billing → upgrade; requires attaching a payment method). No code/CLI path around this.
+**Restore — `.swarm/restore-firestore.js`**:
+1. `node .swarm/restore-firestore.js backups/<stamp>` — dry run (counts only).
+2. `node .swarm/restore-firestore.js backups/<stamp> --apply` — writes every doc back with `set()`.
+3. Verified 2026-08-18: full round-trip, 89/89 docs restored, counts match.
 
-**Once billing is enabled, run:**
-1. `gcloud storage buckets create gs://safesponsor-ai-958cd-firestore-backups --project=safesponsor-ai-958cd --location=us`
-2. `gcloud firestore export gs://safesponsor-ai-958cd-firestore-backups/backups/20260818` (bucket must be same location: us multi-region).
-3. Restore drill (import into the default database, same data = net no-op, proves the path):
-   `gcloud firestore import gs://safesponsor-ai-958cd-firestore-backups/backups/<timestamp>`
-4. Verify: dashboard history loads; a test analyze round-trips.
-5. Note: **stopgap backup implemented + round-trip verified (2026-08-18)** —
-   `.swarm/backup-firestore.js` (streams every collection to
-   `backups/<stamp>/<collection>.jsonl`) and `.swarm/restore-firestore.js`
-   (dry-run default, `--apply` writes). Verified end-to-end: 5 collections /
-   89 docs dumped, restored, counted. `backups/` is gitignored (PII — emails,
-   transcripts). This covers routine data until Blaze is enabled; the GCS
-   export/import path remains the real restore drill.
+**Limitations (be honest):** no point-in-time recovery (restores the last dump only), no GCS offsite
+storage unless `backups/` is copied manually, and `set()`-based restore overwrites any docs that
+changed since the dump. Suitable for a hobby-scale app (2 users, ~90 docs); re-evaluate before real
+traffic.
 
 ## 3. Unlink the `safesponsor-ai2` Vercel project
 
