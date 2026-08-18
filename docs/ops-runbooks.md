@@ -28,12 +28,36 @@ Covers the audit open items that need credentials/tools not available on the dev
 
 > Audit open item 3. Needs: `gcloud` CLI + a service account with Firestore admin.
 
-1. Install gcloud, `gcloud auth login`, `gcloud config set project safesponsor-ai-958cd`.
-2. Export the production data: `gcloud firestore export gs://<your-bucket>/backups/$(date +%Y%m%d)` (bucket must be in the same project).
-3. Documented restore path (drill): import into a scratch project first, then to prod only after a dry run:
-   `gcloud firestore import gs://<your-bucket>/backups/<timestamp>` (restores the default database).
+**Ready (2026-08-18)** — everything up to the bucket is in place:
+- gcloud **580.0.0** installed via `winget install -e --id Google.CloudSDK --source winget`; binary at
+  `C:\Users\DELL\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd` (NOT on PATH in
+  existing shells — call by full path).
+- Non-interactive auth works (no `gcloud auth login` needed): the existing SA key at
+  `C:\Users\DELL\Downloads\safesponsor-ai-958cd-9ad3a3950b5a.json` was activated with
+  `gcloud auth activate-service-account --key-file=...` → `firebase-adminsdk-fbsvc@safesponsor-ai-958cd.iam.gserviceaccount.com`;
+  `gcloud config set project safesponsor-ai-958cd` done.
+- Database facts (`gcloud firestore databases list`): location **nam5** (US multi-region — the backup
+  bucket must also be multi-region `US`), edition STANDARD, PITR disabled (1h retention only).
+
+**BLOCKED — external dependency (needs user action)**: `gcloud storage buckets create gs://…`
+fails with `HTTPError 403: The billing account for the owning project is disabled in state absent`.
+The project is on the Firebase **Spark (free) plan** — GCS bucket creation and Firestore
+export/import both require the **Blaze (pay-as-you-go) plan** (console: project settings → usage &
+billing → upgrade; requires attaching a payment method). No code/CLI path around this.
+
+**Once billing is enabled, run:**
+1. `gcloud storage buckets create gs://safesponsor-ai-958cd-firestore-backups --project=safesponsor-ai-958cd --location=us`
+2. `gcloud firestore export gs://safesponsor-ai-958cd-firestore-backups/backups/20260818` (bucket must be same location: us multi-region).
+3. Restore drill (import into the default database, same data = net no-op, proves the path):
+   `gcloud firestore import gs://safesponsor-ai-958cd-firestore-backups/backups/<timestamp>`
 4. Verify: dashboard history loads; a test analyze round-trips.
-5. `backups/` dir in the repo is empty — the drill should populate it or reference the GCS bucket.
+5. Note: **stopgap backup implemented + round-trip verified (2026-08-18)** —
+   `.swarm/backup-firestore.js` (streams every collection to
+   `backups/<stamp>/<collection>.jsonl`) and `.swarm/restore-firestore.js`
+   (dry-run default, `--apply` writes). Verified end-to-end: 5 collections /
+   89 docs dumped, restored, counted. `backups/` is gitignored (PII — emails,
+   transcripts). This covers routine data until Blaze is enabled; the GCS
+   export/import path remains the real restore drill.
 
 ## 3. Unlink the `safesponsor-ai2` Vercel project
 

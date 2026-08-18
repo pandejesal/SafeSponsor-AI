@@ -14,3 +14,6 @@ coverage/
 .swarm/
 !PLAN.md
 hosting/.firebase/
+
+# stopgap Firestore backups (PII — never commit)
+backups/
