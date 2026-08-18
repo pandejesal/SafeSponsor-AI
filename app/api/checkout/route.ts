@@ -4,7 +4,7 @@ import { adminDb } from "@/lib/firebase-admin";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
-  plan: z.enum(["single", "channel", "subscription", "subscription_annual"]),
+  plan: z.enum(["single", "single_3pack", "channel", "subscription", "subscription_annual"]),
   customerEmail: z.string().email().max(255).optional().or(z.literal("")),
   customerName: z.string().max(100).optional().or(z.literal("")),
 });
@@ -69,8 +69,15 @@ export async function POST(req: NextRequest) {
     }
 
     let productId = "";
+    // P6 — the 3-pack is its own $19 product (Dodo quantity multiplies the
+    // unit price, so a discounted pack needs a dedicated product). The grant
+    // side resolves the credit count via metadata qty.
+    const grantQty = plan === "single_3pack" ? 3 : 1;
+    const grantPlan = plan === "single_3pack" ? "single" : plan;
     if (plan === "single") {
       productId = process.env.DODO_PAYMENTS_PRODUCT_ID_SINGLE || "";
+    } else if (plan === "single_3pack") {
+      productId = process.env.DODO_PAYMENTS_PRODUCT_ID_SINGLE_3PACK || "";
     } else if (plan === "channel") {
       productId = process.env.DODO_PAYMENTS_PRODUCT_ID_CHANNEL || "";
     } else if (plan === "subscription") {
@@ -90,7 +97,7 @@ export async function POST(req: NextRequest) {
         );
       }
       // Dev mode fallback
-      productId = plan === "single" ? "p_single_report" : plan === "channel" ? "p_channel_report" : plan === "subscription" ? "p_unlimited_sub" : "p_unlimited_sub_annual";
+      productId = plan === "single" || plan === "single_3pack" ? "p_single_report" : plan === "channel" ? "p_channel_report" : plan === "subscription" ? "p_unlimited_sub" : "p_unlimited_sub_annual";
     }
 
     const isLive = process.env.DODO_PAYMENTS_MODE === "live" || process.env.DODO_PAYMENTS_MODE === "live_mode";
@@ -152,15 +159,24 @@ export async function POST(req: NextRequest) {
         product_cart: [
           {
             product_id: productId,
+            // P6 — the 3-pack is a dedicated $19 product (Dodo has no volume
+            // discount: quantity would multiply the unit price, 3x$8=$24).
+            // Cart quantity is always 1; the credit grant resolves via
+            // metadata qty below.
             quantity: 1,
           }
         ],
         ...(discountCodes ? { discount_codes: discountCodes } : {}),
         ...(customerEmail ? { customer: { email: customerEmail, ...(customerName ? { name: customerName } : {}) } } : {}),
-        return_url: `${appUrl}/dashboard?dodo_success=true&plan=${plan}`,
+        // P6 — the 3-pack lands the user on the same "single" success page so
+        // the post-purchase upsell popup appears for both single and 3-pack.
+        return_url: `${appUrl}/dashboard?dodo_success=true&plan=${grantPlan}`,
         metadata: {
           uid,
-          plan,
+          // Grant-side plan: webhook/verify-payment resolve "single" and read
+          // qty for the credit count. The popup decision also reads this value.
+          plan: grantPlan,
+          ...(grantQty > 1 ? { qty: String(grantQty) } : {}),
           ...(discountCodes ? { introApplied: "true" } : {}),
         }
       })

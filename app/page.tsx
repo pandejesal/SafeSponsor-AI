@@ -40,6 +40,8 @@ function LandingContent() {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [billingCycle, setBillingCycle] = useState<'month' | 'year'>('month');
+  // P6 — Single Report pack choice: 1 report ($8) or the 3-pack ($19, ~21% off).
+  const [singlePack, setSinglePack] = useState<'one' | 'three'>('one');
   const [heroInputUrl, setHeroInputUrl] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [teaser, setTeaser] = useState<{
@@ -790,8 +792,45 @@ function LandingContent() {
                 Perfect for vetting a single creator&apos;s video or short before publishing.
               </p>
               <div className="mb-8 flex items-baseline gap-1">
-                <span className="text-5xl font-extrabold">$8</span>
-                <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ single report</span>
+                <span className="text-5xl font-extrabold">{singlePack === 'three' ? '$19' : '$8'}</span>
+                <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
+                  {singlePack === 'three' ? '/ 3 reports' : '/ single report'}
+                </span>
+              </div>
+
+              {/* P6 — 3-pack toggle (price anchors the $8 single) */}
+              <div className={`inline-flex items-center rounded-lg border p-1 mb-8 text-xs font-bold ${
+                isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-100 border-slate-200'
+              }`}>
+                <button
+                  type="button"
+                  onClick={() => setSinglePack('one')}
+                  aria-pressed={singlePack === 'one'}
+                  className={`px-3.5 py-1.5 rounded-md transition-all ${
+                    singlePack === 'one'
+                      ? (isDark ? 'bg-zinc-800 text-white' : 'bg-white text-slate-900 shadow-sm')
+                      : (isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700')
+                  }`}
+                >
+                  1 report
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSinglePack('three')}
+                  aria-pressed={singlePack === 'three'}
+                  className={`px-3.5 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+                    singlePack === 'three'
+                      ? (isDark ? 'bg-zinc-800 text-white' : 'bg-white text-slate-900 shadow-sm')
+                      : (isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700')
+                  }`}
+                >
+                  3-pack $19
+                  <span className={`text-[10px] font-extrabold uppercase tracking-wide px-1.5 py-0.5 rounded ${
+                    isDark ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    Save 21%
+                  </span>
+                </button>
               </div>
               <ul className="space-y-3 mb-8 text-sm">
                 <li className="flex items-center gap-2">
@@ -809,7 +848,7 @@ function LandingContent() {
               </ul>
             </div>
             <button
-              onClick={() => handleCheckout("single")}
+              onClick={() => handleCheckout(singlePack === 'three' ? "single_3pack" : "single")}
               disabled={loadingPlan !== null}
               className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                 isDark 
@@ -817,8 +856,8 @@ function LandingContent() {
                   : 'bg-slate-900 hover:bg-slate-800 text-white'
               }`}
             >
-              {loadingPlan === "single" ? <Activity className="w-5 h-5 animate-spin" /> : <DollarSign className="w-5 h-5" />}
-              <span>Buy Single Report ($8)</span>
+              {loadingPlan === "single" || loadingPlan === "single_3pack" ? <Activity className="w-5 h-5 animate-spin" /> : <DollarSign className="w-5 h-5" />}
+              <span>{singlePack === 'three' ? 'Buy 3 Reports ($19)' : 'Buy Single Report ($8)'}</span>
             </button>
           </motion.div>
 
@@ -1036,7 +1075,7 @@ function LandingContent() {
                     isDark ? 'border-zinc-800' : 'border-slate-200'
                   }`}>
                     Single
-                    <span className={`block text-xs font-semibold mt-0.5 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>$8 / report</span>
+                    <span className={`block text-xs font-semibold mt-0.5 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>{singlePack === 'three' ? '$19 / 3 reports' : '$8 / report'}</span>
                   </th>
                   <th className={`px-4 py-4 text-center font-bold border-l ${
                     isDark ? 'border-zinc-800' : 'border-slate-200'

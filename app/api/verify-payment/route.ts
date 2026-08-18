@@ -104,6 +104,12 @@ export async function POST(req: NextRequest) {
 
     const paymentId = matchingPayment.payment_id || matchingPayment.id;
 
+    // P6: quantity-aware grants — a "single_3pack" payment carries metadata
+    // qty so the fallback grants the same credit count as the webhook.
+    const rawQty = parseInt(matchingPayment?.metadata?.qty, 10);
+    const qty = Number.isFinite(rawQty) && rawQty >= 1 && rawQty <= 10 ? rawQty : 1;
+    const customerId = matchingPayment?.customer?.customer_id || null;
+
     // P-M2: a refunded payment must never be re-claimed. The webhook writes a
     // marker under refunded_payments/{paymentId} on refund.succeeded.
     const refundMarker = await adminDb
@@ -125,9 +131,12 @@ export async function POST(req: NextRequest) {
       paymentProvider: "dodo_payments",
       updatedAt: new Date(),
     };
+    if (customerId) {
+      entitlementUpdate.lastDodoCustomerId = customerId;
+    }
 
     if (plan === "single") {
-      entitlementUpdate.videoCredits = FieldValue.increment(1);
+      entitlementUpdate.videoCredits = FieldValue.increment(qty);
     } else if (plan === "channel") {
       entitlementUpdate.channelCredits = FieldValue.increment(1);
     } else if (plan === "subscription" || plan === "subscription_annual") {
@@ -183,6 +192,9 @@ export async function POST(req: NextRequest) {
             status: "active",
             expiresAt: expiresAt.toISOString(),
             ...(matchingPayment.subscription_id ? { subscriptionId: matchingPayment.subscription_id } : {}),
+            // P7 — parity with the webhook grant: a re-purchase must clear the
+            // stale cancelAtPeriodEnd flag from an earlier cancellation.
+            cancelAtPeriodEnd: false,
           };
         }
         tx.set(userRef, entitlementUpdate, { merge: true });

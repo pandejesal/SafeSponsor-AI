@@ -96,6 +96,13 @@ export async function POST(req: NextRequest) {
     const paymentId = data?.payment_id || data?.id || body?.id || null;
     const subscriptionId = data?.subscription_id || data?.subscription?.id || data?.payment?.subscription_id || null;
 
+    // P6: quantity-aware grants — a "single_3pack" purchase rides the same
+    // "single" plan in metadata but carries qty so credit grants scale (3x).
+    // Clamped 1..10 so a malformed payload can never mint excessive credits.
+    const rawQty = parseInt(data?.metadata?.qty, 10);
+    const qty = Number.isFinite(rawQty) && rawQty >= 1 && rawQty <= 10 ? rawQty : 1;
+    const customerId = data?.customer?.customer_id || data?.payment?.customer?.customer_id || null;
+
     // Resolve plan: any subscription-scoped event or a payment/refund that
     // carries a subscription id is always a subscription grant or revocation,
     // even when the payload lacks the original checkout metadata. This prevents
@@ -202,6 +209,11 @@ export async function POST(req: NextRequest) {
     if (subscriptionId) {
       entitlementUpdate.lastSubscriptionId = subscriptionId;
     }
+    // Keep the Dodo customer id so a later one-click upsell (saved card) can
+    // charge the same customer without re-entering card details.
+    if (customerId) {
+      entitlementUpdate.lastDodoCustomerId = customerId;
+    }
 
     if (isRevocationEvent) {
       entitlementUpdate.hasSubscription = false;
@@ -223,7 +235,7 @@ export async function POST(req: NextRequest) {
       entitlementUpdate.hasSubscription = true;
       entitlementUpdate.subscription = { status: "active", subscriptionId: subscriptionId || null };
     } else if (plan === "single") {
-      entitlementUpdate.videoCredits = FieldValue.increment(1);
+      entitlementUpdate.videoCredits = FieldValue.increment(qty);
     } else if (plan === "channel") {
       entitlementUpdate.channelCredits = FieldValue.increment(1);
     } else {
@@ -244,7 +256,7 @@ export async function POST(req: NextRequest) {
         const userData = userSnap.data() || {};
         const creditKey = plan === "single" ? "videoCredits" : "channelCredits";
         const currentVal = typeof userData[creditKey] === "number" ? userData[creditKey] : 0;
-        const clampedVal = Math.max(0, currentVal - 1);
+        const clampedVal = Math.max(0, currentVal - qty);
 
         // P-M2: record the refunded payment so /api/verify-payment can never
         // re-claim it, even if lastPaymentId has since advanced.
@@ -340,6 +352,12 @@ export async function POST(req: NextRequest) {
             // keeps working for this purchase's duplicate events (active/renewed)
             // and future renewals.
             subscriptionId: subscriptionId || existingSubId || undefined,
+            // P7 — a re-purchase after cancellation must never leave the stale
+            // `cancelAtPeriodEnd: true` flag (deep-merged by set(merge) from the
+            // earlier cancellation) driving the dashboard's "scheduled to cancel"
+            // UI. Dodo's field is cancel_at_next_billing_date; every fresh grant
+            // explicitly re-arms it to false.
+            cancelAtPeriodEnd: false,
           },
         }, { merge: true });
       });

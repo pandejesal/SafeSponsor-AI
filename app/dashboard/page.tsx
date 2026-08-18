@@ -141,6 +141,15 @@ function DashboardInner() {
   const [cancelTyping, setCancelTyping] = useState("");
   const [cancelSuccess, setCancelSuccess] = useState<string | null>(null);
 
+  // P4 — post-purchase Channel Report upsell popup (one-click charge).
+  const [showUpsell, setShowUpsell] = useState(false);
+  const [upsellState, setUpsellState] = useState<"idle" | "charging" | "success" | "redirect" | "error">("idle");
+  const [upsellError, setUpsellError] = useState<string | null>(null);
+  const upsellPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => () => {
+    if (upsellPollRef.current) clearInterval(upsellPollRef.current);
+  }, []);
+
   // Filter, Tab & Search states
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<'all' | 'sponsor' | 'caution' | 'blacklist' | 'cached'>('all');
@@ -166,6 +175,14 @@ function DashboardInner() {
     const dodoSuccess = searchParams.get('dodo_success');
     const plan = searchParams.get('plan');
     if (dodoSuccess === 'true' && plan && user) {
+      // P4 — a Single (or 3-pack, which lands on plan=single) purchase opens
+      // the Channel Report upsell popup on this landing. Never on channel /
+      // subscription landings, and it can be dismissed.
+      if (plan === 'single') {
+        setShowUpsell(true);
+        setUpsellState('idle');
+        setUpsellError(null);
+      }
       const verifyPayment = async () => {
         try {
           const token = await user.getIdToken();
@@ -246,27 +263,7 @@ function DashboardInner() {
         });
         if (res.ok) {
           const data = await res.json();
-          // Guard against a stale in-flight poll response reverting the
-          // optimistic cancelAtPeriodEnd set right after cancelling.
-          setUserCredits(prev => {
-            const serverCancel = data.cancelAtPeriodEnd === true;
-            if (prev?.cancelAtPeriodEnd && !serverCancel) {
-              return prev;
-            }
-            return {
-              videoCredits: data.videoCredits || 0,
-              channelCredits: data.channelCredits || 0,
-              hasSubscription: data.hasSubscription || false,
-              subscriptionExpiresAt: data.subscriptionExpiresAt || null,
-              cancelAtPeriodEnd: serverCancel,
-              // Falsy when unconfigured or absent from an older server — the
-              // $99 banner stays hidden rather than over-promising.
-              introAvailable: data.introAvailable === true,
-              introClaimed: data.introClaimed === true,
-              freeTeaserUsed: data.freeTeaserUsed === true,
-              plan: typeof data.plan === "string" ? data.plan : null,
-            };
-          });
+          applyServerCredits(data);
         }
       } catch (err) {
         console.warn("Credits fetch error:", err);
@@ -291,6 +288,96 @@ function DashboardInner() {
       document.removeEventListener("visibilitychange", onVisible);
     };
   }, [user]);
+
+  // P4 — merge a /api/check-credits payload into userCredits. Keeps the
+  // optimistic cancelAtPeriodEnd guard from the cancel flow: a stale in-flight
+  // poll response must never revert the flag set right after cancelling.
+  const applyServerCredits = (data: any) => {
+    setUserCredits(prev => {
+      const serverCancel = data.cancelAtPeriodEnd === true;
+      if (prev?.cancelAtPeriodEnd && !serverCancel) {
+        return prev;
+      }
+      return {
+        videoCredits: data.videoCredits || 0,
+        channelCredits: data.channelCredits || 0,
+        hasSubscription: data.hasSubscription || false,
+        subscriptionExpiresAt: data.subscriptionExpiresAt || null,
+        cancelAtPeriodEnd: serverCancel,
+        // Falsy when unconfigured or absent from an older server — the $99
+        // banner stays hidden rather than over-promising.
+        introAvailable: data.introAvailable === true,
+        introClaimed: data.introClaimed === true,
+        freeTeaserUsed: data.freeTeaserUsed === true,
+        plan: typeof data.plan === "string" ? data.plan : null,
+      };
+    });
+  };
+
+  // P4 — one-click upsell: /api/upsell charges the saved card (confirm:true)
+  // or returns a standard checkout URL. On one-click success, poll credits a
+  // few times so the granted Channel Report credit shows up without a reload.
+  const handleUpsell = async () => {
+    if (!user) return;
+    setUpsellState("charging");
+    setUpsellError(null);
+    try {
+      const token = await user.getIdToken();
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
+      }
+      const res = await fetch('/api/upsell', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ plan: 'channel' }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Upsell failed. Please try again.');
+      }
+      if (data.ok === true) {
+        setUpsellState("success");
+        let tries = 0;
+        upsellPollRef.current = setInterval(async () => {
+          tries += 1;
+          try {
+            const t = await user.getIdToken();
+            const r = await fetch('/api/check-credits', { headers: { 'Authorization': `Bearer ${t}` } });
+            if (r.ok) {
+              const c = await r.json();
+              if ((c.channelCredits || 0) > 0 || tries >= 5) {
+                applyServerCredits(c);
+                if (upsellPollRef.current) clearInterval(upsellPollRef.current);
+              }
+            } else if (tries >= 5 && upsellPollRef.current) {
+              clearInterval(upsellPollRef.current);
+            }
+          } catch {
+            if (tries >= 5 && upsellPollRef.current) clearInterval(upsellPollRef.current);
+          }
+        }, 2000);
+      } else if (data.url) {
+        setUpsellState("redirect");
+        // Popup blockers can return null from window.open — never leave the
+        // user on a dead button; navigate in place instead.
+        const win = window.open(data.url, '_blank', 'noopener');
+        if (!win) {
+          window.location.href = data.url;
+        }
+      } else {
+        throw new Error(data.error || 'Upsell failed. Please try again.');
+      }
+    } catch (err: any) {
+      console.error("Upsell error:", err);
+      setUpsellState("error");
+      setUpsellError(err?.message || "Failed to start upsell.");
+    }
+  };
 
   const handleCheckout = async (plan: string) => {
     if (!user) return;
@@ -2649,6 +2736,105 @@ Report Generated via SafeSponsor AI Research Engine
                       {cancellingSub ? "Cancelling..." : "Confirm cancellation"}
                     </button>
                   </div>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* P4 — post-purchase Channel Report upsell popup. Shown only on the
+            single/3-pack success landing, dismissible, and suppressed once the
+            user already holds Channel Report credits. */}
+        {showUpsell && userCredits !== null && (userCredits.channelCredits || 0) <= 0 && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'}`}>
+              <button
+                type="button"
+                onClick={() => setShowUpsell(false)}
+                aria-label="Close upsell offer"
+                className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                  isDark ? 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              {upsellState === "success" ? (
+                <div className="text-center">
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">Channel Report unlocked</h3>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    Your payment went through. The Channel Report credit will appear here in a moment.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowUpsell(false)}
+                    className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : upsellState === "redirect" ? (
+                <div className="text-center">
+                  <Zap className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">Almost there</h3>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    We opened secure checkout in a new tab to finish your Channel Report purchase.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowUpsell(false)}
+                    className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white transition-colors"
+                  >
+                    I&apos;ll complete it there
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-xl font-bold mb-1">Get the full picture</h3>
+                  <p className={`text-sm mb-4 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    You vetted one video — now audit the whole channel: multi-video toxicity scan, deep comment sentiment audit and a shareable dossier PDF.
+                  </p>
+                  <div className={`flex items-baseline gap-1 mb-6 ${isDark ? 'text-zinc-300' : 'text-slate-800'}`}>
+                    <span className="text-4xl font-extrabold">$19</span>
+                    <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ channel audit</span>
+                  </div>
+                  {upsellState === "error" && (
+                    <div className={`mb-4 p-3 rounded-xl border text-sm font-medium ${isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
+                      {upsellError}
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleUpsell}
+                    disabled={upsellState === "charging"}
+                    className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                      isDark
+                        ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white'
+                        : 'bg-orange-600 hover:bg-orange-700 text-white'
+                    } disabled:opacity-60 disabled:cursor-not-allowed`}
+                  >
+                    {upsellState === "charging" ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        Processing payment…
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4" />
+                        Unlock Channel Report — $19
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowUpsell(false)}
+                    className={`mt-3 w-full py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                      isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    No thanks
+                  </button>
                 </>
               )}
             </div>
