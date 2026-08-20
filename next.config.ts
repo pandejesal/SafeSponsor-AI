@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [],
   },
-  output: 'standalone',
   async headers() {
     return [
       {
