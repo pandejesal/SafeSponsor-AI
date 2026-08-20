@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     if (!auth) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot init on mount: auth SDK not available (lazy import failed), loading must end exactly once
       setLoading(false);
       return;
     }

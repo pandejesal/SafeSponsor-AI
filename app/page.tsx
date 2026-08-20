@@ -1310,6 +1310,7 @@ function LandingContent() {
 export default function Page() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration mount-guard: SSR must render the pre-hydration state, so the flip to mounted belongs in the effect
     setMounted(true);
   }, []);
   

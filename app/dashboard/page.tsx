@@ -2879,6 +2879,7 @@ Report Generated via SafeSponsor AI Research Engine
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration mount-guard: SSR must render the pre-hydration state, so the flip to mounted belongs in the effect
     setMounted(true);
   }, []);
   

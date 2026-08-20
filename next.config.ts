@@ -2,9 +2,6 @@ import type {NextConfig} from 'next';
 import { withSentryConfig } from '@sentry/nextjs';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -30,14 +27,6 @@ const nextConfig: NextConfig = {
         ],
       },
     ];
-  },
-  webpack: (config, {dev}) => {
-    if (dev && process.env.DISABLE_HMR === 'true') {
-      config.watchOptions = {
-        ignored: /.*/,
-      };
-    }
-    return config;
   },
 };
 export default withSentryConfig(nextConfig, {

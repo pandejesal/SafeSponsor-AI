@@ -19,6 +19,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const saved = localStorage.getItem('safesponsor-theme') as Theme | null;
     if (saved === 'dark' || saved === 'light') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot read of localStorage on mount (external system sync, not a render-derived value)
       setThemeState(saved);
       document.documentElement.classList.remove('dark', 'light');
       document.documentElement.classList.add(saved);

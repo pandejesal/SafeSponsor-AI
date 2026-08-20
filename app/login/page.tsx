@@ -103,6 +103,7 @@ function LoginInner() {
     const codeParam = merged.get('errorCode') || merged.get('error') || '';
     const desc = merged.get('errorDescription') || '';
     const code = codeParam.startsWith('auth/') ? codeParam : `auth/${codeParam}`;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot read of the auth-handler URL fragment on mount (not a render-derived value)
     setError(describeHandlerError(code, desc));
     history.replaceState(null, '', window.location.pathname + window.location.search);
   }, []);
@@ -254,6 +255,7 @@ function LoginInner() {
 export default function LoginPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration mount-guard: SSR must render the pre-hydration state, so the flip to mounted belongs in the effect
     setMounted(true);
   }, []);
   

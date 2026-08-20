@@ -17,6 +17,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset on external change (pathname): closing the mobile menu on navigation is the desired cascade
     setMobileMenuOpen(false);
   }, [pathname]);
 
@@ -31,6 +32,7 @@ export function Navbar() {
       // (signInWithPopup/Redirect) awaits its token whenever it is registered.
       // A fresh page after logout guarantees the next sign-in never waits on
       // reCAPTCHA (FR-4).
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- intentional full reload: App Check has no unregister API, so sign-out must reload the page (see comment above)
       window.location.href = '/login';
     } catch (err) {
       console.error('Error signing out', err);
