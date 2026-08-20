@@ -86,6 +86,7 @@ async function generateWithModelFallback(params: {
   config?: any;
   models?: string[];
   maxRetries?: number;
+  timeoutMs?: number;
   deadlineMs?: number;
   uid?: string;
   targetKey?: string;
@@ -94,6 +95,7 @@ async function generateWithModelFallback(params: {
 }) {
   const models = params.models || GEMINI_MODELS_FALLBACK_ORDER;
   const maxRetries = params.maxRetries ?? 1;
+  const timeoutMs = params.timeoutMs ?? GEMINI_TIMEOUT_MS;
   const deadlineMs = params.deadlineMs;
   let lastError: any = null;
 
@@ -111,7 +113,7 @@ async function generateWithModelFallback(params: {
   for (const modelName of models) {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       // Stop trying further models once the wall-clock deadline is near.
-      if (deadlineMs && performance.now() + GEMINI_TIMEOUT_MS + 2000 > deadlineMs) {
+      if (deadlineMs && performance.now() + timeoutMs + 2000 > deadlineMs) {
         throw new Error("Gemini API budget exhausted before model attempt");
       }
       // Declared in the loop-body scope (visible to both try and catch) so a
@@ -126,7 +128,7 @@ async function generateWithModelFallback(params: {
         console.log(`[Gemini API] Executing generateContent with model: ${modelName}`);
         callStartedMs = performance.now();
         const response = await new Promise<any>(async (resolve, reject) => {
-          const timer = setTimeout(() => reject(new Error(`Model ${modelName} timed out after ${GEMINI_TIMEOUT_MS}ms`)), GEMINI_TIMEOUT_MS);
+          const timer = setTimeout(() => reject(new Error(`Model ${modelName} timed out after ${timeoutMs}ms`)), timeoutMs);
           try {
             const res = await getAI().models.generateContent({
               model: modelName,
@@ -394,6 +396,12 @@ export interface LlmGenerateTextParams {
   useGroqFallback?: boolean;
   deadlineMs?: number;
   stage: string;
+  /** Override the Gemini model fallback order for this call. */
+  geminiModels?: string[];
+  /** Override Gemini retries per model for this call. */
+  geminiMaxRetries?: number;
+  /** Override the per-attempt Gemini timeout for this call. */
+  geminiTimeoutMs?: number;
 }
 
 export interface LlmProvider {
@@ -414,6 +422,9 @@ export function createRealLlmProvider(deps: {
         const response = await generateWithModelFallback({
           contents: prompt,
           config: geminiConfig,
+          models: params.geminiModels,
+          maxRetries: params.geminiMaxRetries,
+          timeoutMs: params.geminiTimeoutMs,
           deadlineMs,
           uid,
           targetKey,
@@ -727,6 +738,81 @@ export interface AnalyzePipelineOutcome {
   reportData?: Record<string, unknown>;
   report?: Record<string, unknown>;
   researchText?: string;
+}
+
+export interface TeaserScanOutcome {
+  ok: boolean;
+  reason?: "research_failed";
+  reportData?: Record<string, unknown>;
+}
+
+// P7 — the teaser is a FIRST-impression scan, not the full dossier pipeline:
+// ONE LLM call (Gemini -> Groq fallback) that returns the headline verdict
+// JSON directly, with no video fetching and no evidence collection. The full
+// runAnalyzePipeline routinely exceeds the Vercel function budget on cold
+// starts (50s overall budget vs 60s cap), which made the free check time out;
+// a single call completes in seconds. The result feeds buildTeaserReport
+// (score + risk level + up to 3 red-flag headers) and is discarded server-side.
+export async function runTeaserScan(params: {
+  target: string;
+  brandName: string;
+  deadlineMs: number;
+  llm: LlmProvider;
+}): Promise<TeaserScanOutcome> {
+  const { target, brandName, deadlineMs, llm } = params;
+  const prompt = [
+    "You are a brand safety first-impression scanner.",
+    `Creator or brand to assess: ${target}${brandName && brandName !== "Sponsoring Brand" ? ` (also known as: ${brandName})` : ""}`,
+    "",
+    "Return STRICT JSON only, no markdown, no commentary:",
+    "{",
+    '  "brand_safety_score": <integer 0-100, 100 = totally safe sponsor>',
+    '  "risk_level": <"Safe" | "Elevated" | "Risky" | "Critical">',
+    '  "nuanced_red_flags": [ { "category": "<short header>", "description": "<one sentence>" } ]',
+    "}",
+    "Rules:",
+    "- Base the verdict on widely known facts about this creator/brand (fraud, scandals, hate speech, gambling/crypto promotion, toxic community, regulatory action).",
+    "- List at most 3 red flags; return an empty array if nothing material is known.",
+    "- Do not invent specifics you are not confident about; keep descriptions to one sentence.",
+  ].join("\n");
+  try {
+    const text = await llm.generateText({
+      prompt,
+      systemPrompt: "You are a precise brand safety analyst. You always reply with valid JSON only.",
+      jsonMode: true,
+      deadlineMs,
+      stage: "teaser_scan",
+      // P7: ONE model, ONE attempt, a generous 40s timeout. Free-tier Gemini
+      // latency swings 5-40s, and the 3-model x 2-retry chain (up to 72s)
+      // could never complete inside the teaser's 45s budget; a single patient
+      // attempt is the best shot, with Groq as the safety net when configured.
+      geminiModels: [GEMINI_MODELS_FALLBACK_ORDER[0]],
+      geminiMaxRetries: 0,
+      geminiTimeoutMs: 40000,
+    });
+    const cleaned = text
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+    const firstBrace = cleaned.indexOf("{");
+    const lastBrace = cleaned.lastIndexOf("}");
+    if (firstBrace === -1 || lastBrace <= firstBrace) {
+      console.error("[TEASER] LLM returned non-JSON output:", cleaned.slice(0, 300));
+      return { ok: false, reason: "research_failed" };
+    }
+    const parsed = JSON.parse(cleaned.slice(firstBrace, lastBrace + 1));
+    return {
+      ok: true,
+      reportData: {
+        brand_safety_score: parsed.brand_safety_score,
+        risk_level: parsed.risk_level,
+        nuanced_red_flags: Array.isArray(parsed.nuanced_red_flags) ? parsed.nuanced_red_flags : [],
+      },
+    };
+  } catch (err: any) {
+    console.error("[TEASER] Scan failed:", err?.message || err);
+    return { ok: false, reason: "research_failed" };
+  }
 }
 
 export async function runAnalyzePipeline(params: AnalyzePipelineParams): Promise<AnalyzePipelineOutcome> {

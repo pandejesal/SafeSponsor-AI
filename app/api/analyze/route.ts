@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse, after } from "next/server";
+import crypto from "crypto";
 import { FieldValue } from "firebase-admin/firestore";
 import { adminDb, verifyAuthHeader, verifyAppCheckHeader } from "@/lib/firebase-admin";
 import { getSeededAudit } from "@/lib/seeded_audits";
@@ -12,6 +13,7 @@ import {
   isChannelTarget,
   normalizeTargetKey,
   runAnalyzePipeline,
+  runTeaserScan,
 } from "@/lib/analyze-pipeline";
 import {
   CACHE_REFRESH_COOLDOWN_MS,
@@ -41,6 +43,10 @@ export const maxDuration = 60;
 
 // Hard wall-clock budget for the whole pipeline (Vercel Hobby ~60s limit).
 const OVERALL_BUDGET_MS = 50000;
+// P7 — the free teaser must complete inside the 60s Vercel cap while giving
+// free-tier Gemini (5-40s latency) a real chance: one 40s patient attempt
+// plus ~2s of grant overhead still lands well under the ceiling.
+const TEASER_BUDGET_MS = 45000;
 
 // Best-effort persistence of one LLM usage record (M1T1). Never throws: a
 // Firestore hiccup must not fail the audit the record describes.
@@ -298,32 +304,63 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    // 0. App Check Token Verification
+    // 2. Parse Body FIRST so the App Check policy below can be teaser-aware
+    // (the anonymous teaser is intentionally a public, sign-in-free endpoint).
+    let rawBody: unknown;
+    try {
+      const rawText = await req.text();
+      if (rawText.length > 1024 * 1024) {
+        return NextResponse.json({ error: "Payload too large. Maximum allowed request size is 1MB." }, { status: 413 });
+      }
+      rawBody = JSON.parse(rawText);
+    } catch {
+      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
+    }
+
+    const parseResult = analyzeSchema.safeParse(rawBody);
+    if (!parseResult.success) {
+      return NextResponse.json(
+        { error: "Validation failed: " + parseResult.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(", ") },
+        { status: 400 }
+      );
+    }
+
+    const inputData = parseResult.data;
+    const isTeaserBody = inputData.teaser === true;
+
+    // 1. Authenticate Request. uid is NULLABLE for the anonymous teaser;
+    // every other path re-requires it after the teaser branch below.
+    const uid = await verifyAuthHeader(req);
+    activeUid = uid;
+
+    // Anonymous abuse controls: the teaser is public (no sign-in), so it is
+    // gated on a per-IP marker + per-IP rate limit instead of Firebase auth.
+    // IP comes from the Vercel x-forwarded-for chain and is hashed so raw
+    // addresses never land in Firestore.
+    const ipRaw = (req.headers.get("x-forwarded-for") || "").split(",")[0]?.trim() || "unknown";
+    const ipKey = "ip_" + crypto.createHash("sha256").update("teaser:" + ipRaw).digest("hex").slice(0, 32);
+
+    // 0. App Check Token Verification. Signed-in paths stay enforced (the
+    // client initializes App Check only after sign-in — FR-4). The anonymous
+    // teaser is EXEMPT: its protection is the 1-per-IP marker and per-IP rate
+    // limit below, and demanding reCAPTCHA would re-create the exact
+    // sign-in friction P7 exists to remove.
     const appCheckResult = await verifyAppCheckHeader(req);
-    if (!appCheckResult.valid) {
+    if (!appCheckResult.valid && !(isTeaserBody && !uid)) {
       return NextResponse.json(
         { error: "Unauthorized client request (App Check failed)." },
         { status: 401 }
       );
     }
 
-    // 1. Authenticate Request
-    const uid = await verifyAuthHeader(req);
-    if (!uid) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please log in to run brand safety analyses." },
-        { status: 401 }
-      );
-    }
-    activeUid = uid;
-
     const contentLength = req.headers.get("content-length");
     if (contentLength && parseInt(contentLength, 10) > 1024 * 1024) {
       return NextResponse.json({ error: "Payload too large. Maximum allowed request size is 1MB." }, { status: 413 });
     }
 
-    // Rate Limiting Check: max 10 audit requests per user per minute
-    const rateLimitRef = adminDb.collection("rate_limits").doc(uid);
+    // Rate Limiting Check: max 10 audit requests per minute (per uid, or per
+    // IP for anonymous callers).
+    const rateLimitRef = adminDb.collection("rate_limits").doc(uid || ipKey);
     const now = Date.now();
     try {
       const rateLimitAllowed = await adminDb.runTransaction(async (tx) => {
@@ -353,27 +390,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 2. Parse Body & Enforce Strict Input Bounds via Zod Schema
-    let rawBody: unknown;
-    try {
-      const rawText = await req.text();
-      if (rawText.length > 1024 * 1024) {
-        return NextResponse.json({ error: "Payload too large. Maximum allowed request size is 1MB." }, { status: 413 });
-      }
-      rawBody = JSON.parse(rawText);
-    } catch {
-      return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
-    }
-
-    const parseResult = analyzeSchema.safeParse(rawBody);
-    if (!parseResult.success) {
-      return NextResponse.json(
-        { error: "Validation failed: " + parseResult.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(", ") },
-        { status: 400 }
-      );
-    }
-
-    const inputData = parseResult.data;
     const rawTarget = inputData.target || inputData.primary_url || inputData.url;
     
     if (!rawTarget || typeof rawTarget !== "string" || rawTarget.trim().length === 0) {
@@ -390,7 +406,9 @@ export async function POST(req: NextRequest) {
     const audit_focus = inputData.audit_focus || "standard";
     const targetKey = normalizeTargetKey(target);
     activeTargetKey = targetKey;
-    const userDocRef = adminDb.collection('users').doc(uid);
+    // Anonymous teasers never write to a user doc; the doc ref is only used
+    // in the (uid-guarded) teaser branch and after the auth re-check below.
+    const userDocRef = adminDb.collection('users').doc(uid || "anon");
 
     // Per-audit usage accumulator (M1T1/M1T4): every LLM call of this audit is
     // pushed into the hoisted array (visible to the shared cost-alert emitter
@@ -452,14 +470,16 @@ export async function POST(req: NextRequest) {
     }
 
     // -------------------------------------------------------------
-    // TEASER MODE (N1) — "Check any creator free", once per account.
-    // A fresh pipeline run whose result is DISCARDED: never written to user
-    // history or global_audits, and no normal entitlement claim happens (no
-    // credit decrement, no subscription cap slot, no daily-cap counter — only
-    // the freeAnalysisUsed cap below applies). usage_logs + per-audit cost
-    // alerts still apply so the run's real LLM cost stays visible. Tombstoned
-    // creators are denied outright (fail-safe mirror of M4T2). This branch
-    // returns before the quota transaction and the cache read path below.
+    // TEASER MODE (N1) — "Check any creator free", once per device (IP)
+    // and once per account.
+    // A FAST single-call scan (runTeaserScan) whose result is DISCARDED:
+    // never written to user history or global_audits, and no normal
+    // entitlement claim happens (no credit decrement, no subscription cap
+    // slot, no daily-cap counter — only the dual-marker cap below applies).
+    // usage_logs + per-audit cost alerts still apply so the run's real LLM
+    // cost stays visible. Tombstoned creators are denied outright (fail-safe
+    // mirror of M4T2). This branch returns before the quota transaction and
+    // the cache read path below.
     // -------------------------------------------------------------
     if (teaser) {
       // N1T1 — takedown tombstones block teaser runs BEFORE the cap is
@@ -473,20 +493,35 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // N1T2 — 1-per-account cap, repurposing freeAnalysisUsed. Atomic
+      // N1T2 — dual-marker free-check cap: one per IP (never expires) AND one
+      // per account when signed in. Every run writes BOTH markers, so the
+      // sign-in/sign-out rotation can never reset the IP marker. Atomic
       // check+set (mirror of the M1T3 counter pattern): concurrent teaser
       // requests cannot both pass. Applies to EVERY uid, paid or not — paid
       // users simply never see the teaser CTA (UI-level gating).
+      const ipRef = adminDb.collection("rate_limits").doc(ipKey);
       const teaserGrant = await adminDb.runTransaction(async (tx) => {
-        const snap = await tx.get(userDocRef);
-        const used = snap.exists && (snap.data() || {}).freeAnalysisUsed === true;
-        if (used) return { allowed: false };
-        tx.set(userDocRef, {
-          freeAnalysisUsed: true,
+        const ipSnap = await tx.get(ipRef);
+        if (ipSnap.exists && ipSnap.data()?.teaserUsedAt) {
+          return { allowed: false, reason: "ip" };
+        }
+        if (uid) {
+          const uSnap = await tx.get(userDocRef);
+          const used = uSnap.exists && (uSnap.data() || {}).freeAnalysisUsed === true;
+          if (used) return { allowed: false, reason: "account" };
+        }
+        tx.set(ipRef, {
           teaserUsedAt: new Date().toISOString(),
           updatedAt: new Date(),
         }, { merge: true });
-        return { allowed: true };
+        if (uid) {
+          tx.set(userDocRef, {
+            freeAnalysisUsed: true,
+            teaserUsedAt: new Date().toISOString(),
+            updatedAt: new Date(),
+          }, { merge: true });
+        }
+        return { allowed: true, reason: null };
       }).catch((grantErr: any) => {
         console.error("[TEASER] Cap check transaction failed:", grantErr?.message || grantErr);
         return null;
@@ -507,40 +542,40 @@ export async function POST(req: NextRequest) {
 
       const llmProvider = process.env.LLM_MOCK_MODE === "true"
         ? createMockLlmProvider()
-        : createRealLlmProvider({ uid, targetKey, onUsage: reportAuditUsage });
-      const videoFetcher = process.env.MOCK_YOUTUBE_FETCHES === "true"
-        ? createMockVideoFetcher()
-        : createRealVideoFetcher();
+        : createRealLlmProvider({ uid: uid || "anon", targetKey, onUsage: reportAuditUsage });
 
-      const teaserOutcome = await runAnalyzePipeline({
+      // P7 — fast first-impression scan (single LLM call, no video fetching,
+      // no evidence collection): the full pipeline routinely exceeds the
+      // 50s budget on cold starts and the free check must return in seconds.
+      // The scan runs under its own tighter 25s deadline (see TEASER_BUDGET_MS).
+      const teaserOutcome = await runTeaserScan({
         target,
         brandName: brand_name,
-        auditFocus: audit_focus,
-        competitorBrands: competitor_brands,
-        additionalUrls: additional_urls,
-        aliases: creator_known_aliases,
-        targetKey,
-        isChannelAudit: isChannelHandle,
-        deadlineMs,
-        checkBudget: failFastIfOverBudget,
+        deadlineMs: Math.min(deadlineMs, requestStartMs + TEASER_BUDGET_MS),
         llm: llmProvider,
-        video: videoFetcher,
       });
 
       if (!teaserOutcome.ok) {
         // Nothing was consumed (no entitlement claim), but the failed LLM
         // calls still cost real money — the per-audit cost alert must fire.
         await emitPerAuditCostAlert(activeTargetKey);
-        // Roll the teaser cap back: a failed run must not burn the user's
-        // one free check (mirror of the refundEntitlement pattern).
+        // Roll BOTH teaser markers back: a failed run must not burn the
+        // device's or the account's one free check. ALL reads first — the
+        // Firestore transaction API rejects reads issued after writes.
         await adminDb.runTransaction(async (tx) => {
-          const snap = await tx.get(userDocRef);
-          const d = snap.data() || {};
-          if (d.freeAnalysisUsed === true) {
-            tx.update(userDocRef, {
-              freeAnalysisUsed: FieldValue.delete(),
-              teaserUsedAt: FieldValue.delete(),
-            });
+          const ipSnap = await tx.get(ipRef);
+          const uSnap = uid ? await tx.get(userDocRef) : null;
+          if (ipSnap.exists && ipSnap.data()?.teaserUsedAt) {
+            tx.update(ipRef, { teaserUsedAt: FieldValue.delete() });
+          }
+          if (uid && uSnap) {
+            const ud = uSnap.data() || {};
+            if (ud.freeAnalysisUsed === true) {
+              tx.update(userDocRef, {
+                freeAnalysisUsed: FieldValue.delete(),
+                teaserUsedAt: FieldValue.delete(),
+              });
+            }
           }
         }).catch((rollbackErr: any) => {
           console.error("[TEASER] Cap rollback failed:", rollbackErr?.message || rollbackErr);
@@ -561,6 +596,15 @@ export async function POST(req: NextRequest) {
       // (no history/global_audits write), so a purchase re-runs the pipeline.
       await emitPerAuditCostAlert(activeTargetKey);
       return NextResponse.json(buildTeaserReport(teaserOutcome.reportData));
+    }
+
+    // Anonymous callers are done (the teaser returned above); every other
+    // path requires a real account.
+    if (!uid) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please log in to run brand safety analyses." },
+        { status: 401 }
+      );
     }
 
     // -------------------------------------------------------------
@@ -691,6 +735,12 @@ export async function POST(req: NextRequest) {
     // hoisted above the outer try block so refundEntitlement() can see the value
     // when this request fails after quota consumption. A shadowing re-declaration
     // here would make the variable invisible to the refund closure.
+    // isChannelAudit MUST be declared BEFORE the transaction: the Firestore
+    // callback below runs synchronously (TDZ — "Cannot access X before
+    // initialization"), and the closure branches on isChannelAudit for free
+    // users. A declaration after this block would crash every no-subscription,
+    // zero-credit request with a 500 instead of the intended 402.
+    const isChannelAudit = isChannelHandle;
     try {
       const transactionResult = await adminDb.runTransaction(async (tx) => {
         const userSnap = await tx.get(userDocRef);
@@ -770,13 +820,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // NOTE: declared AFTER the quota block on purpose. The quota transaction
-    // closure references this binding, and it only executes after this line,
-    // so the const is initialized before first use (no TDZ issue). Moving it
-    // above the transaction would change nothing semantically, but keeping the
-    // original ordering avoids accidental shadowing regressions.
-    const isChannelAudit = isChannelHandle;
-
+    // NOTE: isChannelAudit is declared ABOVE the quota transaction block (see
+    // the note there) because the Firestore callback runs synchronously and
+    // branches on it for free users — a declaration after the block would
+    // crash with a TDZ error ("Cannot access X before initialization").
     // 4-6. Run the research → synthesis → repair pipeline core (M2T1a).
     // The route stays thin: auth, quota, cache, alerts. LLM and YouTube
     // dependencies are injected; mock modes make the pipeline run offline

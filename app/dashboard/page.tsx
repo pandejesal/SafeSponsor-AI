@@ -1265,6 +1265,19 @@ Report Generated via SafeSponsor AI Research Engine
                 <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
                   Credits remaining
                 </p>
+                {/* P6 — top-up path when the account is empty */}
+                {(userCredits.videoCredits === 0 && userCredits.channelCredits === 0) && (
+                  <button
+                    onClick={() => handleCheckout("single_3pack")}
+                    disabled={loadingPlan !== null}
+                    className={`mt-3 w-full px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
+                      isDark ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200'
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5" />
+                    Top up — 3 reports for $19 (Save 21%)
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -1280,14 +1293,31 @@ Report Generated via SafeSponsor AI Research Engine
                 <DollarSign className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-xl font-bold">Analysis Quota Reached</h3>
+                {/* P6 — soft limit: no hard wall, always a purchase path */}
+                <h3 className="text-xl font-bold">You&apos;re out of credits — top up or upgrade</h3>
                 <p className={`text-sm ${isDark ? 'text-zinc-300' : 'text-slate-600'}`}>
-                  Choose a plan to continue generating comprehensive creator brand safety dossiers.
+                  Top up for more reports or go unlimited with Pro to keep generating comprehensive brand safety dossiers.
                 </p>
               </div>
             </div>
 
-            <div className="grid sm:grid-cols-3 gap-4 pt-2">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+              <button 
+                onClick={() => handleCheckout("single_3pack")}
+                disabled={loadingPlan !== null}
+                className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
+                  isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700' : 'bg-slate-100 hover:bg-slate-200 border-slate-300'
+                }`}
+              >
+                <div>
+                  <h4 className="font-bold text-sm">3 Reports Pack</h4>
+                  <p className="text-xs text-orange-500">$19 one-time &middot; Save 21%</p>
+                </div>
+                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-cyan-400' : 'text-blue-900'}`}>
+                  Buy 3 Reports <ChevronRight className="w-3 h-3" />
+                </span>
+              </button>
+
               <button 
                 onClick={() => handleCheckout("single")}
                 disabled={loadingPlan !== null}
@@ -2457,7 +2487,7 @@ Report Generated via SafeSponsor AI Research Engine
                 </h2>
                 <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
                   {userCredits.videoCredits === 0 && userCredits.channelCredits === 0
-                    ? "You have no credits remaining. Purchase a plan to continue generating dossiers."
+                    ? "You're out of credits — top up for more reports or upgrade to Pro for unlimited checks."
                     : `${userCredits.videoCredits} video + ${userCredits.channelCredits} channel credits remaining.`}
                 </p>
                 <TestModeBadge />

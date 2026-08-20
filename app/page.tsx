@@ -30,7 +30,8 @@ import {
   TrendingUp,
   Award,
   Check,
-  X
+  X,
+  Mail
 } from 'lucide-react';
 
 function LandingContent() {
@@ -50,26 +51,62 @@ function LandingContent() {
     riskLevel?: string;
     flags?: { category: string; description: string }[];
     error?: string;
+    target?: string;
   }>({ status: 'idle' });
+  // P7 — optional email capture on the teaser result ("Email me the full
+  // dossier"). Stored as a retargeting lead; nothing is emailed today.
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadState, setLeadState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
+  const [leadError, setLeadError] = useState('');
+
+  const submitLead = async () => {
+    const email = leadEmail.trim();
+    if (!email || leadState === 'sending') return;
+    setLeadState('sending');
+    setLeadError('');
+    try {
+      const res = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          target: teaser.target || heroInputUrl.trim(),
+          score: teaser.score,
+          riskLevel: teaser.riskLevel,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setLeadError(data.error || 'Could not save your email. Please try again.');
+        setLeadState('error');
+        return;
+      }
+      setLeadState('done');
+    } catch (err) {
+      console.error("Lead capture error:", err);
+      setLeadError('Failed to connect. Please try again.');
+      setLeadState('error');
+    }
+  };
 
   const isDark = theme === 'dark';
 
-  // N1T3 — hero teaser: a free, once-per-account headline check (score +
-  // risk level + top red-flag headers only). Requires sign-in; result is
-  // discarded server-side, so a purchase re-runs the full pipeline.
+  // N1T3 — hero teaser: a free, once-per-device-and-account headline check
+  // (score + risk level + top red-flag headers only). Works WITHOUT sign-in
+  // (P7); the server gates it on a never-expiring per-IP marker plus the
+  // account marker. The result is discarded server-side, so a purchase
+  // re-runs the full pipeline.
   const runTeaser = async (targetStr: string) => {
-    if (!user) {
-      router.push(`/login?target=${encodeURIComponent(targetStr)}`);
-      return;
-    }
     setTeaser({ status: 'loading' });
     try {
-      const token = await user.getIdToken();
+      const token = user ? await user.getIdToken() : null;
       const appCheckToken = await getAppCheckToken();
       const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Content-Type': 'application/json'
       };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       if (appCheckToken) {
         headers['X-Firebase-AppCheck'] = appCheckToken;
       }
@@ -92,6 +129,7 @@ function LandingContent() {
         score: data.brand_safety_score,
         riskLevel: data.risk_level,
         flags: Array.isArray(data.top_red_flags) ? data.top_red_flags : [],
+        target: targetStr,
       });
     } catch (err) {
       console.error("Teaser error:", err);
@@ -328,7 +366,7 @@ function LandingContent() {
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
                   <p className="text-sm font-semibold text-slate-500 dark:text-zinc-400">
-                    Running a full AI safety scan of this creator — one free check per account…
+                    Running a full AI safety scan of this creator — one free check per device…
                   </p>
                 </div>
               </div>
@@ -376,6 +414,52 @@ function LandingContent() {
                   </div>
                 )}
 
+                {/* P7 — optional email capture: retargeting lead, nothing sent today */}
+                <div className={`mt-5 p-4 rounded-xl border ${
+                  isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  {leadState === 'done' ? (
+                    <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                      Saved! We&apos;ll follow up at <span className="font-black">{leadEmail.trim()}</span> about your full dossier.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-sm font-bold">Email me the full dossier — $8</p>
+                      <div className="flex flex-col sm:flex-row gap-2 mt-2">
+                        <input
+                          type="email"
+                          value={leadEmail}
+                          onChange={(e) => { setLeadEmail(e.target.value); setLeadState('idle'); }}
+                          placeholder="you@brand.com"
+                          aria-label="Email address for the full dossier"
+                          className={`flex-1 px-3.5 py-2.5 rounded-lg text-sm border outline-none focus:ring-2 ${
+                            isDark
+                              ? 'bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500 focus:ring-orange-500/40'
+                              : 'bg-white border-slate-300 text-slate-900 placeholder:text-slate-400 focus:ring-orange-500/30'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={submitLead}
+                          disabled={leadState === 'sending' || !leadEmail.trim()}
+                          className={`px-4 py-2.5 rounded-lg text-sm font-bold transition-colors flex items-center justify-center gap-2 disabled:opacity-50 ${
+                            isDark ? 'bg-orange-600 hover:bg-orange-500 text-white' : 'bg-orange-600 hover:bg-orange-700 text-white'
+                          }`}
+                        >
+                          <Mail className="w-4 h-4" />
+                          {leadState === 'sending' ? 'Saving…' : 'Get the full dossier'}
+                        </button>
+                      </div>
+                      <p className={`text-[11px] mt-2 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>
+                        Enter your email and we&apos;ll reach out with your full dossier. No spam, unsubscribe anytime.
+                      </p>
+                      {leadState === 'error' && (
+                        <p className="text-xs font-semibold text-red-600 dark:text-red-400 mt-2">{leadError}</p>
+                      )}
+                    </>
+                  )}
+                </div>
+
                 <div className="mt-6 pt-5 border-t border-slate-200 dark:border-zinc-800">
                   {renderTeaserUpsell()}
                 </div>
@@ -386,7 +470,7 @@ function LandingContent() {
               <div className={`max-w-2xl mx-auto mt-6 p-6 rounded-xl border shadow-xl text-center ${
                 isDark ? 'bg-zinc-900/90 border-zinc-800' : 'bg-white border-slate-200'
               }`}>
-                <p className="font-black text-lg">You&apos;ve already used your free check</p>
+                <p className="font-black text-lg">You&apos;ve already used your free check on this device</p>
                 <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
                   Unlock the full dossier to see the complete safety breakdown.
                 </p>

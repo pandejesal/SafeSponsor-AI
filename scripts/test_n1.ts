@@ -136,7 +136,7 @@ test("failed teaser runs roll the cap back (one free check is not burned)", () =
 test("teaser still logs usage and fires per-audit cost alerts", () => {
   const teaserBlock = routeSrc.slice(routeSrc.indexOf("if (teaser) {"), routeSrc.indexOf("GLOBAL DATABASE CACHE CHECK"));
   assert(teaserBlock.includes("onUsage: reportAuditUsage"), "teaser pipeline must log LLM usage");
-  assert(teaserBlock.includes("runAnalyzePipeline"), "teaser must run the real pipeline (fresh run)");
+  assert(teaserBlock.includes("runTeaserScan"), "teaser must run the fast single-call scan (fresh run — the full pipeline exceeds the 50s budget on cold starts)");
   const alertCount = (teaserBlock.match(/emitPerAuditCostAlert/g) || []).length;
   assert(alertCount >= 2, `teaser must emit cost alerts on failure AND success (found ${alertCount})`);
 });
