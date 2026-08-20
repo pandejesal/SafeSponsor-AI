@@ -275,7 +275,7 @@ test("check-credits exposes introAvailable only from server env; banner gates on
 
   const dashboard = fs.readFileSync(path.join(__dirname, "..", "app", "dashboard", "page.tsx"), "utf8");
   assert.ok(
-    dashboard.includes("{!introBannerDismissed && userCredits.introAvailable && ("),
+    dashboard.includes("{!introBannerDismissed && userCredits.introAvailable && !userCredits.introClaimed && !userCredits.hasSubscription && ("),
     "banner render condition must combine dismissal with introAvailable (never promises $99 when unconfigured)"
   );
   // The banner section already sits inside the !hasSubscription block — the

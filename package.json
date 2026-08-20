@@ -19,7 +19,8 @@
     "benchmark": "tsx scripts/benchmarks/eval.ts"
   },
   "overrides": {
-    "jose": "5.9.6"
+    "jose": "5.9.6",
+    "uuid": "^11.1.1"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
