@@ -9,6 +9,7 @@ import { Navbar } from "@/components/Navbar";
 import { TestModeBadge } from "@/components/TestModeBadge";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
+import { ReferralCard } from "@/components/ReferralCard";
 import type { AnalysisResult, HistoryItem } from "./dossier-viewer";
 import {
   Search, Activity, AlertTriangle, CheckCircle2,
@@ -149,6 +150,10 @@ function DashboardInner() {
   useEffect(() => () => {
     if (upsellPollRef.current) clearInterval(upsellPollRef.current);
   }, []);
+  // Q: bump — add 2 more reports for +$11 after single $8 (upgrade to 3-pack $19)
+  const [showBump, setShowBump] = useState(false);
+  const [bumpState, setBumpState] = useState<"idle" | "charging" | "success" | "redirect" | "error">("idle");
+  const [bumpError, setBumpError] = useState<string | null>(null);
 
   // Filter, Tab & Search states
   const [searchQuery, setSearchQuery] = useState("");
@@ -182,6 +187,13 @@ function DashboardInner() {
         setShowUpsell(true);
         setUpsellState('idle');
         setUpsellError(null);
+      }
+      // Q: bump — single $8 → add 2 more for +$11 (total 3 for $19, save 21%)
+      // Show for single purchases; dismissible, same landing as channel upsell.
+      if (plan === 'single') {
+        setShowBump(true);
+        setBumpState('idle');
+        setBumpError(null);
       }
       const verifyPayment = async () => {
         try {
@@ -376,6 +388,39 @@ function DashboardInner() {
       console.error("Upsell error:", err);
       setUpsellState("error");
       setUpsellError(err?.message || "Failed to start upsell.");
+    }
+  };
+
+  // Q: bump — add 2 more for $11 (single $8 → 3-pack $19). Reuses checkout; Dodo product for $11 bump (pdt_...) to be created — fallback is $19 3-pack.
+  const handleBump = async () => {
+    if (!user) return;
+    setBumpState("charging");
+    setBumpError(null);
+    try {
+      const token = await user.getIdToken();
+      const appCheckToken = await getAppCheckToken();
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+      if (appCheckToken) headers["X-Firebase-AppCheck"] = appCheckToken;
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ plan: "single_3pack" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Bump failed");
+      if (data.url) {
+        setBumpState("redirect");
+        const win = window.open(data.url, "_blank", "noopener");
+        if (!win) window.location.href = data.url;
+      } else {
+        setBumpState("success");
+      }
+    } catch (err: any) {
+      setBumpState("error");
+      setBumpError(err?.message || "Failed to start bump checkout");
     }
   };
 
@@ -1282,6 +1327,11 @@ Report Generated via SafeSponsor AI Research Engine
             )}
           </div>
         </div>
+
+        {/* Q: referral — free lever, no Dodo */}
+        {user && userCredits && (
+          <ReferralCard uid={user.uid} />
+        )}
 
         {/* Upgrade Banner */}
         {upgradeRequired && (
@@ -2865,6 +2915,55 @@ Report Generated via SafeSponsor AI Research Engine
                   >
                     No thanks
                   </button>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Q: bump — add 2 more for $11 after single $8 (upgrade to 3-pack) */}
+        {showBump && userCredits !== null && (userCredits.videoCredits || 0) <= 1 && (userCredits.channelCredits || 0) === 0 && !userCredits.hasSubscription && (
+          <div className="fixed inset-0 z-[99] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'}`}>
+              <button
+                type="button"
+                onClick={() => setShowBump(false)}
+                aria-label="Close bump offer"
+                className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                  isDark ? 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+                }`}
+              >
+                <X className="w-4 h-4" />
+              </button>
+              {bumpState === "success" ? (
+                <div className="text-center">
+                  <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">Added 2 more reports</h3>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>Your extra credits will appear here in a moment.</p>
+                  <button type="button" onClick={() => setShowBump(false)} className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white">Done</button>
+                </div>
+              ) : bumpState === "redirect" ? (
+                <div className="text-center">
+                  <Zap className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                  <h3 className="text-xl font-bold mb-2">Almost there</h3>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>We opened checkout in a new tab to add 2 more reports.</p>
+                  <button type="button" onClick={() => setShowBump(false)} className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white">I&apos;ll complete it there</button>
+                </div>
+              ) : (
+                <>
+                  <h3 className="text-xl font-bold mb-1">Add 2 more reports for $11</h3>
+                  <p className={`text-sm mb-4 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>You unlocked 1 dossier for $8 — get 2 more for just $11 more (total 3 for $19, save 21% vs $24).</p>
+                  <div className={`flex items-baseline gap-1 mb-6 ${isDark ? 'text-zinc-300' : 'text-slate-800'}`}>
+                    <span className="text-4xl font-extrabold">$11</span>
+                    <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ 2 more reports</span>
+                  </div>
+                  {bumpState === "error" && (
+                    <div className={`mb-4 p-3 rounded-xl border text-sm font-medium ${isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>{bumpError}</div>
+                  )}
+                  <button type="button" onClick={handleBump} disabled={bumpState === "charging"} className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white' : 'bg-orange-600 hover:bg-orange-700 text-white'} disabled:opacity-60`}>
+                    {bumpState === "charging" ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</> : <><Zap className="w-4 h-4" /> Add 2 more — $11</>}
+                  </button>
+                  <button type="button" onClick={() => setShowBump(false)} className={`mt-3 w-full py-2.5 rounded-xl text-sm font-semibold ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700'}`}>No thanks</button>
                 </>
               )}
             </div>
