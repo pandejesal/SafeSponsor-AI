@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPosts, getPostBySlug } from "@/lib/blog";
 
@@ -18,9 +19,9 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
   if (!post) notFound();
   return (
     <main className="max-w-3xl mx-auto px-6 py-12">
-      <a href="/blog" className="text-xs text-zinc-500 hover:underline">
+      <Link href="/blog" className="text-xs text-zinc-500 hover:underline">
         ← All teardowns
-      </a>
+      </Link>
       <h1 className="text-3xl font-black tracking-tight mt-4">{post.title}</h1>
       <p className="text-xs text-zinc-500 mt-2">
         {new Date(post.publishedAt).toLocaleDateString()} · {post.niche} · Score {post.brandSafetyScore}/100 {post.riskLevel} · Source {post.source} ·{" "}
