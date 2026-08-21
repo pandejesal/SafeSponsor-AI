@@ -58,6 +58,18 @@ function LandingContent() {
   const [leadEmail, setLeadEmail] = useState('');
   const [leadState, setLeadState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [leadError, setLeadError] = useState('');
+  // Funnel attribution — read UTM params directly from the URL at submit time
+  // (they never change mid-session) and attach them to the lead capture so
+  // /api/lead can store which campaign brought the user.
+  const utmFromUrl = (): Record<string, string> => {
+    const params = new URLSearchParams(window.location.search);
+    const picked: Record<string, string> = {};
+    for (const key of ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term"]) {
+      const v = params.get(key)?.trim().slice(0, 100);
+      if (v) picked[key] = v;
+    }
+    return picked;
+  };
 
   const submitLead = async () => {
     const email = leadEmail.trim();
@@ -73,6 +85,7 @@ function LandingContent() {
           target: teaser.target || heroInputUrl.trim(),
           score: teaser.score,
           riskLevel: teaser.riskLevel,
+          ...utmFromUrl(),
         }),
       });
       if (!res.ok) {

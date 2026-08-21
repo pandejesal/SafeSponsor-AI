@@ -17,3 +17,6 @@ hosting/.firebase/
 
 # stopgap Firestore backups (PII — never commit)
 backups/
+
+# local clone of the separate safesponsor-outreach repo
+outreach/
