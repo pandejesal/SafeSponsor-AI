@@ -10,7 +10,7 @@ function GlobePoints({ dark }: { dark: boolean }) {
   const ring2 = useRef<THREE.Mesh>(null);
 
   const positions = useMemo(() => {
-    const N = 800;
+    const N = 600;
     const arr = new Float32Array(N * 3);
     const phi = Math.PI * (3 - Math.sqrt(5));
     for (let i = 0; i < N; i++) {
@@ -31,42 +31,57 @@ function GlobePoints({ dark }: { dark: boolean }) {
   }, [positions]);
 
   useFrame((_, delta) => {
-    if (group.current) group.current.rotation.y += delta * 0.08;
-    if (ring.current) ring.current.rotation.z += delta * 0.18;
-    if (ring2.current) ring2.current.rotation.x += delta * 0.12;
+    if (group.current) group.current.rotation.y += delta * 0.15;
+    if (ring.current) ring.current.rotation.z += delta * 0.3;
+    if (ring2.current) ring2.current.rotation.x += delta * 0.2;
   });
 
-  const ptColor = dark ? '#F6F2EF' : '#0F1B2E';
-  const ringColor = '#49A9DE';
+  const ptColor = dark ? '#CBD5E1' : '#1E3446';
 
   return (
     <group ref={group}>
+      {/* Points sphere */}
       <points geometry={geo}>
         <pointsMaterial
           color={ptColor}
-          size={0.018}
+          size={0.04}
           sizeAttenuation
           transparent
-          opacity={0.7}
+          opacity={0.85}
         />
       </points>
 
-      {/* Scan ring 1 — horizontal */}
+      {/* Scan ring 1 */}
       <mesh ref={ring} rotation={[0.3, 0, 0]}>
-        <torusGeometry args={[1.12, 0.005, 6, 128]} />
-        <meshBasicMaterial color={ringColor} transparent opacity={0.45} />
+        <torusGeometry args={[1.15, 0.008, 8, 128]} />
+        <meshBasicMaterial color="#49A9DE" transparent opacity={0.6} />
       </mesh>
 
-      {/* Scan ring 2 — tilted */}
+      {/* Scan ring 2 */}
       <mesh ref={ring2} rotation={[1.2, 0.5, 0]}>
-        <torusGeometry args={[1.08, 0.004, 6, 128]} />
-        <meshBasicMaterial color={ringColor} transparent opacity={0.3} />
+        <torusGeometry args={[1.1, 0.006, 8, 128]} />
+        <meshBasicMaterial color="#49A9DE" transparent opacity={0.4} />
+      </mesh>
+
+      {/* Center dot */}
+      <mesh>
+        <sphereGeometry args={[0.03, 16, 16]} />
+        <meshBasicMaterial color="#E07A5F" />
       </mesh>
     </group>
   );
 }
 
-function FallbackLoader() {
+function Scene({ dark }: { dark: boolean }) {
+  return (
+    <>
+      <ambientLight intensity={0.5} />
+      <GlobePoints dark={dark} />
+    </>
+  );
+}
+
+function CanvasFallback() {
   return null;
 }
 
@@ -75,7 +90,6 @@ export function RadarGlobe({ isDark }: { isDark: boolean }) {
   const [reducedMotion, setReducedMotion] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Detect prefers-reduced-motion
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     setReducedMotion(mq.matches);
@@ -84,30 +98,36 @@ export function RadarGlobe({ isDark }: { isDark: boolean }) {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // IntersectionObserver — pause when offscreen
   useEffect(() => {
     if (reducedMotion) { setPaused(true); return; }
     const el = containerRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => setPaused(!e.isIntersecting),
-      { threshold: 0.1 }
+      { threshold: 0.05 }
     );
     io.observe(el);
     return () => io.disconnect();
   }, [reducedMotion]);
 
   return (
-    <div ref={containerRef} className="w-full h-[300px] rounded-[16px] overflow-hidden" style={{ background: isDark ? 'rgba(15,27,46,0.04)' : 'rgba(246,242,239,0.5)' }}>
-      <Suspense fallback={<FallbackLoader />}>
+    <div
+      ref={containerRef}
+      className="w-full h-[320px] rounded-[16px] overflow-hidden"
+      style={{
+        background: isDark
+          ? 'linear-gradient(135deg, #0F1B2E 0%, #16243E 100%)'
+          : 'linear-gradient(135deg, #EDE9E3 0%, #F6F2EF 100%)',
+      }}
+    >
+      <Suspense fallback={<CanvasFallback />}>
         <Canvas
           frameloop={paused ? 'never' : 'always'}
-          dpr={[1, 1.5]}
-          gl={{ antialias: true, alpha: true, powerPreference: 'low-power' }}
-          camera={{ position: [0, 0, 2.6], fov: 35 }}
-          style={{ background: 'transparent' }}
+          dpr={[1, 2]}
+          gl={{ antialias: true, alpha: false, powerPreference: 'low-power' }}
+          camera={{ position: [0, 0, 2.8], fov: 32 }}
         >
-          <GlobePoints dark={isDark} />
+          <Scene dark={isDark} />
         </Canvas>
       </Suspense>
     </div>
