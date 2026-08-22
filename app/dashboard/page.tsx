@@ -1208,7 +1208,7 @@ Report Generated via SafeSponsor AI Research Engine
         
         {/* Analytics — 8px audit, not zinc */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+          <div className="p-5 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Total audits</span>
               <Layers className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
@@ -1219,7 +1219,7 @@ Report Generated via SafeSponsor AI Research Engine
             </p>
           </div>
 
-          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+          <div className="p-5 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Avg score</span>
               <BarChart2 className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
@@ -1230,7 +1230,7 @@ Report Generated via SafeSponsor AI Research Engine
             </p>
           </div>
 
-          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+          <div className="p-5 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Recommended</span>
               <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--score-good)' }} />
@@ -1241,7 +1241,7 @@ Report Generated via SafeSponsor AI Research Engine
             </p>
           </div>
 
-          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+          <div className="p-5 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
             <div className="flex items-center justify-between mb-2">
               <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Your plan</span>
               <Zap className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />

@@ -143,7 +143,7 @@ export function DossierViewer({
     <>
       {/* Executive Dossier Results View */}
       {result && (
-        <section className="p-6 rounded-[8px] border space-y-6 printable-dossier" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', boxShadow: 'var(--shadow-sm)' }}>
+        <section className="p-6 rounded-[8px] border space-y-6 printable-dossier" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           {/* Audit Complete — subtle, not emerald 500 */}
           {auditComplete && (
             <div className="flex items-center gap-3 p-3 rounded-[8px] border text-[13px] font-medium" style={{ background: 'var(--score-good-bg)', borderColor: 'rgba(5,150,105,0.18)', color: 'var(--score-good)', fontFamily: 'var(--font-sans)' }}>
@@ -177,13 +177,13 @@ export function DossierViewer({
               users; a paying user viewing an old cached dossier must not see
               an upsell to purchase the product they already pay for. */}
           {result.is_cached && !(userCredits?.hasSubscription || (userCredits?.videoCredits || 0) > 0 || (userCredits?.channelCredits || 0) > 0) && (
-            <div className="p-4 rounded-[8px] border flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', boxShadow: 'var(--shadow-sm)' }}>
+            <div className="p-4 rounded-[8px] border flex flex-col sm:flex-row sm:items-center justify-between gap-3 print:hidden" style={{ background: 'var(--paper)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
               <div className="flex items-center gap-3">
                 <Database className="w-5 h-5 shrink-0" style={{ color: 'var(--ink-600)' }} />
                 <div>
                   <h4 className="font-semibold text-[13px] flex items-center gap-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                     <span>Cached preview — hashed (SHA-256)</span>
-                    <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full border" style={{ background: 'white', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+                    <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full border" style={{ background: 'var(--card-bg)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                       90-day cache
                     </span>
                   </h4>
@@ -198,7 +198,7 @@ export function DossierViewer({
                 onClick={onReAudit}
                 disabled={loadingAnalysis}
                 className="px-4 py-2 rounded-[8px] text-[12px] font-semibold inline-flex items-center gap-1.5 shrink-0 border"
-                style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${loadingAnalysis ? 'animate-spin' : ''}`} />
                 <span>Re-audit live</span>
@@ -225,7 +225,7 @@ export function DossierViewer({
           <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6" style={{ borderBottom: '1px solid rgba(15,27,46,0.08)' }}>
             <div className="space-y-2.5 max-w-2xl">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-[0.08em] border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+                <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-[0.08em] border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                   Target: {result.target || target}
                 </span>
                 <span className="text-[12px]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
@@ -272,7 +272,7 @@ export function DossierViewer({
               <button
                 onClick={onDownloadJson}
                 className="p-2.5 rounded-[8px] border print:hidden"
-                style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink-600)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink-600)' }}
                 title="Download Raw JSON Dossier Artifact"
               >
                 <Share2 className="w-4 h-4" />
@@ -302,7 +302,7 @@ export function DossierViewer({
           </div>
 
           {/* 1. Creator Summary */}
-          <div className="p-5 rounded-[8px] border space-y-2" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="p-5 rounded-[8px] border space-y-2" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <h3 className="text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center gap-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
               <Globe className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} />
               1. Persona — digital footprint
@@ -313,7 +313,7 @@ export function DossierViewer({
           </div>
 
           {/* 2. Verdict — 8px audit, cited */}
-          <div className="p-5 rounded-[8px] border space-y-4" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="p-5 rounded-[8px] border space-y-4" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <div className="flex items-center justify-between pb-3" style={{ borderBottom: '1px solid rgba(15,27,46,0.08)' }}>
               <h3 className="text-[12px] font-semibold tracking-[0.06em] uppercase flex items-center gap-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                 <Scale className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
@@ -337,7 +337,7 @@ export function DossierViewer({
                 </p>
                 <ul className="grid sm:grid-cols-2 gap-2">
                   {result.final_verdict.contractual_safeguards.map((sg, i) => (
-                    <li key={i} className="p-3 rounded-[8px] text-[12px] leading-[1.5] flex items-start gap-2 border" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}>
+                    <li key={i} className="p-3 rounded-[8px] text-[12px] leading-[1.5] flex items-start gap-2 border" style={{ background: 'var(--paper)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}>
                       <Shield className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--risk)' }} />
                       <span>{sg}</span>
                     </li>
@@ -355,26 +355,26 @@ export function DossierViewer({
                 Audience — 50 comments via API
               </h3>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <span className="text-[10px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Authenticity</span>
                   <p className="text-[12px] font-semibold" style={{ fontFamily: 'var(--font-sans)', color: 'var(--score-good)' }}>{result.audience_insights.authenticity_rating}</p>
                 </div>
-                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <span className="text-[10px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Demographics</span>
                   <p className="text-[12px] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{result.audience_insights.demographics_summary}</p>
                 </div>
-                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <span className="text-[10px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Engagement</span>
                   <p className="text-[12px] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{result.audience_insights.engagement_quality}</p>
                 </div>
-                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+                <div className="p-4 rounded-[8px] border space-y-1" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <span className="text-[10px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Sentiment</span>
                   <p className="text-[12px] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{result.audience_insights.community_sentiment}</p>
                 </div>
               </div>
 
               {(result.audience_insights.comment_sentiment_summary || (result.audience_insights.toxic_recurring_themes && result.audience_insights.toxic_recurring_themes.length > 0)) && (
-                <div className="p-4 rounded-[8px] border space-y-3 mt-1" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+                <div className="p-4 rounded-[8px] border space-y-3 mt-1" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                   <div className="flex items-center gap-2">
                     <MessageSquare className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
                     <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Comment sentiment — 50 sampled, PII-scrubbed</span>
@@ -411,7 +411,7 @@ export function DossierViewer({
                 <MessageSquare className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
                 PR history — web-grounded
               </h3>
-              <div className="p-5 rounded-[8px] border space-y-4" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="p-5 rounded-[8px] border space-y-4" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div>
                   <h4 className="text-[11px] font-semibold tracking-[0.08em] uppercase mb-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Past issues</h4>
                   <p className="text-[12px] leading-[1.6]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{result.controversy_and_pr_history.past_issues_summary}</p>
@@ -437,13 +437,13 @@ export function DossierViewer({
                 <Flame className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
                 Competitor — exclusivity history
               </h3>
-              <span className="text-[11px] font-semibold px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+              <span className="text-[11px] font-semibold px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                 {result.competitor_and_sponsorship_history?.length || 0} checked
               </span>
             </div>
 
             {(!result.competitor_and_sponsorship_history || result.competitor_and_sponsorship_history.length === 0) ? (
-              <div className="p-4 rounded-[8px] border flex items-center gap-2 text-[13px]" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="p-4 rounded-[8px] border flex items-center gap-2 text-[13px]" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
                 <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: 'var(--score-good)' }} />
                 <span>No direct competitor conflicts detected.</span>
               </div>
@@ -503,32 +503,32 @@ export function DossierViewer({
                 <AlertTriangle className="w-4 h-4" style={{ color: 'var(--score-risk)' }} />
                 Red flags — cited
               </h3>
-              <span className="text-[11px] font-semibold px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+              <span className="text-[11px] font-semibold px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                 {result.nuanced_red_flags?.length || 0} flags
               </span>
             </div>
 
             {(!result.nuanced_red_flags || result.nuanced_red_flags.length === 0) ? (
-              <div className="p-4 rounded-[8px] border flex items-center gap-2 text-[13px]" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="p-4 rounded-[8px] border flex items-center gap-2 text-[13px]" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
                 <CheckCircle2 className="w-4 h-4 shrink-0" style={{ color: 'var(--score-good)' }} />
                 <span>No major red flags detected.</span>
               </div>
             ) : (
               <div className="grid gap-3">
                 {result.nuanced_red_flags.map((flag, idx) => (
-                  <div key={idx} className="p-4 rounded-[8px] space-y-2 border" style={{ background: 'white', borderColor: 'rgba(220,38,38,0.15)', boxShadow: 'var(--shadow-sm)' }}>
+                  <div key={idx} className="p-4 rounded-[8px] space-y-2 border" style={{ background: 'var(--card-bg)', borderColor: 'rgba(220,38,38,0.15)', boxShadow: 'var(--shadow-sm)' }}>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--score-risk)' }}>
                         {flag.category}
                       </span>
                       {flag.video_timestamp && flag.video_timestamp !== 'N/A' && (
-                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+                        <span className="text-[11px] font-mono px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                           {flag.video_timestamp}
                         </span>
                       )}
                     </div>
                     <p className="text-[12px] font-semibold" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{flag.description}</p>
-                    <p className="text-[12px] italic p-3 rounded-[8px] border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+                    <p className="text-[12px] italic p-3 rounded-[8px] border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                       <strong style={{ color: 'var(--ink)' }}>Context & impact:</strong> {flag.context_and_impact}
                     </p>
                     {flag.source_url && flag.source_url !== 'N/A' && (
@@ -558,7 +558,7 @@ export function DossierViewer({
               </h3>
               <ul className="grid sm:grid-cols-2 gap-2">
                 {result.positive_highlights.map((highlight, idx) => (
-                  <li key={idx} className="p-3 rounded-[8px] text-[12px] leading-[1.5] flex items-start gap-2 border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
+                  <li key={idx} className="p-3 rounded-[8px] text-[12px] leading-[1.5] flex items-start gap-2 border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
                     <ThumbsUp className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--score-good)' }} />
                     <span>{highlight}</span>
                   </li>
@@ -582,7 +582,7 @@ export function DossierViewer({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[11px] px-2.5 py-1 rounded-full border inline-flex items-center gap-1 truncate max-w-xs"
-                    style={{ background: 'var(--paper)', color: 'var(--line)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}
+                    style={{ background: 'var(--paper)', color: 'var(--line)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}
                   >
                     <span className="truncate">{src.title || src.url}</span>
                     <ExternalLink className="w-3 h-3 shrink-0" />
@@ -600,7 +600,7 @@ export function DossierViewer({
       )}
 
       {/* History — 8px audit */}
-      <section className="p-6 rounded-[8px] border space-y-5 print:hidden" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+      <section className="p-6 rounded-[8px] border space-y-5 print:hidden" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-[18px] font-semibold flex items-center gap-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
@@ -622,7 +622,7 @@ export function DossierViewer({
                 onChange={(e) => onSearchQueryChange(e.target.value)}
                 placeholder="Search dossiers…"
                 className="pl-8 pr-3 py-1.5 text-xs rounded-[8px] border focus:outline-none"
-                style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
               />
             </div>
 
@@ -630,7 +630,7 @@ export function DossierViewer({
               value={sortBy}
               onChange={(e: any) => onSortByChange(e.target.value)}
               className="px-3 py-1.5 text-xs rounded-[8px] border focus:outline-none font-medium"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
             >
               <option value="newest">Newest first</option>
               <option value="score_high">Highest score</option>
@@ -724,15 +724,15 @@ export function DossierViewer({
                 key={item.id}
                 onClick={() => onSelectHistoryItem(item)}
                 className="p-4 rounded-[8px] border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 cursor-pointer"
-                style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
               >
                 <div className="space-y-1 overflow-hidden">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                       {item.brand_name || "Brand Audit"}
                     </span>
                     {item.is_cached && (
-                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ background: 'white', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+                      <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full border inline-flex items-center gap-1" style={{ background: 'var(--card-bg)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
                         <Database className="w-2.5 h-2.5" /> Cached
                       </span>
                     )}
