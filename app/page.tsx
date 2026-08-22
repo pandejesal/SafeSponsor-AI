@@ -923,7 +923,7 @@ function LandingContent() {
         <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6 items-stretch">
           {/* PLAN 1 — Single */}
           <motion.div
-            className="rounded-[16px] border p-6 flex flex-col justify-between"
+            className="rounded-[16px] border p-6 flex flex-col justify-between transition-transform duration-200 ease-out hover:-translate-y-0.5"
             style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
           >
             <div>
@@ -988,7 +988,7 @@ function LandingContent() {
 
           {/* PLAN 2 — Channel */}
           <motion.div
-            className="rounded-[16px] border p-6 flex flex-col justify-between"
+            className="rounded-[16px] border p-6 flex flex-col justify-between transition-transform duration-200 ease-out hover:-translate-y-0.5"
             style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
           >
             <div>
@@ -1019,7 +1019,7 @@ function LandingContent() {
 
           {/* PLAN 3 — Pro (risk border only, no gradient) */}
           <motion.div
-            className="rounded-[16px] border p-6 flex flex-col justify-between relative"
+            className="rounded-[16px] border p-6 flex flex-col justify-between transition-transform duration-200 ease-out hover:-translate-y-0.5 relative"
             style={{ background: 'white', borderColor: 'var(--risk)', boxShadow: 'var(--shadow-md)' }}
           >
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold tracking-[0.08em] uppercase border" style={{ background: 'var(--risk)', color: 'white', borderColor: 'var(--risk)', fontFamily: 'var(--font-sans)' }}>
@@ -1167,7 +1167,7 @@ function LandingContent() {
               </thead>
               <tbody className="divide-y divide-zinc-800/40 dark:divide-zinc-800/40">
                 {compareFeatures.map((row, i) => (
-                  <tr key={i} className={i % 2 === 1 ? 'bg-[var(--paper)]' : ''}>
+                  <tr key={i} className={`transition-colors hover:bg-[var(--risk-50)] ${i % 2 === 1 ? 'bg-[var(--paper)]' : ''}`}>
                     <td className={`px-6 py-3.5 font-semibold ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
                       {row.label}
                     </td>
