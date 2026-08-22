@@ -1037,9 +1037,11 @@ function LandingContent() {
 
           {/* PLAN 3 — Pro (risk border only, no gradient) */}
           <motion.div
-            className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg relative"
-            style={{ background: 'white', borderColor: 'var(--risk)', boxShadow: 'var(--shadow-md)' }}
+            className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg relative overflow-hidden"
+            style={{ background: 'white', borderColor: 'var(--risk)', boxShadow: '0 0 0 1px var(--risk), var(--shadow-md)' }}
           >
+            {/* Subtle gradient accent at top */}
+            <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, var(--risk) 0%, var(--line) 100%)' }} />
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold tracking-[0.08em] uppercase border" style={{ background: 'var(--risk)', color: 'white', borderColor: 'var(--risk)', fontFamily: 'var(--font-sans)' }}>
               For agencies
             </div>
