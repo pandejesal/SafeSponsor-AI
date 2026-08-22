@@ -1,0 +1,159 @@
+{
+  "nodes": [
+    {
+      "id": "layout",
+      "type": "text",
+      "x": 400,
+      "y": 0,
+      "width": 400,
+      "height": 200,
+      "color": "4",
+      "text": "## SafeSponsor AI — Site Architecture\n\n**Stack**: Next 16.3.1 + Tailwind 4 + motion/react + R3F + Firestore\n\n**Fonts**: Instrument Serif (display) + Inter (body/UI)\n\n**Tokens**: ink #0F1B2E / paper #F6F2EF / risk #E07A5F / line #49A9DE"
+    },
+    {
+      "id": "marketing",
+      "type": "text",
+      "x": 0,
+      "y": 300,
+      "width": 350,
+      "height": 280,
+      "color": "6",
+      "text": "## Marketing (16px bento)\n\n- `/` — Landing (hero + RadarGlobe + pricing + FAQ)\n- `/blog` — Blog index (28px serif)\n- `/blog/[slug]` — Blog post\n- `/privacy` — Privacy policy\n- `/terms` — Terms of service\n- `/brand-safety/*` — Platform pages (IG, TikTok, Twitch, YT)"
+    },
+    {
+      "id": "app",
+      "type": "text",
+      "x": 450,
+      "y": 300,
+      "width": 350,
+      "height": 280,
+      "color": "5",
+      "text": "## Application (8px audit cards)\n\n- `/dashboard` — Analytics + batch history\n- `/dashboard/dossier-viewer` — 7-section dossier\n- `/login` — Auth (Firebase)\n\n**Dossier sections**: Persona · Verdict · Audience · PR · Competitor · Red Flags · Highlights"
+    },
+    {
+      "id": "api",
+      "type": "text",
+      "x": 900,
+      "y": 300,
+      "width": 300,
+      "height": 280,
+      "color": "3",
+      "text": "## API Routes\n\n- `/api/analyze` — Creator analysis\n- `/api/checkout` — DodoPayments\n- `/api/webhook` — Payment webhook\n- `/api/save-dossier` — Firestore save\n- `/api/history` — Batch history\n- `/api/lead` — Email capture\n- `/api/health` — Status check"
+    },
+    {
+      "id": "components",
+      "type": "text",
+      "x": 0,
+      "y": 650,
+      "width": 350,
+      "height": 240,
+      "color": "2",
+      "text": "## Components\n\n- `Navbar` — 72px, blur(12px), ss monogram\n- `RadarGlobe` — WebGL points-sphere + scan ring\n- `MethodDiagram` — 7-step pipeline (stagger reveal)\n- `PlatformPage` — Platform landing template\n- `TeaserWidget` — Audit teaser (score chips)\n- `AuthProvider` — Firebase auth context"
+    },
+    {
+      "id": "design",
+      "type": "text",
+      "x": 450,
+      "y": 650,
+      "width": 350,
+      "height": 240,
+      "color": "1",
+      "text": "## Design System (Ink Auditor)\n\n**Voice**: Calm Auditor + Risk Radar\n**Palette**: ink / paper / risk / line\n**Type**: Instrument Serif (H1-H3) + Inter (body)\n**Layout**: 16px bento (marketing) + 8px audit (dossier)\n**Motion**: L2 editorial scroll (150-250ms)\n**Texture**: Noise grain overlay (5% opacity)"
+    },
+    {
+      "id": "data",
+      "type": "text",
+      "x": 900,
+      "y": 650,
+      "width": 300,
+      "height": 240,
+      "color": "7",
+      "text": "## Data Layer\n\n- **Firestore**: dossiers, users, leads, batches\n- **Firebase Admin**: server-side auth\n- **DodoPayments**: checkout + webhooks\n- **Providers**: YouTube, Instagram, TikTok, Twitch, X\n- **Cache**: 90-day PII-scrubbed dossiers"
+    },
+    {
+      "id": "hero",
+      "type": "group",
+      "x": -50,
+      "y": 980,
+      "width": 600,
+      "height": 320,
+      "color": "4",
+      "label": "Hero Flow"
+    },
+    {
+      "id": "hero-input",
+      "type": "text",
+      "x": 0,
+      "y": 1020,
+      "width": 250,
+      "height": 120,
+      "text": "### 1. Search Bar\nUser enters @handle\n↓ Triggers teaser API"
+    },
+    {
+      "id": "hero-globe",
+      "type": "text",
+      "x": 300,
+      "y": 1020,
+      "width": 250,
+      "height": 120,
+      "text": "### 2. RadarGlobe\nWebGL points-sphere\n↓ Rotates while user waits"
+    },
+    {
+      "id": "hero-result",
+      "type": "text",
+      "x": 0,
+      "y": 1180,
+      "width": 550,
+      "height": 100,
+      "text": "### 3. Teaser Result\nScore + 3 red flags + email capture → $8 full dossier"
+    },
+    {
+      "id": "pricing",
+      "type": "group",
+      "x": 700,
+      "y": 980,
+      "width": 500,
+      "height": 320,
+      "color": "3",
+      "label": "Pricing Flow"
+    },
+    {
+      "id": "pricing-free",
+      "type": "text",
+      "x": 750,
+      "y": 1020,
+      "width": 200,
+      "height": 80,
+      "text": "### Free\n1 preview/device\nScore + 3 flags"
+    },
+    {
+      "id": "pricing-single",
+      "type": "text",
+      "x": 750,
+      "y": 1120,
+      "width": 200,
+      "height": 80,
+      "text": "### $8 Single\nFull 7-section dossier\nPDF export"
+    },
+    {
+      "id": "pricing-pro",
+      "type": "text",
+      "x": 1000,
+      "y": 1020,
+      "width": 180,
+      "height": 180,
+      "text": "### $149/mo Pro\n50 dossiers/mo\nAPI access + priority"
+    }
+  ],
+  "edges": [
+    { "id": "e1", "fromNode": "layout", "fromSide": "bottom", "toNode": "marketing", "toSide": "top", "color": "6" },
+    { "id": "e2", "fromNode": "layout", "fromSide": "bottom", "toNode": "app", "toSide": "top", "color": "5" },
+    { "id": "e3", "fromNode": "layout", "fromSide": "bottom", "toNode": "api", "toSide": "top", "color": "3" },
+    { "id": "e4", "fromNode": "marketing", "fromSide": "bottom", "toNode": "components", "toSide": "top", "color": "2" },
+    { "id": "e5", "fromNode": "app", "fromSide": "bottom", "toNode": "design", "toSide": "top", "color": "1" },
+    { "id": "e6", "fromNode": "api", "fromSide": "bottom", "toNode": "data", "toSide": "top", "color": "7" },
+    { "id": "e7", "fromNode": "hero-input", "fromSide": "right", "toNode": "hero-globe", "toSide": "left", "color": "4" },
+    { "id": "e8", "fromNode": "hero-globe", "fromSide": "bottom", "toNode": "hero-result", "toSide": "top", "color": "4" },
+    { "id": "e9", "fromNode": "hero-result", "fromSide": "right", "toNode": "pricing-free", "toSide": "left", "color": "3" }
+  ]
+}
