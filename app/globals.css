@@ -66,6 +66,23 @@
   --slate-50: #16243E;
   --slate-200: #2A3A52;
   --slate-300: #3F4E66;
+  /* Dark card tokens */
+  --card-bg: #16243E;
+  --card-border: #2A3A52;
+  --card-text: #F6F2EF;
+  --card-muted: #94A3B8;
+  --score-good-bg: rgba(5,150,105,0.15);
+  --score-warn-bg: rgba(217,119,6,0.15);
+  --score-risk-bg: rgba(220,38,38,0.15);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.2);
+}
+:root {
+  --card-bg: #FFFFFF;
+  --card-border: rgba(15,27,46,0.08);
+  --card-text: #0F1B2E;
+  --card-muted: #3B5F7A;
 }
 
 @layer base {

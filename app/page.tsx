@@ -327,7 +327,7 @@ function LandingContent() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
-                  style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+                  style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full risk-dot-pulse" style={{ background: 'var(--risk)' }} aria-hidden />
                   <span className="text-[13px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
@@ -385,7 +385,7 @@ function LandingContent() {
                     <div
                       key={c.label}
                       className="rounded-[8px] border p-2 flex items-center justify-between"
-                      style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)' }}
+                      style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
                     >
                       <span className="text-[11px] font-semibold tracking-[0.06em] uppercase" style={{ color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}>{c.label}</span>
                       <span
@@ -418,7 +418,7 @@ function LandingContent() {
           >
             <div
               className="p-2 rounded-[8px] border flex flex-col sm:flex-row gap-2 transition-all search-focus-ring"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.12)', boxShadow: 'var(--shadow-md)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-md)' }}
             >
               <div className="flex items-center gap-3 px-4 py-2 flex-1">
                 <Search className="w-5 h-5 shrink-0" style={{ color: 'var(--ink-600)' }} />
@@ -446,7 +446,7 @@ function LandingContent() {
             </div>
 
             {teaser.status === 'loading' && (
-              <div className="max-w-2xl mt-6 p-4 rounded-[8px] border shimmer" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="max-w-2xl mt-6 p-4 rounded-[8px] border shimmer" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--risk)', borderTopColor: 'transparent' }} />
                   <p className="text-[14px] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
@@ -471,7 +471,7 @@ function LandingContent() {
                     </div>
                   </div>
                   <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${
-                    isDark ? 'bg-[var(--ink)]-500/15 text-[var(--ink)]-300 border-[var(--ink)]-500/30' : 'bg-blue-50 text-blue-900 border-blue-200'
+                    isDark ? 'bg-[var(--paper-100)] text-[var(--ink-600)] border-[var(--paper-200)]' : 'bg-blue-50 text-blue-900 border-blue-200'
                   }`}>
                     Free preview — full dossier requires a purchase
                   </span>
@@ -605,7 +605,7 @@ function LandingContent() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.38 + idx * 0.06, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 className="p-4 rounded-[8px] border text-center"
-                style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
               >
                 <div className="text-[15px] font-semibold" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                   {stat.metric}
@@ -624,7 +624,7 @@ function LandingContent() {
       </section>
 
       {/* DOSSIER PREVIEW — honest excerpt, no blur (kills #5) */}
-      <section id="demo" className="py-20 border-y" style={{ background: 'var(--paper-100)', borderColor: 'rgba(15,27,46,0.08)' }}>
+      <section id="demo" className="py-20 border-y" style={{ background: 'var(--paper-100)', borderColor: 'var(--card-border)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-10">
             <p className="text-[13px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--risk)' }}>An honest preview</p>
@@ -642,7 +642,7 @@ function LandingContent() {
             initial={{ opacity: 0, y: 16 }}
             viewport={{ once: true }}
             className="rounded-[8px] border p-6 sm:p-7 relative overflow-hidden"
-            style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', boxShadow: 'var(--shadow-md)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-md)' }}
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6" style={{ borderBottom: '1px solid rgba(15,27,46,0.08)' }}>
               <div className="space-y-2">
@@ -658,7 +658,7 @@ function LandingContent() {
                   <div className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ color: 'var(--score-good)', fontFamily: 'var(--font-sans)' }}>Brand Safety Score</div>
                   <div className="text-[24px] font-bold" style={{ color: 'var(--score-good)', fontFamily: 'var(--font-sans)' }}>82 / 100</div>
                 </div>
-                <div className="px-4 py-3 rounded-[8px] border text-center" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)' }}>
+                <div className="px-4 py-3 rounded-[8px] border text-center" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}>
                   <div className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ color: 'var(--zinc-400)', fontFamily: 'var(--font-sans)' }}>Recommendation</div>
                   <div className="text-[14px] font-semibold" style={{ color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}>Sponsor with terms</div>
                 </div>
@@ -669,7 +669,7 @@ function LandingContent() {
             <div className="pt-6">
             <div className="grid md:grid-cols-3 gap-4">
               {/* Box 1: Comment Audit — source-linked */}
-              <div className="p-4 rounded-[8px] border space-y-2.5" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="p-4 rounded-[8px] border space-y-2.5" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                     <Users className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} /> Comment audit — 50 via API
@@ -686,7 +686,7 @@ function LandingContent() {
               </div>
 
               {/* Box 2: Transcript — source-linked */}
-              <div className="p-4 rounded-[8px] border space-y-2.5" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="p-4 rounded-[8px] border space-y-2.5" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                     <FileText className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} /> Transcript • youtube-transcript
@@ -702,7 +702,7 @@ function LandingContent() {
               </div>
 
               {/* Box 3: Exclusivity — source-linked */}
-              <div className="p-4 rounded-[8px] border space-y-2.5" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="p-4 rounded-[8px] border space-y-2.5" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                     <ShieldCheck className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} /> Exclusivity • web-grounded
@@ -758,7 +758,7 @@ function LandingContent() {
               title: "Input Target Creator",
               desc: "Paste any YouTube video link, Shorts URL, channel handle, or Instagram creator profile.",
               icon: Search,
-              color: isDark ? "text-[var(--ink)]-400" : "text-blue-900"
+              color: isDark ? 'text-[var(--ink-600)]' : 'text-blue-900'
             },
             {
               step: "02",
@@ -772,7 +772,7 @@ function LandingContent() {
               title: "Execute & Export Dossier",
               desc: "Get an executive score, community toxicity breakdown, competitor log, and contractual safeguards.",
               icon: FileText,
-              color: isDark ? "text-[var(--ink)]-400" : "text-blue-900"
+              color: isDark ? 'text-[var(--ink-600)]' : 'text-blue-900'
             }
           ].map((item, idx) => (
             <motion.div
@@ -782,7 +782,7 @@ function LandingContent() {
               viewport={{ once: true }}
               transition={{ delay: idx * 0.08 }}
               className="p-7 rounded-[16px] border flex flex-col justify-between"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
               <div>
                 <div className="flex items-center justify-between mb-6">
@@ -803,7 +803,7 @@ function LandingContent() {
       </section>
 
       {/* FEATURES — editorial, not lucide wallpaper */}
-      <section id="features" className="py-16 border-t" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)' }}>
+      <section id="features" className="py-16 border-t" style={{ background: 'var(--paper-100)', borderColor: 'var(--card-border)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mb-10">
             <p className="text-[13px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--risk)' }}>Platform</p>
@@ -823,7 +823,7 @@ function LandingContent() {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="p-7 rounded-[16px] border md:col-span-8"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <Video className="w-5 h-5" />
@@ -841,7 +841,7 @@ function LandingContent() {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
               className="p-7 rounded-[16px] border md:col-span-4"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <FileText className="w-5 h-5" />
@@ -859,7 +859,7 @@ function LandingContent() {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
               className="p-7 rounded-[16px] border md:col-span-4"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <ShieldAlert className="w-5 h-5" />
@@ -877,7 +877,7 @@ function LandingContent() {
               viewport={{ once: true, margin: '-100px' }}
               transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
               className="p-7 rounded-[16px] border md:col-span-8"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <Lock className="w-5 h-5" />
@@ -942,7 +942,7 @@ function LandingContent() {
           {/* PLAN 1 — Single */}
           <motion.div
             className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg"
-            style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
           >
             <div>
               <h3 className="text-[18px] font-semibold mb-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Single video report</h3>
@@ -1007,7 +1007,7 @@ function LandingContent() {
           {/* PLAN 2 — Channel */}
           <motion.div
             className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg"
-            style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
           >
             <div>
               <h3 className="text-[18px] font-semibold mb-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Channel audit</h3>
@@ -1038,7 +1038,7 @@ function LandingContent() {
           {/* PLAN 3 — Pro (risk border only, no gradient) */}
           <motion.div
             className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg relative overflow-hidden"
-            style={{ background: 'white', borderColor: 'var(--risk)', boxShadow: '0 0 0 1px var(--risk), var(--shadow-md)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--risk)', boxShadow: '0 0 0 1px var(--risk), var(--shadow-md)' }}
           >
             {/* Subtle gradient accent at top */}
             <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, var(--risk) 0%, var(--line) 100%)' }} />
@@ -1135,7 +1135,7 @@ function LandingContent() {
             <a
               href="mailto:pandejesal@gmail.com?subject=Agency%2FEnterprise%20Plan%20Inquiry%20%E2%80%94%20SafeSponsor%20AI"
               className="w-full h-11 rounded-[8px] text-[14px] font-semibold inline-flex items-center justify-center gap-2 border"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.14)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
             >
               <ExternalLink className="w-5 h-5" />
               <span>Contact sales</span>
@@ -1241,7 +1241,7 @@ function LandingContent() {
               <div
                 key={idx}
                 className="rounded-[8px] border overflow-hidden"
-                style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
@@ -1313,7 +1313,7 @@ function LandingContent() {
         type="button"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         className={`fixed bottom-20 right-4 md:bottom-8 md:right-8 w-10 h-10 rounded-full border grid place-items-center transition-all duration-300 z-40 ${showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}
-        style={{ background: 'white', borderColor: 'rgba(15,27,46,0.12)', boxShadow: 'var(--shadow-md)', color: 'var(--ink-600)' }}
+        style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-md)', color: 'var(--ink-600)' }}
         aria-label="Back to top"
       >
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1338,7 +1338,7 @@ function LandingContent() {
             type="button"
             onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
             className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold border btn-lift"
-            style={{ background: 'white', borderColor: 'rgba(15,27,46,0.12)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'rgba(15,27,46,0.12)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
           >
             See pricing
           </button>
