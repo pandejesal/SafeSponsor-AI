@@ -1293,7 +1293,7 @@ function LandingContent() {
           <button
             type="button"
             onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold"
+            className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold btn-lift"
             style={{ background: 'var(--risk)', color: 'white', fontFamily: 'var(--font-sans)' }}
           >
             Run check — free
@@ -1301,7 +1301,7 @@ function LandingContent() {
           <button
             type="button"
             onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-            className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold border"
+            className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold border btn-lift"
             style={{ background: 'white', borderColor: 'rgba(15,27,46,0.12)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
           >
             See pricing
