@@ -24,6 +24,43 @@ export default function NewCollabPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
+  const [brief, setBrief] = useState("");
+  const [qualifying, setQualifying] = useState(false);
+  const [qualifyError, setQualifyError] = useState<string | null>(null);
+  const [rationale, setRationale] = useState<string | null>(null);
+
+  async function autoFill() {
+    setQualifyError(null);
+    if (brief.trim().length < 20) {
+      setQualifyError("Describe your campaign in at least 20 characters.");
+      return;
+    }
+    setQualifying(true);
+    try {
+      const token = await user!.getIdToken();
+      const res = await fetch("/api/qualify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ brief }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Could not generate a suggestion.");
+      const s = data.suggestion;
+      setTitle(s.title || title);
+      setDescription(s.description || description);
+      setNiche(s.niche || niche);
+      if (Array.isArray(s.platforms) && s.platforms.length) setPlatforms(s.platforms);
+      setMinFollowers(String(s.minFollowers ?? minFollowers));
+      setCompType(s.compensationType || compType);
+      if (s.suggestedAmountUsd) setAmount(String(s.suggestedAmountUsd));
+      if (Array.isArray(s.deliverables) && s.deliverables.length) setDeliverables(s.deliverables.join("\n"));
+      setRationale(s.rationale || null);
+    } catch (err: any) {
+      setQualifyError(err?.message || "Something went wrong.");
+    } finally {
+      setQualifying(false);
+    }
+  }
 
   const togglePlatform = (p: Platform) =>
     setPlatforms((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
@@ -91,6 +128,17 @@ export default function NewCollabPage() {
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-5">
+            <div className="p-6 rounded-[8px] border" style={{ background: 'var(--paper-100, var(--card-bg))', borderColor: 'var(--card-border)' }}>
+              <label className={labelCls} style={{ color: 'var(--ink-600)' }}>Describe your campaign — let AI draft the listing</label>
+              <textarea rows={3} maxLength={4000} value={brief} onChange={(e) => setBrief(e.target.value)} placeholder="e.g. We're a DTC coffee brand launching a cold brew line. Want 2-3 fitness or lifestyle creators to post a morning-routine video. Budget ~$800 total."
+                className="w-full px-4 py-3 rounded-[8px] border text-[14px] resize-y mb-3" style={inputStyle} />
+              {qualifyError && <p className="text-[12px] mb-2" style={{ color: 'var(--risk, #E07A5F)' }}>{qualifyError}</p>}
+              <button type="button" onClick={autoFill} disabled={qualifying || submitting} className="px-4 py-2.5 rounded-[8px] text-[13px] font-semibold disabled:opacity-50" style={{ background: 'var(--ink)', color: '#F6F2EF' }}>
+                {qualifying ? "Drafting…" : "Auto-fill with AI"}
+              </button>
+              {rationale && <p className="text-[12px] mt-3 italic" style={{ color: 'var(--ink-600)' }}>{rationale}</p>}
+            </div>
+
             <div className="p-6 rounded-[8px] border space-y-5" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
               <div>
                 <label className={labelCls} style={{ color: 'var(--ink-600)' }}>Title</label>
