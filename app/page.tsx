@@ -1234,14 +1234,17 @@ function LandingContent() {
                   <ChevronDown className="w-5 h-5 shrink-0 transition-transform" style={{ color: openFaq === idx ? 'var(--risk)' : 'var(--zinc-400)', transform: openFaq === idx ? 'rotate(180deg)' : 'none' }} />
                 </button>
                 {openFaq === idx && (
-                  <div
+                  <motion.div
                     id={`faq-answer-${idx}`}
                     role="region"
-                    className="px-5 pb-5 text-[14px] leading-[1.6]"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    transition={{ duration: 0.22, ease: [0.4, 0, 0.2, 1] }}
+                    className="px-5 pb-5 text-[14px] leading-[1.6] overflow-hidden"
                     style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}
                   >
                     {faq.a}
-                  </div>
+                  </motion.div>
                 )}
               </div>
             ))}
