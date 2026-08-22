@@ -34,7 +34,6 @@ import {
   X,
   Mail
 } from 'lucide-react';
-
 function LandingContent() {
   const { user } = useAuth();
   const { theme } = useTheme();
@@ -800,7 +799,14 @@ function LandingContent() {
 
           <div className="grid md:grid-cols-12 gap-4">
             {/* Feature 1 — 8-col */}
-            <div className="p-7 rounded-[16px] border md:col-span-8" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="p-7 rounded-[16px] border md:col-span-8"
+              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+            >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <Video className="w-5 h-5" />
               </div>
@@ -808,10 +814,17 @@ function LandingContent() {
               <p className="text-[14px] leading-[1.6]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
                 Fetches top recent comments, PII-scrubbed. Recurring themes — scam, harassment, bot spam — surfaced with citations.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 2 — 4-col */}
-            <div className="p-7 rounded-[16px] border md:col-span-4" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
+              className="p-7 rounded-[16px] border md:col-span-4"
+              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+            >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <FileText className="w-5 h-5" />
               </div>
@@ -819,10 +832,17 @@ function LandingContent() {
               <p className="text-[14px] leading-[1.6]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
                 Full transcript for profanity, hate, or political claims — word-level, cited.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 3 — 4-col */}
-            <div className="p-7 rounded-[16px] border md:col-span-4" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
+              className="p-7 rounded-[16px] border md:col-span-4"
+              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+            >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <ShieldAlert className="w-5 h-5" />
               </div>
@@ -830,10 +850,17 @@ function LandingContent() {
               <p className="text-[14px] leading-[1.6]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
                 60-day web-grounded sweep for rival sponsorships. Verified or flagged, not guessed.
               </p>
-            </div>
+            </motion.div>
 
             {/* Feature 4 — 8-col */}
-            <div className="p-7 rounded-[16px] border md:col-span-8" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-100px' }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.3 }}
+              className="p-7 rounded-[16px] border md:col-span-8"
+              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+            >
               <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
                 <Lock className="w-5 h-5" />
               </div>
@@ -841,7 +868,7 @@ function LandingContent() {
               <p className="text-[14px] leading-[1.6]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
                 Tailored clauses for the flagged risk — procurement-ready, not “bulletproof” boilerplate.
               </p>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>
