@@ -203,7 +203,7 @@ function LandingContent() {
       <button
         type="button"
         onClick={() => handleCheckout('single')}
-        className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:scale-[1.02] ${
+        className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md risk-glow ${
           isDark
             ? 'bg-gradient-to-r from-risk to-risk text-white shadow-orange-950/50'
             : 'bg-[var(--risk)] hover:bg-orange-700 text-white shadow-orange-200'

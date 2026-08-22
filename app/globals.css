@@ -178,6 +178,15 @@
   animation: shimmer 1.5s infinite;
 }
 
+/* Risk CTA glow on hover */
+.risk-glow {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+.risk-glow:hover {
+  box-shadow: 0 0 20px rgba(224,122,95,0.3), 0 4px 12px rgba(224,122,95,0.2);
+  transform: translateY(-1px);
+}
+
 /* Focus ring */
 *:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
 
