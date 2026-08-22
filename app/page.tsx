@@ -65,6 +65,14 @@ function LandingContent() {
   const [leadEmail, setLeadEmail] = useState('');
   const [leadState, setLeadState] = useState<'idle' | 'sending' | 'done' | 'error'>('idle');
   const [leadError, setLeadError] = useState('');
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Scroll listener for back-to-top button
+  useEffect(() => {
+    const handleScroll = () => setShowBackToTop(window.scrollY > 400);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   // Funnel attribution — read UTM params directly from the URL at submit time
   // (they never change mid-session) and attach them to the lead capture so
   // /api/lead can store which campaign brought the user.
@@ -1262,7 +1270,7 @@ function LandingContent() {
         </div>
       </motion.div>
 
-      {/* FOOTER — ink, minimal */}
+      {/* FOOTER — ink, minimal with hover transitions */}
       <footer className="py-10 border-t text-[13px]" style={{ background: 'var(--ink)', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(246,242,239,0.72)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
@@ -1272,12 +1280,23 @@ function LandingContent() {
           </div>
 
           <div className="flex items-center gap-5 font-medium text-[12px] flex-wrap" style={{ fontFamily: 'var(--font-sans)' }}>
-            <a href="#features" className="hover:underline" style={{ color: 'rgba(246,242,239,0.85)' }}>Method</a>
-            <a href="#pricing" className="hover:underline" style={{ color: 'rgba(246,242,239,0.85)' }}>Pricing</a>
-            <a href="#faq" className="hover:underline" style={{ color: 'rgba(246,242,239,0.85)' }}>FAQ</a>
-            <a href="/privacy" className="hover:underline" style={{ color: 'rgba(246,242,239,0.85)' }}>Privacy</a>
-            <a href="/terms" className="hover:underline" style={{ color: 'rgba(246,242,239,0.85)' }}>Terms</a>
-            <a href="mailto:pandejesal@gmail.com" className="hover:underline" style={{ color: 'rgba(246,242,239,0.85)' }}>Support</a>
+            {[
+              { href: '#features', label: 'Method' },
+              { href: '#pricing', label: 'Pricing' },
+              { href: '#faq', label: 'FAQ' },
+              { href: '/privacy', label: 'Privacy' },
+              { href: '/terms', label: 'Terms' },
+              { href: 'mailto:pandejesal@gmail.com', label: 'Support' },
+            ].map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                className="transition-colors duration-200 hover:text-white"
+                style={{ color: 'rgba(246,242,239,0.85)' }}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 pt-6" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
@@ -1286,6 +1305,19 @@ function LandingContent() {
           </p>
         </div>
       </footer>
+
+      {/* BACK TO TOP — appears on scroll */}
+      <button
+        type="button"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className={`fixed bottom-20 right-4 md:bottom-8 md:right-8 w-10 h-10 rounded-full border grid place-items-center transition-all duration-300 z-40 ${showBackToTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}
+        style={{ background: 'white', borderColor: 'rgba(15,27,46,0.12)', boxShadow: 'var(--shadow-md)', color: 'var(--ink-600)' }}
+        aria-label="Back to top"
+      >
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M8 12V4M4 7l4-4 4 4" />
+        </svg>
+      </button>
 
       {/* MOBILE STICKY CTA BAR (GoGoChimp: sticky pricing CTA lifts mobile
           conversion 8-15%). Hidden on md+; root div has pb-16 on mobile so
