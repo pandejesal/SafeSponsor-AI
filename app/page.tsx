@@ -321,7 +321,7 @@ function LandingContent() {
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
                   style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--risk)' }} aria-hidden />
+                  <span className="w-1.5 h-1.5 rounded-full risk-dot-pulse" style={{ background: 'var(--risk)' }} aria-hidden />
                   <span className="text-[13px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
                     Evidence-backed - PII-scrubbed - 90-day cache
                   </span>
@@ -933,7 +933,7 @@ function LandingContent() {
         <div className="grid lg:grid-cols-4 md:grid-cols-2 gap-6 items-stretch">
           {/* PLAN 1 — Single */}
           <motion.div
-            className="rounded-[16px] border p-6 flex flex-col justify-between transition-transform duration-200 ease-out hover:-translate-y-0.5"
+            className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg"
             style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
           >
             <div>
@@ -998,7 +998,7 @@ function LandingContent() {
 
           {/* PLAN 2 — Channel */}
           <motion.div
-            className="rounded-[16px] border p-6 flex flex-col justify-between transition-transform duration-200 ease-out hover:-translate-y-0.5"
+            className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg"
             style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
           >
             <div>
@@ -1029,7 +1029,7 @@ function LandingContent() {
 
           {/* PLAN 3 — Pro (risk border only, no gradient) */}
           <motion.div
-            className="rounded-[16px] border p-6 flex flex-col justify-between transition-transform duration-200 ease-out hover:-translate-y-0.5 relative"
+            className="rounded-[16px] border p-6 flex flex-col justify-between transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg relative"
             style={{ background: 'white', borderColor: 'var(--risk)', boxShadow: 'var(--shadow-md)' }}
           >
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold tracking-[0.08em] uppercase border" style={{ background: 'var(--risk)', color: 'white', borderColor: 'var(--risk)', fontFamily: 'var(--font-sans)' }}>

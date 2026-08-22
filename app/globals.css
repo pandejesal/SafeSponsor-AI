@@ -130,6 +130,15 @@
   * { animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
 }
 
+/* Risk dot pulse — subtle attention */
+@keyframes risk-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
+}
+.risk-dot-pulse {
+  animation: risk-pulse 2s ease-in-out infinite;
+}
+
 /* Button hover micro-interaction — subtle lift + scale */
 .btn-lift {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
