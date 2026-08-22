@@ -417,7 +417,7 @@ function LandingContent() {
             className="max-w-2xl mx-auto mb-12"
           >
             <div
-              className="p-2 rounded-[8px] border flex flex-col sm:flex-row gap-2 transition-colors"
+              className="p-2 rounded-[8px] border flex flex-col sm:flex-row gap-2 transition-all search-focus-ring"
               style={{ background: 'white', borderColor: 'rgba(15,27,46,0.12)', boxShadow: 'var(--shadow-md)' }}
             >
               <div className="flex items-center gap-3 px-4 py-2 flex-1">
