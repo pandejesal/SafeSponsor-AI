@@ -316,7 +316,7 @@ function LandingContent() {
       <Navbar />
 
         {/* HERO — Ink Auditor: calm auditor + risk radar, serif display, UGC masonry */}
-        <section id="hero" className="relative overflow-hidden pt-12 pb-16 md:pt-16 md:pb-20" style={{ background: 'linear-gradient(180deg, var(--paper) 0%, rgba(246,242,239,0.4) 100%)' }}>
+        <section id="hero" className="relative overflow-hidden pt-12 pb-16 md:pt-16 md:pb-20 border-b" style={{ background: 'linear-gradient(180deg, var(--paper) 0%, rgba(246,242,239,0.4) 100%)', borderColor: 'rgba(15,27,46,0.06)' }}>
           {/* Subtle radial accent behind globe */}
           <div className="absolute right-0 top-0 w-[600px] h-[600px] opacity-[0.04] pointer-events-none" style={{ background: 'radial-gradient(circle at center, var(--line) 0%, transparent 70%)' }} aria-hidden />
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
