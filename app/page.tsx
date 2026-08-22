@@ -313,7 +313,7 @@ function LandingContent() {
                 >
                   <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--risk)' }} aria-hidden />
                   <span className="text-[13px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
-                    Evidence-backed • PII-scrubbed • 90-day cache
+                    Evidence-backed - PII-scrubbed - 90-day cache
                   </span>
                 </motion.div>
 
@@ -876,7 +876,7 @@ function LandingContent() {
       <MethodDiagram />
 
       {/* PRICING — procurement table, not 4 flashy cards (L2 scroll reveal #4) */}
-      <motion.section
+      <motion.div
         id="pricing"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -1191,12 +1191,11 @@ function LandingContent() {
               </tbody>
             </table>
           </div>
-        </div>
         </motion.div>
-      </section>
+        </div>{/* close max-w-7xl */}
+      </motion.div>
 
-      {/* FAQ — dense, 8px (L2 scroll reveal #6) */}
-      <motion.section
+      <motion.div
         id="faq"
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -1205,6 +1204,7 @@ function LandingContent() {
         className="py-16 border-t"
         style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}
       >
+        {/* FAQ - dense, 8px (L2 scroll reveal #6) */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
             <p className="text-[13px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--risk)' }}>FAQ</p>
@@ -1247,7 +1247,7 @@ function LandingContent() {
             ))}
           </div>
         </div>
-      </motion.section>
+      </motion.div>
 
       {/* FOOTER — ink, minimal */}
       <footer className="py-10 border-t text-[13px]" style={{ background: 'var(--ink)', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(246,242,239,0.72)' }}>
