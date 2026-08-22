@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -10,6 +11,12 @@ import { MethodDiagram } from '@/components/MethodDiagram';
 import { TestModeBadge } from '@/components/TestModeBadge';
 import { useTheme } from '@/components/ThemeProvider';
 import { motion, MotionConfig } from 'motion/react';
+
+// Dynamic import — SSR disabled for R3F WebGL
+const DynamicRadarGlobe = dynamic(
+  () => import('@/components/RadarGlobe').then((m) => m.RadarGlobe),
+  { ssr: false, loading: () => <div className="w-full h-[300px] rounded-[16px] animate-pulse" style={{ background: 'var(--paper-100)' }} /> }
+);
 import { 
   ShieldAlert, 
   ShieldCheck, 
@@ -351,41 +358,41 @@ function LandingContent() {
                 className="lg:col-span-5 hidden lg:block"
                 aria-hidden
               >
-                <div className="grid grid-cols-3 gap-3">
+                {/* 3D Risk Radar — WebGL globe of creator points + scanning rings */}
+                <div className="relative rounded-[16px] overflow-hidden border" style={{ background: 'rgba(246,242,239,0.5)', borderColor: 'rgba(15,27,46,0.06)' }}>
+                  <DynamicRadarGlobe isDark={isDark} />
+                </div>
+                {/* Anonymized score chips */}
+                <div className="grid grid-cols-3 gap-2 mt-3">
                   {[
                     { label: 'Gaming', score: 82, tone: 'good' },
                     { label: 'Beauty', score: 64, tone: 'warn' },
                     { label: 'Finance', score: 41, tone: 'risk' },
-                    { label: ' fitness', score: 91, tone: 'good' },
+                    { label: 'Fitness', score: 91, tone: 'good' },
                     { label: 'Comedy', score: 58, tone: 'warn' },
                     { label: 'Tech', score: 77, tone: 'good' },
                   ].map((c) => (
                     <div
                       key={c.label}
-                      className="rounded-[16px] border p-3 flex flex-col gap-2"
-                      style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+                      className="rounded-[8px] border p-2 flex items-center justify-between"
+                      style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)' }}
                     >
-                      <div className="aspect-[4/3] rounded-[12px] border flex items-center justify-center text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.06)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}>
-                        {c.label.trim()}
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-semibold tracking-[0.06em] uppercase" style={{ color: 'var(--ink-600)' }}>Score</span>
-                        <span
-                          className="text-[13px] font-bold px-2 py-0.5 rounded-full border"
-                          style={{
-                            background: c.tone === 'good' ? 'var(--score-good-bg)' : c.tone === 'warn' ? 'var(--score-warn-bg)' : 'var(--score-risk-bg)',
-                            color: c.tone === 'good' ? 'var(--score-good)' : c.tone === 'warn' ? 'var(--score-warn)' : 'var(--score-risk)',
-                            borderColor: c.tone === 'good' ? 'rgba(5,150,105,0.18)' : c.tone === 'warn' ? 'rgba(217,119,6,0.18)' : 'rgba(220,38,38,0.18)',
-                          }}
-                        >
-                          {c.score}
-                        </span>
-                      </div>
+                      <span className="text-[11px] font-semibold tracking-[0.06em] uppercase" style={{ color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}>{c.label}</span>
+                      <span
+                        className="text-[12px] font-bold px-1.5 py-0.5 rounded-full border"
+                        style={{
+                          background: c.tone === 'good' ? 'var(--score-good-bg)' : c.tone === 'warn' ? 'var(--score-warn-bg)' : 'var(--score-risk-bg)',
+                          color: c.tone === 'good' ? 'var(--score-good)' : c.tone === 'warn' ? 'var(--score-warn)' : 'var(--score-risk)',
+                          borderColor: c.tone === 'good' ? 'rgba(5,150,105,0.18)' : c.tone === 'warn' ? 'rgba(217,119,6,0.18)' : 'rgba(220,38,38,0.18)',
+                        }}
+                      >
+                        {c.score}
+                      </span>
                     </div>
                   ))}
                 </div>
-                <p className="text-[12px] mt-3 text-center" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
-                  Example excerpts — anonymized, not real reports. Full dossiers are source-cited.
+                <p className="text-[11px] mt-2 text-center" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
+                  Example scores — anonymized, not real reports. Full dossiers are source-cited.
                 </p>
               </motion.div>
             </div>
