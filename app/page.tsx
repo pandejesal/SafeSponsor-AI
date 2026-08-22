@@ -341,7 +341,7 @@ function LandingContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.06 }}
                   className="text-[40px] sm:text-[56px] lg:text-[72px] leading-[1.05] max-w-[640px] mb-4"
-                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.03em', color: 'var(--ink)' }}
+                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.03em', color: 'var(--ink)', textShadow: '0 1px 2px rgba(15,27,46,0.06)' }}
                 >
                   Catch the risk
                   <br />
