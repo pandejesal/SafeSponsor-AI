@@ -875,8 +875,16 @@ function LandingContent() {
 
       <MethodDiagram />
 
-      {/* PRICING — procurement table, not 4 flashy cards */}
-      <section id="pricing" className="py-16 border-t" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}>
+      {/* PRICING — procurement table, not 4 flashy cards (L2 scroll reveal #4) */}
+      <motion.section
+        id="pricing"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        className="py-16 border-t"
+        style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-10">
           <p className="text-[13px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--risk)' }}>Pricing</p>
@@ -1121,9 +1129,14 @@ function LandingContent() {
           </p>
         </div>
 
-        {/* COMPARISON TABLE — structural pricing clarity (GoGoChimp: comparison
-            tables lift conversion 8-12% vs prose bullets) */}
-        <div className="mt-16 max-w-5xl mx-auto">
+        {/* COMPARISON TABLE — structural pricing clarity (L2 scroll reveal #5) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
+          className="mt-16 max-w-5xl mx-auto"
+        >
           <h3 className="text-xl sm:text-2xl font-bold text-center mb-8">
             Compare Plans at a Glance
           </h3>
@@ -1179,11 +1192,19 @@ function LandingContent() {
             </table>
           </div>
         </div>
-        </div>
+        </motion.div>
       </section>
 
-      {/* FAQ — dense, 8px */}
-      <section id="faq" className="py-16 border-t" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}>
+      {/* FAQ — dense, 8px (L2 scroll reveal #6) */}
+      <motion.section
+        id="faq"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+        className="py-16 border-t"
+        style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}
+      >
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
             <p className="text-[13px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--risk)' }}>FAQ</p>
@@ -1226,7 +1247,7 @@ function LandingContent() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* FOOTER — ink, minimal */}
       <footer className="py-10 border-t text-[13px]" style={{ background: 'var(--ink)', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(246,242,239,0.72)' }}>
