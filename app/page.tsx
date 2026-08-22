@@ -9,7 +9,7 @@ import { Navbar } from '@/components/Navbar';
 import { MethodDiagram } from '@/components/MethodDiagram';
 import { TestModeBadge } from '@/components/TestModeBadge';
 import { useTheme } from '@/components/ThemeProvider';
-import { motion } from 'motion/react';
+import { motion, MotionConfig } from 'motion/react';
 import { 
   ShieldAlert, 
   ShieldCheck, 
@@ -296,6 +296,7 @@ function LandingContent() {
   ];
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen pb-16 md:pb-0" style={{ background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
@@ -1301,6 +1302,7 @@ function LandingContent() {
         </div>
       </div>
     </div>
+    </MotionConfig>
   );
 }
 
