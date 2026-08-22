@@ -14,22 +14,20 @@ interface PlatformPageProps {
   platformHint?: string;
 }
 
-// N2T2–N2T4 — static platform landing pages: SEO copy + embedded teaser
-// widget. Server component shell; the teaser is the only client island.
 export default function PlatformPage({ platform, eyebrow, title, subtitle, bullets, faq, platformHint }: PlatformPageProps) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--paper)', color: 'var(--ink)' }}>
       <Navbar />
       <main className="flex-1">
-        <section className="max-w-4xl mx-auto px-6 pt-20 pb-16 text-center">
-          <p className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border shadow-sm mb-6 bg-white dark:bg-zinc-900/90 border-orange-200 dark:border-cyan-500/30 text-orange-700 dark:text-cyan-400">
-            <ShieldCheck className="w-3.5 h-3.5" />
+        <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
+          <p className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-[0.08em] uppercase border mb-6" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
+            <ShieldCheck className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} />
             {eyebrow}
           </p>
-          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.1] mb-6">
+          <h1 className="text-[36px] sm:text-[48px] leading-[1.05] mb-4" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)' }}>
             {title}
           </h1>
-          <p className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-10 font-medium text-slate-600 dark:text-zinc-400">
+          <p className="text-[16px] leading-[1.6] max-w-3xl mx-auto mb-8" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
             {subtitle}
           </p>
 
@@ -37,58 +35,53 @@ export default function PlatformPage({ platform, eyebrow, title, subtitle, bulle
             <TeaserWidget platformHint={platformHint} />
           </div>
 
-          <div className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto mt-14 text-left">
+          <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto mt-10 text-left">
             {bullets.map((b, i) => (
-              <div key={i} className={`p-5 rounded-xl border shadow-sm ${
-                i % 2 === 0
-                  ? 'bg-white dark:bg-zinc-900/90 border-slate-200 dark:border-zinc-800'
-                  : 'bg-slate-50 dark:bg-zinc-950 border-slate-200 dark:border-zinc-800'
-              }`}>
+              <div key={i} className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-500" />
-                  <p className="text-sm font-medium text-slate-700 dark:text-zinc-300">{b}</p>
+                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--score-good)' }} />
+                  <p className="text-[13px] leading-[1.5] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{b}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="max-w-3xl mx-auto px-6 pb-20">
-          <h2 className="text-2xl font-extrabold mb-6 text-center">
-            Frequently Asked Questions
+        <section className="max-w-3xl mx-auto px-6 pb-16">
+          <h2 className="text-[24px] leading-[1.1] mb-6 text-center" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: 'var(--ink)' }}>
+            Frequently asked questions
           </h2>
-          <div className="space-y-4">
-{faq.map((f, i) => (
-              <details key={i} className={`group rounded-xl border p-5 shadow-sm bg-white dark:bg-zinc-900/90 border-slate-200 dark:border-zinc-800`}>
-                <summary className="flex items-start gap-3 cursor-pointer list-none font-bold text-sm">
-                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
+          <div className="space-y-3">
+            {faq.map((f, i) => (
+              <details key={i} className="group rounded-[8px] border p-5" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+                <summary className="flex items-start gap-3 cursor-pointer list-none font-semibold text-[14px]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--risk)' }} />
                   <span>{f.q}</span>
                 </summary>
-                <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-zinc-400 pl-7">{f.a}</p>
+                <p className="mt-3 text-[13px] leading-[1.6] pl-7" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>{f.a}</p>
               </details>
             ))}
           </div>
 
-          <div className="mt-14 p-6 rounded-2xl border shadow-md bg-gradient-to-br from-slate-50 to-white dark:from-zinc-900 dark:to-zinc-950 border-slate-200 dark:border-zinc-800 text-center">
-            <FileText className="w-8 h-8 mx-auto mb-3 text-orange-500" />
-            <h3 className="text-xl font-extrabold mb-2">Need the full {platform} risk dossier?</h3>
-            <p className="text-sm text-slate-600 dark:text-zinc-400 mb-5 max-w-xl mx-auto">
-              The free check shows the headline score. The $8 Single Report delivers the complete
-              analysis: audience insights, sponsorship history, verified red flags, and contractual safeguards.
+          <div className="mt-10 p-6 rounded-[16px] border text-center" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+            <FileText className="w-7 h-7 mx-auto mb-3" style={{ color: 'var(--ink-600)' }} />
+            <h3 className="text-[18px] font-semibold mb-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Need the full {platform} dossier?</h3>
+            <p className="text-[13px] leading-[1.5] mb-5 max-w-xl mx-auto" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
+              Free check shows headline score. $8 Single Report delivers full analysis: audience, sponsorship history, red flags, and safeguards — cited.
             </p>
             <Link
-              href="/pricing"
-              className="inline-block py-3 px-7 rounded-xl font-bold text-sm bg-orange-600 hover:bg-orange-700 text-white shadow-md hover:scale-[1.02] transition-all"
+              href="/#pricing"
+              className="inline-block h-11 px-6 rounded-[8px] text-[14px] font-semibold inline-flex items-center justify-center"
+              style={{ background: 'var(--risk)', color: 'white', fontFamily: 'var(--font-sans)' }}
             >
-              See Pricing
+              See pricing
             </Link>
           </div>
 
-          {/* N2T5 — internal cross-links between platform pages */}
-          <nav className="mt-14 pt-8 border-t border-slate-200 dark:border-zinc-800 text-center" aria-label="Platform checks">
-            <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Check creators on other platforms</p>
-            <div className="flex flex-wrap justify-center gap-3 text-sm font-semibold">
-              <Link href="/" className="text-orange-600 dark:text-cyan-400 hover:underline">Home</Link>
+          <nav className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid rgba(15,27,46,0.08)' }} aria-label="Platform checks">
+            <p className="text-[11px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Check creators on other platforms</p>
+            <div className="flex flex-wrap justify-center gap-3 text-[13px] font-medium" style={{ fontFamily: 'var(--font-sans)' }}>
+              <Link href="/" className="hover:underline" style={{ color: 'var(--line)' }}>Home</Link>
               {[
                 ['YouTube', '/brand-safety/youtube'],
                 ['TikTok', '/brand-safety/tiktok'],
@@ -97,7 +90,7 @@ export default function PlatformPage({ platform, eyebrow, title, subtitle, bulle
               ]
                 .filter(([name]) => name !== platform)
                 .map(([name, href]) => (
-                  <Link key={href} href={href} className="text-orange-600 dark:text-cyan-400 hover:underline">
+                  <Link key={href} href={href} className="hover:underline" style={{ color: 'var(--line)' }}>
                     {name}
                   </Link>
                 ))}

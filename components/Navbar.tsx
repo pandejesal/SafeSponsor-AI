@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Sun, Moon, ArrowRight, Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
@@ -15,24 +14,22 @@ export function Navbar() {
   const { user } = useAuth();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset on external change (pathname): closing the mobile menu on navigation is the desired cascade
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const handleSignOut = async () => {
     try {
-      if (auth) {
-        await signOut(auth);
-      }
-      // Full reload, not a client-side navigation: once initialized, the App
-      // Check provider stays registered on the FirebaseApp for the page
-      // lifetime (no public unregister API), and any subsequent sign-in
-      // (signInWithPopup/Redirect) awaits its token whenever it is registered.
-      // A fresh page after logout guarantees the next sign-in never waits on
-      // reCAPTCHA (FR-4).
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- intentional full reload: App Check has no unregister API, so sign-out must reload the page (see comment above)
+      if (auth) await signOut(auth);
       window.location.href = '/login';
     } catch (err) {
       console.error('Error signing out', err);
@@ -42,209 +39,202 @@ export function Navbar() {
   const isDark = theme === 'dark';
 
   return (
-    <header className={`sticky top-0 z-50 transition-colors duration-300 backdrop-blur-xl border-b print:hidden ${
-      isDark 
-        ? 'bg-zinc-950/80 border-zinc-800/80 text-zinc-100' 
-        : 'bg-white/80 border-slate-200 text-slate-900 shadow-md'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        
-        {/* LOGO */}
+    <header
+      className={`sticky top-0 z-50 border-b print:hidden transition-all duration-200 ${
+        scrolled ? 'shadow-[var(--shadow-md)]' : ''
+      }`}
+      style={{
+        background: isDark ? 'rgba(15,27,46,0.88)' : 'rgba(246,242,239,0.88)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderColor: scrolled ? 'rgba(15,27,46,0.10)' : 'rgba(15,27,46,0.08)',
+        color: 'var(--ink)',
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-[72px] flex items-center justify-between">
+        {/* LOGO — wordmark serif + monogram (replaces AI-generated mark) */}
         <Link href="/" className="flex items-center gap-3 group">
-          <Image 
-            src="/favicon.svg" 
-            alt="SafeSponsor AI" 
-            width={40}
-            height={40}
-            className="w-10 h-10 rounded-xl shadow-md transition-transform group-hover:scale-105"
-          />
+          <div
+            className="w-10 h-10 rounded-[8px] flex items-center justify-center text-[15px] font-normal leading-none select-none"
+            style={{
+              background: 'var(--ink)',
+              color: 'var(--paper)',
+              fontFamily: 'var(--font-display)',
+              boxShadow: 'var(--shadow-sm)',
+            }}
+            aria-hidden
+          >
+            ss
+          </div>
           <div className="flex flex-col">
-            <span className="font-extrabold text-lg sm:text-xl tracking-tight leading-none flex items-center gap-1">
-              SafeSponsor
-              <span className={isDark ? 'text-cyan-400 font-black' : 'text-orange-600 font-black'}>
-                AI
+            <span className="flex items-baseline gap-[5px] leading-none">
+              <span
+                className="text-[20px] tracking-[-0.02em]"
+                style={{ fontFamily: 'var(--font-display)', fontWeight: 400, color: 'var(--ink)' }}
+              >
+                SafeSponsor
+              </span>
+              <span
+                className="text-[11px] font-semibold tracking-[0.08em] uppercase px-1.5 py-0.5 rounded-full"
+                style={{ background: 'var(--risk-50)', color: 'var(--risk)', border: '1px solid rgba(224,122,95,0.18)' }}
+              >
+                Audit
               </span>
             </span>
-            <span className={`text-[10px] font-semibold tracking-wider uppercase mt-0.5 ${
-              isDark ? 'text-zinc-400' : 'text-slate-500'
-            }`}>
-              Brand Safety Engine
+            <span
+              className="text-[11px] font-semibold tracking-[0.08em] uppercase"
+              style={{ color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}
+            >
+              Evidence, not promises
             </span>
           </div>
         </Link>
 
-        {/* DESKTOP NAV LINKS */}
-        <nav className="hidden md:flex items-center gap-8">
-          <Link 
-            href="/#features" 
-            className={`text-sm font-medium transition-colors hover:text-orange-500 ${
-              isDark ? 'text-zinc-300' : 'text-slate-700'
-            }`}
-          >
-            Features
-          </Link>
-          <Link 
-            href="/#how-it-works" 
-            className={`text-sm font-medium transition-colors hover:text-orange-500 ${
-              isDark ? 'text-zinc-300' : 'text-slate-700'
-            }`}
-          >
-            How It Works
-          </Link>
-          <Link 
-            href="/#demo" 
-            className={`text-sm font-medium transition-colors hover:text-orange-500 ${
-              isDark ? 'text-zinc-300' : 'text-slate-700'
-            }`}
-          >
-            Live Sample
-          </Link>
-          <Link 
-            href="/#pricing" 
-            className={`text-sm font-medium transition-colors hover:text-orange-500 ${
-              isDark ? 'text-zinc-300' : 'text-slate-700'
-            }`}
-          >
-            Pricing
-          </Link>
-          <Link 
-            href="/#faq" 
-            className={`text-sm font-medium transition-colors hover:text-orange-500 ${
-              isDark ? 'text-zinc-300' : 'text-slate-700'
-            }`}
-          >
-            FAQ
-          </Link>
+        {/* DESKTOP NAV */}
+        <nav className="hidden md:flex items-center gap-7">
+          {[
+            { href: '/#features', label: 'Method' },
+            { href: '/#how-it-works', label: 'How it works' },
+            { href: '/#demo', label: 'Example' },
+            { href: '/#pricing', label: 'Pricing' },
+            { href: '/#faq', label: 'FAQ' },
+          ].map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="text-[14px] font-medium transition-colors hover:opacity-80"
+              style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}
+            >
+              {l.label}
+            </Link>
+          ))}
         </nav>
 
-        {/* RIGHT CONTROLS & CTA */}
-        <div className="hidden sm:flex items-center gap-4">
-          {/* THEME TOGGLE BUTTON */}
+        {/* RIGHT */}
+        <div className="hidden sm:flex items-center gap-3">
           <button
             onClick={toggleTheme}
-            aria-label="Toggle Dark and Light Mode"
-            className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center justify-center ${
-              isDark 
-                ? 'bg-zinc-900 border-zinc-800 text-cyan-400 hover:bg-zinc-800 hover:border-cyan-500/50' 
-                : 'bg-slate-100 border-slate-300 text-orange-600 hover:bg-slate-200 hover:border-orange-500/50'
-            }`}
-            title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            aria-label="Toggle theme"
+            className="w-10 h-10 rounded-[8px] border flex items-center justify-center transition-colors"
+            style={{
+              background: 'var(--paper)',
+              borderColor: 'rgba(15,27,46,0.10)',
+              color: 'var(--ink-600)',
+            }}
           >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-amber-400 stroke-[2]" />
-            ) : (
-              <Moon className="w-5 h-5 text-blue-900 stroke-[2]" />
-            )}
+            {isDark ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
           </button>
 
           {user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 href="/dashboard"
-                className={`px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md hover:scale-[1.02] ${
-                  isDark
-                    ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-400 hover:to-cyan-500 text-zinc-950'
-                    : 'bg-blue-900 hover:bg-blue-950 text-white'
-                }`}
+                className="h-10 px-4 rounded-[8px] text-[14px] font-semibold inline-flex items-center gap-2 transition-colors"
+                style={{ background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'var(--font-sans)' }}
               >
                 <LayoutDashboard className="w-4 h-4" />
-                <span>Dashboard</span>
+                Dashboard
               </Link>
-
               <button
                 onClick={handleSignOut}
                 aria-label="Sign out"
-                className={`p-2.5 rounded-xl border text-sm font-semibold transition-all ${
-                  isDark 
-                    ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800' 
-                    : 'bg-slate-100 border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-200'
-                }`}
-                title="Sign out"
+                className="w-10 h-10 rounded-[8px] border inline-flex items-center justify-center"
+                style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink-600)' }}
               >
                 <LogOut className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className={`px-4 py-2.5 text-sm font-bold transition-colors ${
-                  isDark ? 'text-zinc-300 hover:text-white' : 'text-slate-700 hover:text-blue-900'
-                }`}
+                className="h-10 px-4 rounded-[8px] text-[14px] font-semibold inline-flex items-center transition-colors"
+                style={{ color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}
               >
-                Sign In
+                Sign in
               </Link>
               <Link
                 href="/login"
-                className={`px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-md hover:scale-[1.02] ${
-                  isDark
-                    ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white shadow-orange-950/50'
-                    : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
-                }`}
+                className="h-10 px-[18px] rounded-[8px] text-[14px] font-semibold inline-flex items-center gap-2 transition-all hover:translate-y-[-1px]"
+                style={{
+                  background: 'var(--risk)',
+                  color: 'white',
+                  fontFamily: 'var(--font-sans)',
+                  boxShadow: '0 1px 2px rgba(15,27,46,0.06)',
+                }}
               >
-                <span>Get Started</span>
+                Get started
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           )}
         </div>
 
-        {/* MOBILE MENU TOGGLE */}
+        {/* MOBILE */}
         <div className="flex sm:hidden items-center gap-2">
           <button
             onClick={toggleTheme}
-            aria-label="Toggle Theme"
-            className={`p-2 rounded-lg border ${
-              isDark ? 'bg-zinc-900 border-zinc-800 text-amber-400' : 'bg-slate-100 border-slate-300 text-blue-900'
-            }`}
+            aria-label="Toggle theme"
+            className="w-9 h-9 rounded-[8px] border grid place-items-center"
+            style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink-600)' }}
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          
           <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileMenuOpen}
-            className={`p-2 rounded-lg border ${
-              isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-300' : 'bg-slate-100 border-slate-300 text-slate-800'
-            }`}
+            className="w-9 h-9 rounded-[8px] border grid place-items-center"
+            style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)' }}
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>
 
-      {/* MOBILE DROPDOWN */}
       {mobileMenuOpen && (
-        <div className={`sm:hidden border-b px-6 py-6 space-y-4 ${
-          isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-slate-200'
-        }`}>
-          <div className="flex flex-col space-y-3 font-semibold text-base">
-            <Link href="/#features" onClick={() => setMobileMenuOpen(false)}>Features</Link>
-            <Link href="/#how-it-works" onClick={() => setMobileMenuOpen(false)}>How It Works</Link>
-            <Link href="/#demo" onClick={() => setMobileMenuOpen(false)}>Live Sample</Link>
-            <Link href="/#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</Link>
-            <Link href="/#faq" onClick={() => setMobileMenuOpen(false)}>FAQ</Link>
+        <div
+          className="sm:hidden border-t px-6 py-6 space-y-5"
+          style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}
+        >
+          <div className="flex flex-col gap-3">
+            {[
+              { href: '/#features', label: 'Method' },
+              { href: '/#how-it-works', label: 'How it works' },
+              { href: '/#demo', label: 'Example' },
+              { href: '/#pricing', label: 'Pricing' },
+              { href: '/#faq', label: 'FAQ' },
+            ].map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-[15px] font-medium"
+                style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}
+              >
+                {l.label}
+              </Link>
+            ))}
           </div>
-          <div className="pt-4 border-t border-zinc-800/20 flex flex-col gap-3">
+          <div className="pt-4 border-t flex flex-col gap-3" style={{ borderColor: 'rgba(15,27,46,0.08)' }}>
             {user ? (
               <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 bg-cyan-500 text-zinc-950 font-bold rounded-xl text-center"
+                className="h-11 rounded-[8px] grid place-items-center text-[14px] font-semibold"
+                style={{ background: 'var(--ink)', color: 'var(--paper)' }}
               >
-                Go to Dashboard
+                Go to dashboard
               </Link>
             ) : (
-              <>
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-full py-3 bg-orange-600 text-white font-bold rounded-xl text-center"
-                >
-                  Get Started
-                </Link>
-              </>
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="h-11 rounded-[8px] grid place-items-center text-[14px] font-semibold"
+                style={{ background: 'var(--risk)', color: 'white' }}
+              >
+                Get started
+              </Link>
             )}
           </div>
         </div>

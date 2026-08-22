@@ -1,14 +1,20 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
-import { Space_Grotesk } from 'next/font/google';
+import { Instrument_Serif, Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { AuthProvider } from '@/components/AuthProvider';
 
-// Display typeface for headings (self-hosted at build; swap fallback at runtime).
-const spaceGrotesk = Space_Grotesk({
+// Ink Auditor — editorial display serif + neutral sans (DESIGN.md Typography Rules)
+const display = Instrument_Serif({
   subsets: ['latin'],
+  weight: ['400'],
   variable: '--font-display',
+  display: 'swap',
+});
+const sans = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
   display: 'swap',
 });
 
@@ -54,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${display.variable} ${sans.variable} dark`} suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -63,7 +69,7 @@ export default function RootLayout({
         />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#09090b" />
+        <meta name="theme-color" content="#F6F2EF" />
         <Script
           defer
           data-domain="safe-sponsor-ai.vercel.app"

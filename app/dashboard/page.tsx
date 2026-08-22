@@ -28,7 +28,7 @@ const DossierViewer = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex justify-center p-12">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--ink-600)]" />
       </div>
     ),
   }
@@ -521,8 +521,8 @@ function DashboardInner() {
         disabled={!!loadingPlan}
         className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 ${
           isDark
-            ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white shadow-orange-950/50'
-            : 'bg-orange-600 hover:bg-orange-700 text-white shadow-orange-200'
+            ? 'bg-gradient-to-r from-ink-600 to-ink-600 text-white shadow-ink-950/50'
+            : 'bg-[var(--ink-600)] hover:bg-[var(--ink)]-700 text-white shadow-paper-100'
         }`}
       >
         <Lock className="w-4 h-4" />
@@ -534,8 +534,8 @@ function DashboardInner() {
         disabled={!!loadingPlan}
         className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 ${
           isDark
-            ? 'bg-zinc-950 text-zinc-200 border-zinc-700 hover:border-cyan-500/50'
-            : 'bg-white text-slate-800 border-slate-300 hover:border-blue-500'
+            ? 'bg-white text-[var(--paper)]-100 border-[var(--ink)]-700 hover:border-[var(--ink-600)]/50'
+            : 'bg-white text-[var(--ink-600)] border-[rgba(15,27,46,0.08)] hover:border-blue-500'
         }`}
       >
         <ShieldCheck className="w-4 h-4" />
@@ -1163,16 +1163,16 @@ Report Generated via SafeSponsor AI Research Engine
   if (authLoading || !user) {
     return (
       <div className={`min-h-screen flex items-center justify-center font-sans ${
-        isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-50 text-slate-900'
+        isDark ? 'bg-white text-[var(--ink)]-100' : 'bg-white text-[var(--ink)]'
       }`}>
-        <Activity className="w-8 h-8 animate-spin text-cyan-500" />
+        <Activity className="w-8 h-8 animate-spin text-[var(--ink-600)]" />
       </div>
     );
   }
 
   return (
     <div className={`min-h-screen font-sans transition-colors duration-300 ${
-      isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-slate-50 text-slate-900'
+      isDark ? 'bg-white text-[var(--ink)]-100' : 'bg-white text-[var(--ink)]'
     }`}>
       <Navbar />
 
@@ -1205,64 +1205,56 @@ Report Generated via SafeSponsor AI Research Engine
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Analytics Header Metrics */}
+        {/* Analytics — 8px audit, not zinc */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className={`p-5 rounded-xl border transition-all ${
-            isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
-          }`}>
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Total Audits</span>
-              <Layers className="w-4 h-4 text-cyan-500" />
+          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Total audits</span>
+              <Layers className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
             </div>
-            <div className="text-2xl sm:text-3xl font-black">{totalAudits}</div>
-            <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
-              Creator dossiers generated
+            <div className="text-[24px] font-bold tracking-[-0.02em]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{totalAudits}</div>
+            <p className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
+              Dossiers generated
             </p>
           </div>
 
-          <div className={`p-5 rounded-xl border transition-all ${
-            isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
-          }`}>
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Avg Safety Score</span>
-              <BarChart2 className="w-4 h-4 text-orange-500" />
+          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Avg score</span>
+              <BarChart2 className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-orange-500">{avgSafetyScore}/100</div>
-            <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
-              Portfolio average risk
+            <div className="text-[24px] font-bold tracking-[-0.02em]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{avgSafetyScore}/100</div>
+            <p className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
+              Portfolio average
             </p>
           </div>
 
-          <div className={`p-5 rounded-xl border transition-all ${
-            isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
-          }`}>
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Recommended</span>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Recommended</span>
+              <CheckCircle2 className="w-4 h-4" style={{ color: 'var(--score-good)' }} />
             </div>
-            <div className="text-2xl sm:text-3xl font-black text-emerald-500">{recommendedAudits}</div>
-            <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
+            <div className="text-[24px] font-bold tracking-[-0.02em]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--score-good)' }}>{recommendedAudits}</div>
+            <p className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
               Safe for sponsorship
             </p>
           </div>
 
-          <div className={`p-5 rounded-xl border transition-all ${
-            isDark ? 'bg-zinc-900/80 border-cyan-500/20' : 'bg-white border-cyan-200 shadow-sm'
-          }`}>
-            <div className="flex items-center justify-between text-slate-400 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider">Your Plan</span>
-              <Zap className="w-4 h-4 text-cyan-500" />
+          <div className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-[var(--shadow-sm)])' }}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Your plan</span>
+              <Zap className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
             </div>
             {userCredits === null ? (
               <div className="flex items-center gap-2">
-                <div className={`h-8 w-16 rounded-lg animate-pulse ${isDark ? 'bg-zinc-800' : 'bg-slate-200'}`} />
+                <div className={`h-8 w-16 rounded-lg animate-pulse ${isDark ? 'bg-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper-100)]'}`} />
               </div>
             ) : userCredits.hasSubscription ? (
               <>
-                <div className="text-2xl sm:text-3xl font-black text-cyan-400">
+                <div className="text-2xl sm:text-3xl font-bold text-[var(--ink-600)]">
                   Pro{userCredits.plan === 'subscription_annual' ? ' · Annual' : ''}
                 </div>
-                <p className={`text-[11px] mt-1 ${isDark ? 'text-cyan-300/80' : 'text-cyan-900'}`}>
+                <p className={`text-[11px] mt-1 ${isDark ? 'text-[var(--ink-600)]/80' : 'text-[var(--ink-900)]'}`}>
                   {userCredits.cancelAtPeriodEnd ? (
                     <>
                       Cancelled &middot; access until {userCredits.subscriptionExpiresAt ? new Date(userCredits.subscriptionExpiresAt).toLocaleDateString() : "period end"}
@@ -1280,7 +1272,7 @@ Report Generated via SafeSponsor AI Research Engine
                   <button
                     onClick={() => setCancelStep(1)}
                     className={`mt-3 text-[11px] font-semibold underline transition-colors ${
-                      isDark ? 'text-zinc-500 hover:text-zinc-300' : 'text-slate-400 hover:text-slate-700'
+                      isDark ? 'text-[var(--ink-600)] hover:text-[var(--ink-600)]' : 'text-[var(--ink-600)] hover:text-[var(--ink)]-700'
                     }`}
                   >
                     Cancel subscription
@@ -1289,7 +1281,7 @@ Report Generated via SafeSponsor AI Research Engine
               </>
             ) : cancelSuccess ? (
               <div className="text-center">
-                <div className="text-2xl sm:text-3xl font-black text-cyan-400">Pro</div>
+                <div className="text-2xl sm:text-3xl font-bold text-[var(--ink-600)]">Pro</div>
                 <p className="mt-1 text-[11px] font-semibold text-amber-500">
                   Subscription cancelled. Access until {cancelSuccess && !isNaN(new Date(cancelSuccess).getTime()) ? new Date(cancelSuccess).toLocaleDateString() : "the end of your billing period"}.
                 </p>
@@ -1298,16 +1290,16 @@ Report Generated via SafeSponsor AI Research Engine
               <>
                 <div className="flex items-center gap-3">
                   <div className="text-center">
-                    <div className="text-xl font-black text-cyan-400">{userCredits.videoCredits}</div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase">Video</div>
+                    <div className="text-xl font-bold text-[var(--ink-600)]">{userCredits.videoCredits}</div>
+                    <div className="text-[10px] font-bold text-[var(--ink-600)] uppercase">Video</div>
                   </div>
-                  <div className={`w-px h-8 ${isDark ? 'bg-zinc-800' : 'bg-slate-200'}`} />
+                  <div className={`w-px h-8 ${isDark ? 'bg-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper-100)]'}`} />
                   <div className="text-center">
-                    <div className="text-xl font-black text-orange-400">{userCredits.channelCredits}</div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase">Channel</div>
+                    <div className="text-xl font-bold text-[var(--ink-600)]">{userCredits.channelCredits}</div>
+                    <div className="text-[10px] font-bold text-[var(--ink-600)] uppercase">Channel</div>
                   </div>
                 </div>
-                <p className={`text-[11px] mt-1 ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>
+                <p className={`text-[11px] mt-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                   Credits remaining
                 </p>
                 {/* P6 — top-up path when the account is empty */}
@@ -1316,7 +1308,7 @@ Report Generated via SafeSponsor AI Research Engine
                     onClick={() => handleCheckout("single_3pack")}
                     disabled={loadingPlan !== null}
                     className={`mt-3 w-full px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center justify-center gap-1.5 ${
-                      isDark ? 'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30' : 'bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200'
+                      isDark ? 'bg-[var(--paper)] hover:bg-[var(--ink-600)]/20 text-[var(--ink-600)] border border-[var(--ink-600)]/30' : 'bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200'
                     }`}
                   >
                     <Zap className="w-3.5 h-3.5" />
@@ -1336,16 +1328,16 @@ Report Generated via SafeSponsor AI Research Engine
         {/* Upgrade Banner */}
         {upgradeRequired && (
           <div className={`p-6 rounded-xl border space-y-4 ${
-            isDark ? 'bg-zinc-900/90 border-orange-500/40' : 'bg-white border-orange-300'
+            isDark ? 'bg-white/90 border-[var(--ink-600)]/40' : 'bg-white border-[var(--ink-600)]'
           }`}>
             <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-lg bg-orange-600/10 border border-orange-500/30 flex items-center justify-center text-orange-500 shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-[var(--ink-600)]/10 border border-[var(--ink-600)]/30 flex items-center justify-center text-[var(--ink-600)] shrink-0">
                 <DollarSign className="w-6 h-6" />
               </div>
               <div className="space-y-1">
                 {/* P6 — soft limit: no hard wall, always a purchase path */}
                 <h3 className="text-xl font-bold">You&apos;re out of credits — top up or upgrade</h3>
-                <p className={`text-sm ${isDark ? 'text-zinc-300' : 'text-slate-600'}`}>
+                <p className={`text-sm ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                   Top up for more reports or go unlimited with Pro to keep generating comprehensive brand safety dossiers.
                 </p>
               </div>
@@ -1356,14 +1348,14 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => handleCheckout("single_3pack")}
                 disabled={loadingPlan !== null}
                 className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
-                  isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700' : 'bg-slate-100 hover:bg-slate-200 border-slate-300'
+                  isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)]'
                 }`}
               >
                 <div>
                   <h4 className="font-bold text-sm">3 Reports Pack</h4>
-                  <p className="text-xs text-orange-500">$19 one-time &middot; Save 21%</p>
+                  <p className="text-xs text-[var(--ink-600)]">$19 one-time &middot; Save 21%</p>
                 </div>
-                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-cyan-400' : 'text-blue-900'}`}>
+                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-blue-900'}`}>
                   Buy 3 Reports <ChevronRight className="w-3 h-3" />
                 </span>
               </button>
@@ -1372,14 +1364,14 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => handleCheckout("single")}
                 disabled={loadingPlan !== null}
                 className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
-                  isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700' : 'bg-slate-100 hover:bg-slate-200 border-slate-300'
+                  isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)]'
                 }`}
               >
                 <div>
                   <h4 className="font-bold text-sm">Single Video Report</h4>
-                  <p className="text-xs text-orange-500">$8 one-time</p>
+                  <p className="text-xs text-[var(--ink-600)]">$8 one-time</p>
                 </div>
-                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-cyan-400' : 'text-blue-900'}`}>
+                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-blue-900'}`}>
                   Buy 1 Report <ChevronRight className="w-3 h-3" />
                 </span>
               </button>
@@ -1388,14 +1380,14 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => handleCheckout("channel")}
                 disabled={loadingPlan !== null}
                 className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
-                  isDark ? 'bg-zinc-800/90 hover:bg-zinc-800 border-cyan-500/40' : 'bg-orange-50 hover:bg-orange-100 border-orange-300'
+                  isDark ? 'bg-[rgba(15,27,46,0.08)]/90 hover:bg-[rgba(15,27,46,0.08)] border-[var(--ink-600)]/40' : 'bg-[var(--ink)]-50 hover:bg-[var(--ink)]-100 border-[var(--ink-600)]'
                 }`}
               >
                 <div>
                   <h4 className="font-bold text-sm">Channel Audit</h4>
-                  <p className="text-xs text-orange-600">$19 one-time</p>
+                  <p className="text-xs text-[var(--ink-600)]">$19 one-time</p>
                 </div>
-                <span className="text-xs font-bold text-orange-600 flex items-center gap-1">
+                <span className="text-xs font-bold text-[var(--ink-600)] flex items-center gap-1">
                   Buy Channel Report <ChevronRight className="w-3 h-3" />
                 </span>
               </button>
@@ -1404,15 +1396,15 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => handleCheckout("subscription")}
                 disabled={loadingPlan !== null}
                 className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 relative overflow-hidden ${
-                  isDark ? 'bg-orange-950/40 hover:bg-orange-950/60 border-orange-500/40' : 'bg-blue-900 text-white hover:bg-blue-950 border-blue-950'
+                  isDark ? 'bg-[var(--ink)]-950/40 hover:bg-[var(--ink)]-950/60 border-[var(--ink-600)]/40' : 'bg-blue-900 text-white hover:bg-blue-950 border-blue-950'
                 }`}
               >
-                <div className="absolute top-0 right-0 bg-orange-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-bl">PRO</div>
+                <div className="absolute top-0 right-0 bg-[var(--ink-600)] text-white text-[9px] font-bold px-2 py-0.5 rounded-bl">PRO</div>
                 <div>
                   <h4 className="font-bold text-sm">Unlimited Pro</h4>
-                  <p className={`text-xs ${isDark ? 'text-orange-300' : 'text-slate-300'}`}>$149 / month</p>
+                  <p className={`text-xs ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>$149 / month</p>
                 </div>
-                <span className="text-xs font-bold text-orange-400 flex items-center gap-1">
+                <span className="text-xs font-bold text-[var(--ink-600)] flex items-center gap-1">
                   Subscribe Unlimited <ChevronRight className="w-3 h-3" />
                 </span>
               </button>
@@ -1423,16 +1415,16 @@ Report Generated via SafeSponsor AI Research Engine
         {/* Audit Form Section */}
         <section className={`p-6 sm:p-8 rounded-xl border relative overflow-hidden transition-colors print:hidden ${
           isDark 
-            ? 'bg-zinc-900/80 border-zinc-800 ring-1 ring-cyan-500/10' 
-            : 'bg-white border-slate-200'
+            ? 'bg-white border-[rgba(15,27,46,0.08)] ring-1 ring-ink-600/10' 
+            : 'bg-white border-[rgba(15,27,46,0.08)]'
         }`}>
-          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-zinc-800">
+          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[rgba(15,27,46,0.08)] dark:border-[rgba(15,27,46,0.08)]">
             <div>
-              <h2 className="text-2xl font-black flex items-center gap-2">
-                <Building2 className={`w-6 h-6 ${isDark ? 'text-cyan-400' : 'text-blue-900'}`} />
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Building2 className={`w-6 h-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-blue-900'}`} />
                 Sponsorship Safety Audit Engine
               </h2>
-              <p className={`text-sm mt-1 font-medium ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+              <p className={`text-sm mt-1 font-medium ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                 Investigate YouTube video links, channel handles, or Instagram creator profiles individually or in batch queues.
               </p>
             </div>
@@ -1444,8 +1436,8 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => setAuditMode('single')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                   auditMode === 'single'
-                    ? (isDark ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm' : 'bg-blue-900 text-white shadow-sm')
-                    : (isDark ? 'bg-zinc-950 text-zinc-400 border border-zinc-800 hover:text-zinc-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    ? (isDark ? 'bg-[var(--ink-600)]/20 text-[var(--ink-600)] border border-[var(--ink-600)]/40 shadow-[var(--shadow-sm)]' : 'bg-blue-900 text-white shadow-[var(--shadow-sm)]')
+                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
                 }`}
               >
                 <Search className="w-3.5 h-3.5" />
@@ -1457,13 +1449,13 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => setAuditMode('batch')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 relative ${
                   auditMode === 'batch'
-                    ? (isDark ? 'bg-orange-500/20 text-orange-300 border border-orange-500/40 shadow-sm' : 'bg-orange-600 text-white shadow-sm')
-                    : (isDark ? 'bg-zinc-950 text-zinc-400 border border-zinc-800 hover:text-zinc-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    ? (isDark ? 'bg-[var(--ink-600)]/20 text-[var(--ink-600)] border border-[var(--ink-600)]/40 shadow-[var(--shadow-sm)]' : 'bg-[var(--ink-600)] text-white shadow-[var(--shadow-sm)]')
+                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
                 }`}
               >
                 <ListOrdered className="w-3.5 h-3.5" />
                 <span>Batch Multi-URL Queue</span>
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-orange-500 text-white">
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-[var(--ink-600)] text-white">
                   NEW
                 </span>
               </button>
@@ -1473,13 +1465,13 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => setAuditMode('free')}
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 relative ${
                   auditMode === 'free'
-                    ? (isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm' : 'bg-emerald-600 text-white shadow-sm')
-                    : (isDark ? 'bg-zinc-950 text-zinc-400 border border-zinc-800 hover:text-zinc-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                    ? (isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[var(--shadow-sm)]' : 'bg-emerald-600 text-white shadow-[var(--shadow-sm)]')
+                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
                 }`}
               >
                 <Zap className="w-3.5 h-3.5" />
                 <span>Free Score Preview</span>
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500 text-white">
+                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500 text-white">
                   FREE
                 </span>
               </button>
@@ -1490,13 +1482,13 @@ Report Generated via SafeSponsor AI Research Engine
             <>
               {/* Single Creator Quick Presets */}
               <div className="mb-6 space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Quick Creator Sample Presets:</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--ink-600)]">Quick Creator Sample Presets:</span>
                 <div className="flex items-center gap-2 flex-wrap">
                   <button
                     type="button"
                     onClick={() => applyPreset("youtube.com/@mrbeast", "GamerSupps", "GFuel, Prime Energy, Red Bull")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
                     }`}
                   >
                     🎮 @MrBeast (Gaming & Energy)
@@ -1505,7 +1497,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@mkbhd", "Anker", "Belkin, Mophie, Samsung")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
                     }`}
                   >
                     📱 @MKBHD (Consumer Tech)
@@ -1514,7 +1506,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@markrober", "KiwiCo", "LittleBits, Mel Science")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
                     }`}
                   >
                     🔬 @MarkRober (STEM & EdTech)
@@ -1523,7 +1515,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@GrahamStephan", "Public.com", "Robinhood, Coinbase, Webull")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
                     }`}
                   >
                     💼 @GrahamStephan (Fintech)
@@ -1532,7 +1524,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@DougDeMuro", "Cars & Bids", "Bring a Trailer, Hagerty")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
                     }`}
                   >
                     🏎️ @DougDeMuro (Automotive)
@@ -1541,7 +1533,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@ijustine", "Canon", "Sony, Panasonic, RED")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
                     }`}
                   >
                     📷 @iJustine (Creator Hardware)
@@ -1550,7 +1542,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@loganpaul", "PRIME", "Gatorade, Powerade, BodyArmor")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-200' : 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
                     }`}
                   >
                     🏋️ @LoganPaul (Fitness)
@@ -1562,9 +1554,9 @@ Report Generated via SafeSponsor AI Research Engine
                 {/* Audit Focus Mode Selector */}
                 <div className="space-y-2 pb-2">
                   <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                    isDark ? 'text-zinc-300' : 'text-slate-700'
+                    isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                   }`}>
-                    <Zap className="w-4 h-4 text-orange-500" />
+                    <Zap className="w-4 h-4 text-[var(--ink-600)]" />
                     Select Audit Depth & Research Focus Mode
                   </label>
                   <div className="grid sm:grid-cols-3 gap-3">
@@ -1573,13 +1565,13 @@ Report Generated via SafeSponsor AI Research Engine
                       onClick={() => setAuditFocus("standard")}
                       className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "standard"
-                          ? (isDark ? 'bg-cyan-500/10 border-cyan-500 text-cyan-300 ring-1 ring-cyan-500/50' : 'bg-blue-50 border-blue-900 text-blue-950 font-bold')
-                          : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 text-slate-600')
+                          ? (isDark ? 'bg-[var(--paper)] border-[var(--ink-600)] text-[var(--ink-600)] ring-1 ring-ink-600/50' : 'bg-blue-50 border-blue-900 text-blue-950 font-bold')
+                          : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center justify-between">
-                        <span>360° Standard Audit</span>
-                        {auditFocus === "standard" && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                        <span>web-grounded Standard Audit</span>
+                        {auditFocus === "standard" && <Check className="w-3.5 h-3.5 text-[var(--ink-600)]" />}
                       </div>
                       <p className="text-[11px] opacity-80 leading-tight">Grounded web search, transcript analysis, & YouTube comment toxicity check.</p>
                     </button>
@@ -1589,13 +1581,13 @@ Report Generated via SafeSponsor AI Research Engine
                       onClick={() => setAuditFocus("deep_compliance")}
                       className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "deep_compliance"
-                          ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300 ring-1 ring-orange-500/50' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
-                          : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 text-slate-600')
+                          ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)] ring-1 ring-ink-600/50' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
+                          : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center justify-between">
                         <span>FTC & Legal Compliance</span>
-                        {auditFocus === "deep_compliance" && <Check className="w-3.5 h-3.5 text-orange-400" />}
+                        {auditFocus === "deep_compliance" && <Check className="w-3.5 h-3.5 text-[var(--ink-600)]" />}
                       </div>
                       <p className="text-[11px] opacity-80 leading-tight">Enhanced scrutiny on FTC ad disclosures, regulatory history, & financial claims.</p>
                     </button>
@@ -1606,7 +1598,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "exclusivity_matrix"
                           ? (isDark ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-50 border-emerald-600 text-emerald-950 font-bold')
-                          : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 text-slate-600')
+                          : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center justify-between">
@@ -1622,9 +1614,9 @@ Report Generated via SafeSponsor AI Research Engine
                   {/* Primary Target */}
                   <div className="space-y-1.5">
                     <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                      isDark ? 'text-zinc-300' : 'text-slate-700'
+                      isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                     }`}>
-                      Target Creator Handle / Video URL <span className="text-orange-500">*</span>
+                      Target Creator Handle / Video URL <span className="text-[var(--ink-600)]">*</span>
                     </label>
                     <input 
                       type="text" 
@@ -1633,8 +1625,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. MrBeast, @creatorhandle, or YouTube/Instagram URL" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500 focus:border-cyan-500' 
-                          : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                       required
                     />
@@ -1643,9 +1635,9 @@ Report Generated via SafeSponsor AI Research Engine
                   {/* Brand Name */}
                   <div className="space-y-1.5">
                     <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                      isDark ? 'text-zinc-300' : 'text-slate-700'
+                      isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                     }`}>
-                      Your Brand Name <span className="text-orange-500">*</span>
+                      Your Brand Name <span className="text-[var(--ink-600)]">*</span>
                     </label>
                     <input 
                       type="text" 
@@ -1654,8 +1646,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. Gymshark, GamerSupps, Athletic Greens" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500 focus:border-cyan-500' 
-                          : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                       required
                     />
@@ -1666,10 +1658,10 @@ Report Generated via SafeSponsor AI Research Engine
                   {/* Competitor Brands */}
                   <div className="space-y-1.5">
                     <label className={`text-xs font-bold uppercase tracking-wider flex items-center justify-between ${
-                      isDark ? 'text-zinc-300' : 'text-slate-700'
+                      isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                     }`}>
                       <span>Competitor Brands (Comma-separated)</span>
-                      <span className="text-[10px] text-orange-500 font-bold">RECOMMENDED</span>
+                      <span className="text-[10px] text-[var(--ink-600)] font-bold">RECOMMENDED</span>
                     </label>
                     <input 
                       type="text" 
@@ -1678,8 +1670,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. Nike, Adidas, Under Armour, Lululemon" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500 focus:border-cyan-500' 
-                          : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                     />
                   </div>
@@ -1687,7 +1679,7 @@ Report Generated via SafeSponsor AI Research Engine
                   {/* Creator Aliases */}
                   <div className="space-y-1.5">
                     <label className={`text-xs font-bold uppercase tracking-wider ${
-                      isDark ? 'text-zinc-300' : 'text-slate-700'
+                      isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                     }`}>
                       Creator Aliases / Known Handles (Optional)
                     </label>
@@ -1698,8 +1690,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. @realcreator, John Doe, CreatorVlogs" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500 focus:border-cyan-500' 
-                          : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                     />
                   </div>
@@ -1708,10 +1700,10 @@ Report Generated via SafeSponsor AI Research Engine
                 {/* Additional URLs */}
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold uppercase tracking-wider flex items-center justify-between ${
-                    isDark ? 'text-zinc-300' : 'text-slate-700'
+                    isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                   }`}>
                     <span>Additional Links / Posts of Concern (Optional)</span>
-                    <span className="text-[10px] text-slate-400 font-medium">One URL per line</span>
+                    <span className="text-[10px] text-[var(--ink-600)] font-medium">One URL per line</span>
                   </label>
                   <textarea 
                     rows={2}
@@ -1720,8 +1712,8 @@ Report Generated via SafeSponsor AI Research Engine
                     placeholder="https://youtube.com/watch?v=...&#10;https://instagram.com/p/..." 
                     className={`w-full border rounded-xl p-3 text-sm focus:outline-none transition resize-none ${
                       isDark 
-                        ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500 focus:border-cyan-500' 
-                        : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                        ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                        : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                     }`}
                   />
                 </div>
@@ -1733,9 +1725,9 @@ Report Generated via SafeSponsor AI Research Engine
                       type="checkbox"
                       checked={forceRefresh}
                       onChange={(e) => setForceRefresh(e.target.checked)}
-                      className="rounded border-zinc-700 text-orange-600 focus:ring-orange-500 w-4 h-4"
+                      className="rounded border-[var(--ink)]-700 text-[var(--ink-600)] focus:ring-ink-600 w-4 h-4"
                     />
-                    <span className={isDark ? 'text-zinc-300' : 'text-slate-700'}>
+                    <span className={isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'}>
                       Force Re-Audit (Bypass Global Database Cache)
                     </span>
                   </label>
@@ -1745,8 +1737,8 @@ Report Generated via SafeSponsor AI Research Engine
                     disabled={loadingAnalysis} 
                     className={`font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${
                       isDark
-                        ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white'
-                        : 'bg-orange-600 hover:bg-orange-700 text-white'
+                        ? 'bg-gradient-to-r from-ink-600 to-ink-600 hover:from-ink-600 hover:to-ink-600 text-white'
+                        : 'bg-[var(--ink-600)] hover:bg-[var(--ink)]-700 text-white'
                     }`}
                   >
                     {loadingAnalysis ? (
@@ -1757,7 +1749,7 @@ Report Generated via SafeSponsor AI Research Engine
                     ) : (
                       <>
                         <Search className="w-5 h-5" />
-                        <span>Run 360° Safety Audit</span>
+                        <span>Run web-grounded Safety Audit</span>
                       </>
                     )}
                   </button>
@@ -1769,29 +1761,29 @@ Report Generated via SafeSponsor AI Research Engine
                Output is the trimmed headline verdict; the full dossier requires
                a purchase (N1T5). */
             <div className="space-y-6">
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-slate-50 border-slate-200'}`}>
+              <div className={`p-4 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
                 <p className="text-sm font-bold">Free creator score preview</p>
-                <p className={`text-xs mt-1 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                <p className={`text-xs mt-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                   One free check per account (shared with the homepage). You get the brand safety score, risk level, and top red-flag headers — the full dossier requires a purchase.
                 </p>
               </div>
 
               {teaserResult.status === 'loading' ? (
-                <div className={`p-5 rounded-xl border ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                <div className={`p-5 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
                   <div className="flex items-center gap-3">
-                    <Loader2 className="w-5 h-5 animate-spin text-orange-500" />
-                    <p className={`text-sm font-semibold ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    <Loader2 className="w-5 h-5 animate-spin text-[var(--ink-600)]" />
+                    <p className={`text-sm font-semibold ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                       Running a full AI safety scan of this creator…
                     </p>
                   </div>
                 </div>
               ) : teaserResult.status === 'done' && teaserResult.score !== undefined ? (
-                <div className={`p-6 rounded-xl border ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                <div className={`p-6 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div>
-                      <p className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>Brand Safety Score</p>
+                      <p className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>Brand Safety Score</p>
                       <div className="flex items-end gap-3 mt-1">
-                        <span className="text-5xl font-black leading-none">{teaserResult.score}</span>
+                        <span className="text-5xl font-bold leading-none">{teaserResult.score}</span>
                         <span className={`text-sm font-bold px-2 py-1 rounded-lg ${
                           teaserResult.score >= 80
                             ? (isDark ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border border-emerald-200')
@@ -1804,7 +1796,7 @@ Report Generated via SafeSponsor AI Research Engine
                       </div>
                     </div>
                     <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${
-                      isDark ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-blue-50 text-blue-900 border-blue-200'
+                      isDark ? 'bg-[var(--ink-600)]/15 text-[var(--ink-600)] border-[var(--ink-600)]/30' : 'bg-blue-50 text-blue-900 border-blue-200'
                     }`}>
                       Free preview — full dossier requires a purchase
                     </span>
@@ -1812,17 +1804,17 @@ Report Generated via SafeSponsor AI Research Engine
 
                   {teaserResult.flags && teaserResult.flags.length > 0 && (
                     <div className="mt-5">
-                      <p className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>Top Red Flags</p>
+                      <p className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>Top Red Flags</p>
                       <ul className="space-y-2">
                         {teaserResult.flags.map((f, i) => (
                           <li key={i} className={`flex items-start gap-2 text-sm rounded-lg px-3 py-2 ${
-                            isDark ? 'bg-zinc-950 border border-zinc-800' : 'bg-slate-50 border border-slate-200'
+                            isDark ? 'bg-white border border-[rgba(15,27,46,0.08)]' : 'bg-white border border-[rgba(15,27,46,0.08)]'
                           }`}>
-                            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-orange-500" />
+                            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-[var(--ink-600)]" />
                             <span>
                               <span className="font-bold">{f.category}</span>
                               {f.description ? (
-                                <span className="text-slate-500 dark:text-zinc-400"> — {f.description}</span>
+                                <span className="text-[var(--ink-600)] dark:text-[var(--ink-600)]"> — {f.description}</span>
                               ) : null}
                             </span>
                           </li>
@@ -1831,26 +1823,26 @@ Report Generated via SafeSponsor AI Research Engine
                     </div>
                   )}
 
-                  <div className="mt-6 pt-5 border-t border-slate-200 dark:border-zinc-800">
+                  <div className="mt-6 pt-5 border-t border-[rgba(15,27,46,0.08)] dark:border-[rgba(15,27,46,0.08)]">
                     {renderTeaserUpsell()}
                   </div>
                 </div>
               ) : teaserResult.status === 'used' ? (
-                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
-                  <p className="font-black text-lg">You&apos;ve already used your free check</p>
-                  <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+                  <p className="font-bold text-lg">You&apos;ve already used your free check</p>
+                  <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     Unlock the full dossier to see the complete safety breakdown.
                   </p>
                   {renderTeaserUpsell()}
                 </div>
               ) : teaserResult.status === 'error' ? (
-                <div className={`p-5 rounded-xl border ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
+                <div className={`p-5 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
                   <p className="font-bold text-red-600 dark:text-red-400">{teaserResult.error}</p>
                 </div>
               ) : userCredits?.freeTeaserUsed ? (
-                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200'}`}>
-                  <p className="font-black text-lg">You&apos;ve already used your free check</p>
-                  <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+                  <p className="font-bold text-lg">You&apos;ve already used your free check</p>
+                  <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     Unlock the full dossier to see the complete safety breakdown.
                   </p>
                   {renderTeaserUpsell()}
@@ -1858,7 +1850,7 @@ Report Generated via SafeSponsor AI Research Engine
               ) : (
                 <form onSubmit={runTeaser} className="space-y-4">
                   <div>
-                    <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-zinc-300' : 'text-slate-700'}`}>
+                    <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'}`}>
                       <Zap className="w-4 h-4 text-emerald-500" />
                       Creator Handle, Channel, or Video/Post URL
                     </label>
@@ -1870,8 +1862,8 @@ Report Generated via SafeSponsor AI Research Engine
                         placeholder="e.g. youtube.com/@creator or @handle"
                         className={`flex-1 px-4 py-3 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 transition ${
                           isDark
-                            ? 'bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-500 focus:ring-emerald-500/40'
-                            : 'bg-slate-50 border-slate-300 text-slate-900 placeholder:text-slate-400 focus:ring-emerald-500/30'
+                            ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder:text-[var(--ink-600)] focus:ring-emerald-500/40'
+                            : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder:text-[var(--ink-600)] focus:ring-emerald-500/30'
                         }`}
                       />
                       <button
@@ -1895,9 +1887,9 @@ Report Generated via SafeSponsor AI Research Engine
             <form onSubmit={handleProcessBatch} className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                  isDark ? 'text-zinc-300' : 'text-slate-700'
+                  isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                 }`}>
-                  <ListOrdered className="w-4 h-4 text-orange-500" />
+                  <ListOrdered className="w-4 h-4 text-[var(--ink-600)]" />
                   Paste Creator Handles or Video/Post URLs (One Per Line)
                 </label>
 
@@ -1906,10 +1898,10 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={loadSampleBatchRoster}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition flex items-center gap-1.5 ${
-                      isDark ? 'bg-orange-500/10 border-orange-500/30 text-orange-300 hover:bg-orange-500/20' : 'bg-orange-50 border-orange-200 text-orange-900 hover:bg-orange-100'
+                      isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)]/30 text-[var(--ink-600)] hover:bg-[var(--ink-600)]/20' : 'bg-[var(--ink)]-50 border-[var(--paper)]-100 text-[var(--ink-900)] hover:bg-[var(--ink)]-100'
                     }`}
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-orange-500" />
+                    <Sparkles className="w-3.5 h-3.5 text-[var(--ink-600)]" />
                     Load Sample Creator Roster (5 Creators)
                   </button>
                   {batchUrlsInput && (
@@ -1917,7 +1909,7 @@ Report Generated via SafeSponsor AI Research Engine
                       type="button"
                       onClick={() => setBatchUrlsInput("")}
                       className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border transition ${
-                        isDark ? 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-zinc-200' : 'bg-slate-100 border-slate-300 text-slate-600 hover:bg-slate-200'
+                        isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 text-[var(--ink-600)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]'
                       }`}
                     >
                       Clear
@@ -1933,8 +1925,8 @@ Report Generated via SafeSponsor AI Research Engine
                 placeholder={`Paste YouTube channel handles, video links, or Instagram creator profiles here...\n\nExample:\nyoutube.com/@mrbeast\nyoutube.com/@mkbhd\nyoutube.com/@GrahamStephan\nyoutube.com/@DougDeMuro\nyoutube.com/@ijustine`}
                 className={`w-full border rounded-lg p-4 text-sm font-mono focus:outline-none transition ${
                   isDark 
-                    ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-600 focus:border-orange-500' 
-                    : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                    ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                    : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                 }`}
                 disabled={isBatchProcessing}
               />
@@ -1943,9 +1935,9 @@ Report Generated via SafeSponsor AI Research Engine
                 {/* Shared Brand Name */}
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                    isDark ? 'text-zinc-300' : 'text-slate-700'
+                    isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                   }`}>
-                    Your Sponsoring Brand Name <span className="text-orange-500">*</span>
+                    Your Sponsoring Brand Name <span className="text-[var(--ink-600)]">*</span>
                   </label>
                   <input 
                     type="text" 
@@ -1954,8 +1946,8 @@ Report Generated via SafeSponsor AI Research Engine
                     placeholder="e.g. GamerSupps, Gymshark, Athletic Greens" 
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                       isDark 
-                        ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500 focus:border-orange-500' 
-                        : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                        ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                        : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                     }`}
                     required
                     disabled={isBatchProcessing}
@@ -1965,10 +1957,10 @@ Report Generated via SafeSponsor AI Research Engine
                 {/* Shared Competitors */}
                 <div className="space-y-1.5">
                   <label className={`text-xs font-bold uppercase tracking-wider flex items-center justify-between ${
-                    isDark ? 'text-zinc-300' : 'text-slate-700'
+                    isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                   }`}>
                     <span>Competitor Brands to Exclude</span>
-                    <span className="text-[10px] text-orange-500 font-bold">RECOMMENDED</span>
+                    <span className="text-[10px] text-[var(--ink-600)] font-bold">RECOMMENDED</span>
                   </label>
                   <input 
                     type="text" 
@@ -1977,8 +1969,8 @@ Report Generated via SafeSponsor AI Research Engine
                     placeholder="e.g. GFuel, Prime Energy, Red Bull" 
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                       isDark 
-                        ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500 focus:border-orange-500' 
-                        : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-orange-500'
+                        ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                        : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                     }`}
                     disabled={isBatchProcessing}
                   />
@@ -1988,9 +1980,9 @@ Report Generated via SafeSponsor AI Research Engine
               {/* Focus mode for batch */}
               <div className="space-y-2">
                 <label className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${
-                  isDark ? 'text-zinc-300' : 'text-slate-700'
+                  isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'
                 }`}>
-                  <Zap className="w-4 h-4 text-orange-500" />
+                  <Zap className="w-4 h-4 text-[var(--ink-600)]" />
                   Audit Depth Mode
                 </label>
                 <div className="grid sm:grid-cols-3 gap-3">
@@ -2000,11 +1992,11 @@ Report Generated via SafeSponsor AI Research Engine
                     disabled={isBatchProcessing}
                     className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "standard"
-                        ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
-                        : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600')
+                        ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
+                        : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
                     }`}
                   >
-                    <span className="text-xs font-bold">360° Standard Audit</span>
+                    <span className="text-xs font-bold">web-grounded Standard Audit</span>
                     <span className="text-[11px] opacity-80">Full web research & toxicity sweep</span>
                   </button>
 
@@ -2014,8 +2006,8 @@ Report Generated via SafeSponsor AI Research Engine
                     disabled={isBatchProcessing}
                     className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "deep_compliance"
-                        ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
-                        : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600')
+                        ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
+                        : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
                     }`}
                   >
                     <span className="text-xs font-bold">FTC & Legal Focus</span>
@@ -2028,8 +2020,8 @@ Report Generated via SafeSponsor AI Research Engine
                     disabled={isBatchProcessing}
                     className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "exclusivity_matrix"
-                        ? (isDark ? 'bg-orange-500/10 border-orange-500 text-orange-300' : 'bg-orange-50 border-orange-600 text-orange-950 font-bold')
-                        : (isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-400' : 'bg-slate-50 border-slate-200 text-slate-600')
+                        ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
+                        : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
                     }`}
                   >
                     <span className="text-xs font-bold">Exclusivity Sweep</span>
@@ -2045,10 +2037,10 @@ Report Generated via SafeSponsor AI Research Engine
                     type="checkbox"
                     checked={forceRefresh}
                     onChange={(e) => setForceRefresh(e.target.checked)}
-                    className="rounded border-zinc-700 text-orange-600 focus:ring-orange-500 w-4 h-4"
+                    className="rounded border-[var(--ink)]-700 text-[var(--ink-600)] focus:ring-ink-600 w-4 h-4"
                     disabled={isBatchProcessing}
                   />
-                  <span className={isDark ? 'text-zinc-300' : 'text-slate-700'}>
+                  <span className={isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink)]-700'}>
                     Force Re-Audit (Bypass Database Cache)
                   </span>
                 </label>
@@ -2058,8 +2050,8 @@ Report Generated via SafeSponsor AI Research Engine
                   disabled={isBatchProcessing || !batchUrlsInput.trim()} 
                   className={`font-bold px-8 py-3.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
                     isDark
-                      ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white'
-                      : 'bg-orange-600 hover:bg-orange-700 text-white'
+                      ? 'bg-gradient-to-r from-ink-600 to-ink-600 hover:from-ink-600 hover:to-ink-600 text-white'
+                      : 'bg-[var(--ink-600)] hover:bg-[var(--ink)]-700 text-white'
                   }`}
                 >
                   {isBatchProcessing ? (
@@ -2080,14 +2072,14 @@ Report Generated via SafeSponsor AI Research Engine
 
           {/* Batch Processing Queue Live Dashboard Indicators */}
           {batchItems.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-zinc-800 space-y-6">
+            <div className="mt-8 pt-8 border-t border-[rgba(15,27,46,0.08)] dark:border-[rgba(15,27,46,0.08)] space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-black flex items-center gap-2">
-                    <ListOrdered className="w-5 h-5 text-orange-500" />
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <ListOrdered className="w-5 h-5 text-[var(--ink-600)]" />
                     Batch Queue Processing Indicators ({batchItems.length} Total)
                   </h3>
-                  <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  <p className={`text-xs mt-0.5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     Real-time status tracking for queued creator brand safety audits. Filter or sort queue items below.
                   </p>
                 </div>
@@ -2097,7 +2089,7 @@ Report Generated via SafeSponsor AI Research Engine
                   <button
                     onClick={downloadAllBatchJson}
                     className={`px-4 py-2 rounded-xl text-xs font-bold border transition flex items-center gap-2 ${
-                      isDark ? 'bg-orange-500/10 border-orange-500/30 text-orange-300 hover:bg-orange-500/20' : 'bg-orange-50 border-orange-300 text-orange-900 hover:bg-orange-100'
+                      isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)]/30 text-[var(--ink-600)] hover:bg-[var(--ink-600)]/20' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink-900)] hover:bg-[var(--ink)]-100'
                     }`}
                   >
                     <Download className="w-4 h-4" />
@@ -2114,15 +2106,15 @@ Report Generated via SafeSponsor AI Research Engine
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'completed'
                       ? (isDark ? 'bg-emerald-950/40 border-emerald-500/60 ring-2 ring-emerald-500/30' : 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300')
-                      : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
+                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
                   }`}
                 >
                   <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
                     <CheckCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400 font-bold uppercase">Completed</div>
-                    <div className="text-lg font-black">{batchItems.filter(i => i.status === 'completed').length}</div>
+                    <div className="text-xs text-[var(--ink-600)] font-bold uppercase">Completed</div>
+                    <div className="text-lg font-bold">{batchItems.filter(i => i.status === 'completed').length}</div>
                   </div>
                 </button>
 
@@ -2132,15 +2124,15 @@ Report Generated via SafeSponsor AI Research Engine
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'processing'
                       ? (isDark ? 'bg-blue-950/40 border-blue-500/60 ring-2 ring-blue-500/30' : 'bg-blue-50 border-blue-400 ring-2 ring-blue-300')
-                      : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
+                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
                   }`}
                 >
                   <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
                     <Loader2 className={`w-5 h-5 ${isBatchProcessing ? 'animate-spin' : ''}`} />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400 font-bold uppercase">Processing</div>
-                    <div className="text-lg font-black">{batchItems.filter(i => i.status === 'processing').length}</div>
+                    <div className="text-xs text-[var(--ink-600)] font-bold uppercase">Processing</div>
+                    <div className="text-lg font-bold">{batchItems.filter(i => i.status === 'processing').length}</div>
                   </div>
                 </button>
 
@@ -2149,16 +2141,16 @@ Report Generated via SafeSponsor AI Research Engine
                   onClick={() => setBatchFilterStatus(prev => prev === 'pending' ? 'all' : 'pending')}
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'pending'
-                      ? (isDark ? 'bg-zinc-800 border-zinc-500 ring-2 ring-zinc-500/30' : 'bg-slate-200 border-slate-400 ring-2 ring-slate-300')
-                      : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
+                      ? (isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink-600)] ring-2 ring-ink-600/30' : 'bg-[var(--paper-100)] border-[var(--ink-600)] ring-2 ring-ink-600')
+                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
                   }`}
                 >
-                  <div className="w-9 h-9 rounded-xl bg-zinc-500/10 text-zinc-400 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--ink-600)]/10 text-[var(--ink-600)] flex items-center justify-center shrink-0">
                     <Clock className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400 font-bold uppercase">Queued</div>
-                    <div className="text-lg font-black">{batchItems.filter(i => i.status === 'pending').length}</div>
+                    <div className="text-xs text-[var(--ink-600)] font-bold uppercase">Queued</div>
+                    <div className="text-lg font-bold">{batchItems.filter(i => i.status === 'pending').length}</div>
                   </div>
                 </button>
 
@@ -2168,15 +2160,15 @@ Report Generated via SafeSponsor AI Research Engine
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'failed'
                       ? (isDark ? 'bg-rose-950/40 border-rose-500/60 ring-2 ring-rose-500/30' : 'bg-rose-50 border-rose-400 ring-2 ring-rose-300')
-                      : (isDark ? 'bg-zinc-950 border-zinc-800 hover:border-zinc-700' : 'bg-slate-50 border-slate-200 hover:border-slate-300')
+                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
                   }`}
                 >
                   <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
                     <XCircle className="w-5 h-5" />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400 font-bold uppercase">Failed</div>
-                    <div className="text-lg font-black">{batchItems.filter(i => i.status === 'failed').length}</div>
+                    <div className="text-xs text-[var(--ink-600)] font-bold uppercase">Failed</div>
+                    <div className="text-lg font-bold">{batchItems.filter(i => i.status === 'failed').length}</div>
                   </div>
                 </button>
               </div>
@@ -2184,26 +2176,26 @@ Report Generated via SafeSponsor AI Research Engine
               {/* Animated Progress Bar */}
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
-                  <span className={isDark ? 'text-zinc-400' : 'text-slate-600'}>Queue Completion Progress</span>
-                  <span className="text-orange-500">
+                  <span className={isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}>Queue Completion Progress</span>
+                  <span className="text-[var(--ink-600)]">
                     {Math.round(((batchItems.filter(i => i.status === 'completed' || i.status === 'failed').length) / batchItems.length) * 100)}%
                   </span>
                 </div>
-                <div className={`w-full h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-zinc-800' : 'bg-slate-200'}`}>
+                <div className={`w-full h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper-100)]'}`}>
                   <div 
-                    className="h-full bg-gradient-to-r from-orange-600 to-orange-400 transition-all duration-500 rounded-full"
+                    className="h-full bg-gradient-to-r from-ink-600 to-ink-600 transition-all duration-500 rounded-full"
                     style={{ width: `${((batchItems.filter(i => i.status === 'completed' || i.status === 'failed').length) / batchItems.length) * 100}%` }}
                   />
                 </div>
               </div>
 
               {/* Batch Queue Controls Toolbar: Status Pills, Search Input, Sort Dropdown & Actions */}
-              <div className={`p-4 rounded-lg border space-y-3 ${isDark ? 'bg-zinc-950/60 border-zinc-800' : 'bg-slate-100/80 border-slate-200'}`}>
+              <div className={`p-4 rounded-lg border space-y-3 ${isDark ? 'bg-white/60 border-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper)]/80 border-[rgba(15,27,46,0.08)]'}`}>
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                   
                   {/* Status Filter Buttons */}
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1 mr-1">
+                    <span className="text-xs font-bold text-[var(--ink-600)] flex items-center gap-1 mr-1">
                       <Filter className="w-3.5 h-3.5" />
                       Filter:
                     </span>
@@ -2212,8 +2204,8 @@ Report Generated via SafeSponsor AI Research Engine
                       onClick={() => setBatchFilterStatus('all')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'all'
-                          ? 'bg-orange-500 text-white shadow-sm'
-                          : (isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-300')
+                          ? 'bg-[var(--ink-600)] text-white shadow-[var(--shadow-sm)]'
+                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
                       }`}
                     >
                       All ({batchItems.length})
@@ -2223,10 +2215,10 @@ Report Generated via SafeSponsor AI Research Engine
                       onClick={() => setBatchFilterStatus('failed')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'failed'
-                          ? 'bg-rose-600 text-white shadow-sm'
+                          ? 'bg-rose-600 text-white shadow-[var(--shadow-sm)]'
                           : batchItems.some(i => i.status === 'failed')
                           ? (isDark ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30' : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100')
-                          : (isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-300')
+                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
                       }`}
                     >
                       Failed ({batchItems.filter(i => i.status === 'failed').length})
@@ -2236,8 +2228,8 @@ Report Generated via SafeSponsor AI Research Engine
                       onClick={() => setBatchFilterStatus('completed')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'completed'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : (isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-300')
+                          ? 'bg-emerald-600 text-white shadow-[var(--shadow-sm)]'
+                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
                       }`}
                     >
                       Completed ({batchItems.filter(i => i.status === 'completed').length})
@@ -2247,8 +2239,8 @@ Report Generated via SafeSponsor AI Research Engine
                       onClick={() => setBatchFilterStatus('processing')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'processing'
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : (isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-300')
+                          ? 'bg-blue-600 text-white shadow-[var(--shadow-sm)]'
+                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
                       }`}
                     >
                       Processing ({batchItems.filter(i => i.status === 'processing').length})
@@ -2258,8 +2250,8 @@ Report Generated via SafeSponsor AI Research Engine
                       onClick={() => setBatchFilterStatus('pending')}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'pending'
-                          ? 'bg-zinc-600 text-white shadow-sm'
-                          : (isDark ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300' : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-300')
+                          ? 'bg-[var(--ink-600)] text-white shadow-[var(--shadow-sm)]'
+                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
                       }`}
                     >
                       Queued ({batchItems.filter(i => i.status === 'pending').length})
@@ -2290,7 +2282,7 @@ Report Generated via SafeSponsor AI Research Engine
                         type="button"
                         onClick={resetBatchFilters}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 border ${
-                          isDark ? 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'
+                          isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)]-700 hover:bg-[var(--paper)]'
                         }`}
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -2301,23 +2293,23 @@ Report Generated via SafeSponsor AI Research Engine
                 </div>
 
                 {/* Second Row: Search Input & Sort Dropdown */}
-                <div className="flex flex-col sm:flex-row items-center gap-3 pt-1 border-t border-slate-200/60 dark:border-zinc-800/60">
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-1 border-t border-[rgba(15,27,46,0.08)]/60 dark:border-[rgba(15,27,46,0.08)]/60">
                   <div className="relative w-full sm:flex-1">
-                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -tranink-y-1/2 text-[var(--ink-600)]" />
                     <input
                       type="text"
                       value={batchSearchQuery}
                       onChange={(e) => setBatchSearchQuery(e.target.value)}
                       placeholder="Search queue items by URL, error, summary, or recommendation..."
-                      className={`w-full pl-9 pr-8 py-1.5 text-xs rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                        isDark ? 'bg-zinc-900 border-zinc-800 text-white placeholder-zinc-500' : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                      className={`w-full pl-9 pr-8 py-1.5 text-xs rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-ink-600 ${
+                        isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600'
                       }`}
                     />
                     {batchSearchQuery && (
                       <button
                         type="button"
                         onClick={() => setBatchSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 font-bold"
+                        className="absolute right-3 top-1/2 -tranink-y-1/2 text-xs text-[var(--ink-600)] hover:text-[var(--ink-600)] dark:hover:text-[var(--paper)]-100 font-bold"
                       >
                         ✕
                       </button>
@@ -2325,15 +2317,15 @@ Report Generated via SafeSponsor AI Research Engine
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-                    <span className="text-xs font-bold text-slate-400 flex items-center gap-1 shrink-0">
+                    <span className="text-xs font-bold text-[var(--ink-600)] flex items-center gap-1 shrink-0">
                       <ArrowUpDown className="w-3.5 h-3.5" />
                       Sort:
                     </span>
                     <select
                       value={batchSortBy}
                       onChange={(e) => setBatchSortBy(e.target.value as any)}
-                      className={`w-full sm:w-auto px-3 py-1.5 text-xs font-bold rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-orange-500 ${
-                        isDark ? 'bg-zinc-900 border-zinc-800 text-white' : 'bg-white border-slate-300 text-slate-900'
+                      className={`w-full sm:w-auto px-3 py-1.5 text-xs font-bold rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-ink-600 ${
+                        isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-white' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)]'
                       }`}
                     >
                       <option value="queue_order">Queue Order (#1, #2...)</option>
@@ -2347,16 +2339,16 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
 
               {/* Items Counter Bar */}
-              <div className="flex items-center justify-between text-xs text-slate-400 font-bold px-1">
+              <div className="flex items-center justify-between text-xs text-[var(--ink-600)] font-bold px-1">
                 <span>
                   Showing {filteredAndSortedBatchItems.length} of {batchItems.length} items
-                  {batchFilterStatus !== 'all' && <span className="ml-1 text-orange-500">({batchFilterStatus} only)</span>}
-                  {batchSearchQuery && <span className="ml-1 text-orange-500">(matching &quot;{batchSearchQuery}&quot;)</span>}
+                  {batchFilterStatus !== 'all' && <span className="ml-1 text-[var(--ink-600)]">({batchFilterStatus} only)</span>}
+                  {batchSearchQuery && <span className="ml-1 text-[var(--ink-600)]">(matching &quot;{batchSearchQuery}&quot;)</span>}
                 </span>
                 {filteredAndSortedBatchItems.length < batchItems.length && (
                   <button
                     onClick={resetBatchFilters}
-                    className="text-orange-500 hover:underline flex items-center gap-1"
+                    className="text-[var(--ink-600)] hover:underline flex items-center gap-1"
                   >
                     Clear Filter Constraints
                   </button>
@@ -2366,14 +2358,14 @@ Report Generated via SafeSponsor AI Research Engine
               {/* Batch Queue Items List */}
               {filteredAndSortedBatchItems.length === 0 ? (
                 <div className={`p-8 rounded-lg border text-center space-y-3 ${
-                  isDark ? 'bg-zinc-950/50 border-zinc-800' : 'bg-slate-50 border-slate-200'
+                  isDark ? 'bg-white/50 border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'
                 }`}>
-                  <Filter className="w-8 h-8 text-slate-400 mx-auto opacity-50" />
+                  <Filter className="w-8 h-8 text-[var(--ink-600)] mx-auto opacity-50" />
                   <p className="text-sm font-bold">No queue items match your active status or search filter.</p>
-                  <p className="text-xs text-slate-400">Try adjusting your status filter or search query to locate specific creator items.</p>
+                  <p className="text-xs text-[var(--ink-600)]">Try adjusting your status filter or search query to locate specific creator items.</p>
                   <button
                     onClick={resetBatchFilters}
-                    className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5"
+                    className="px-4 py-2 bg-[var(--ink-600)] hover:bg-[var(--ink-600)] text-white rounded-xl text-xs font-bold transition inline-flex items-center gap-1.5"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Reset All Queue Filters</span>
@@ -2397,28 +2389,28 @@ Report Generated via SafeSponsor AI Research Engine
                         key={item.id}
                         className={`p-4 rounded-lg border transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                           item.status === 'processing'
-                            ? (isDark ? 'bg-cyan-950/20 border-cyan-500/40 ring-1 ring-cyan-500/20' : 'bg-blue-50 border-blue-300')
+                            ? (isDark ? 'bg-[var(--ink)]-950/20 border-[var(--ink-600)]/40 ring-1 ring-ink-600/20' : 'bg-blue-50 border-blue-300')
                             : item.status === 'failed'
                             ? (isDark ? 'bg-rose-950/10 border-rose-500/30' : 'bg-rose-50/50 border-rose-200')
-                            : (isDark ? 'bg-zinc-950/80 border-zinc-800/80' : 'bg-slate-50 border-slate-200')
+                            : (isDark ? 'bg-white/80 border-[rgba(15,27,46,0.08)]/80' : 'bg-white border-[rgba(15,27,46,0.08)]')
                         }`}
                       >
                         <div className="space-y-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono font-bold text-slate-400">#{originalIndex + 1}</span>
+                            <span className="text-xs font-mono font-bold text-[var(--ink-600)]">#{originalIndex + 1}</span>
                             <span className="font-bold text-sm truncate">{item.url}</span>
                           </div>
 
                           {/* Progress Status Description */}
                           {item.status === 'pending' && (
-                            <div className="text-xs text-slate-400 flex items-center gap-1.5">
-                              <Clock className="w-3.5 h-3.5 text-slate-400" />
+                            <div className="text-xs text-[var(--ink-600)] flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-[var(--ink-600)]" />
                               <span>Queued — Waiting for turn</span>
                             </div>
                           )}
 
                           {item.status === 'processing' && (
-                            <div className="text-xs text-cyan-400 flex items-center gap-1.5 font-medium">
+                            <div className="text-xs text-[var(--ink-600)] flex items-center gap-1.5 font-medium">
                               <Activity className="w-3.5 h-3.5 animate-spin" />
                               <span>{item.progressMessage || 'Auditing creator transcripts & web disclosures...'}</span>
                             </div>
@@ -2432,7 +2424,7 @@ Report Generated via SafeSponsor AI Research Engine
                           )}
 
                           {isCompleted && res && (
-                            <p className={`text-xs line-clamp-1 opacity-80 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                            <p className={`text-xs line-clamp-1 opacity-80 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                               {res.creator_summary}
                             </p>
                           )}
@@ -2443,7 +2435,7 @@ Report Generated via SafeSponsor AI Research Engine
                           {isCompleted && res && (
                             <>
                               {/* Score Pill */}
-                              <div className={`px-2.5 py-1 rounded-xl text-xs font-black border ${
+                              <div className={`px-2.5 py-1 rounded-xl text-xs font-bold border ${
                                 res.brand_safety_score >= 80 
                                   ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' 
                                   : res.brand_safety_score >= 60 
@@ -2462,7 +2454,7 @@ Report Generated via SafeSponsor AI Research Engine
                               <button
                                 onClick={() => viewBatchItemDossier(item)}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1 ${
-                                  isDark ? 'bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-cyan-300' : 'bg-white border-slate-300 hover:bg-slate-100 text-blue-900 shadow-sm'
+                                  isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] hover:bg-[var(--paper)] text-blue-900 shadow-[var(--shadow-sm)]'
                                 }`}
                               >
                                 <FileText className="w-3.5 h-3.5" />
@@ -2472,7 +2464,7 @@ Report Generated via SafeSponsor AI Research Engine
                               <button
                                 onClick={() => downloadJsonDossier(res)}
                                 className={`p-1.5 rounded-xl border transition ${
-                                  isDark ? 'bg-zinc-800 border-zinc-700 hover:bg-zinc-700 text-orange-400' : 'bg-white border-slate-300 hover:bg-slate-100 text-orange-600'
+                                  isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] hover:bg-[var(--paper)] text-[var(--ink-600)]'
                                 }`}
                                 title="Download Individual JSON Dossier"
                               >
@@ -2496,13 +2488,13 @@ Report Generated via SafeSponsor AI Research Engine
                           )}
 
                           {item.status === 'pending' && (
-                            <span className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-zinc-500/10 text-zinc-400 border border-zinc-500/20">
+                            <span className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-[var(--ink-600)]/10 text-[var(--ink-600)] border border-[var(--ink-600)]/20">
                               Queued
                             </span>
                           )}
 
                           {item.status === 'processing' && (
-                            <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
+                            <span className="text-xs font-bold px-2.5 py-1 rounded-xl bg-[var(--paper)] text-[var(--ink-600)] border border-[var(--ink-600)]/30 flex items-center gap-1">
                               <Loader2 className="w-3 h-3 animate-spin" />
                               Auditing
                             </span>
@@ -2527,15 +2519,15 @@ Report Generated via SafeSponsor AI Research Engine
         {/* Always-Visible Pricing & Upgrade Section */}
         {userCredits !== null && !userCredits.hasSubscription && (
           <section className={`p-6 sm:p-8 rounded-xl border space-y-5 print:hidden ${
-            isDark ? 'bg-zinc-900/80 border-zinc-800' : 'bg-white border-slate-200 shadow-sm'
+            isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)] shadow-[var(--shadow-sm)]'
           }`}>
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold flex items-center gap-2">
-                  <DollarSign className={`w-5 h-5 ${isDark ? 'text-orange-400' : 'text-orange-600'}`} />
+                  <DollarSign className={`w-5 h-5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`} />
                   Upgrade Your Research Capacity
                 </h2>
-                <p className={`text-xs mt-0.5 ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                <p className={`text-xs mt-0.5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                   {userCredits.videoCredits === 0 && userCredits.channelCredits === 0
                     ? "You're out of credits — top up for more reports or upgrade to Pro for unlimited checks."
                     : `${userCredits.videoCredits} video + ${userCredits.channelCredits} channel credits remaining.`}
@@ -2549,13 +2541,13 @@ Report Generated via SafeSponsor AI Research Engine
                 (introAvailable) — an unconfigured deploy must never promise $99. */}
             {!introBannerDismissed && userCredits.introAvailable && !userCredits.introClaimed && !userCredits.hasSubscription && (
               <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border px-4 py-3 ${
-                isDark ? "bg-cyan-950/40 border-cyan-500/40" : "bg-cyan-50 border-cyan-300"
+                isDark ? "bg-[var(--ink)]-950/40 border-[var(--ink-600)]/40" : "bg-[var(--ink)]-50 border-[var(--ink-600)]"
               }`}>
                 <div className="flex items-start sm:items-center gap-3 min-w-0">
-                  <Sparkles className={`w-5 h-5 shrink-0 mt-0.5 sm:mt-0 ${isDark ? "text-cyan-300" : "text-cyan-700"}`} />
-                  <p className={`text-sm font-semibold ${isDark ? "text-cyan-100" : "text-cyan-900"}`}>
-                    Get Pro for <span className="text-orange-500">$99</span> your first month
-                    <span className={`block text-xs font-normal ${isDark ? "text-cyan-300/70" : "text-cyan-700/80"}`}>
+                  <Sparkles className={`w-5 h-5 shrink-0 mt-0.5 sm:mt-0 ${isDark ? "text-[var(--ink-600)]" : "text-[var(--ink)]-700"}`} />
+                  <p className={`text-sm font-semibold ${isDark ? "text-[var(--ink)]-100" : "text-[var(--ink-900)]"}`}>
+                    Get Pro for <span className="text-[var(--ink-600)]">$99</span> your first month
+                    <span className={`block text-xs font-normal ${isDark ? "text-[var(--ink-600)]/70" : "text-[var(--ink)]-700/80"}`}>
                       One-time intro offer for new Pro subscribers &middot; $149/mo after your first month.
                     </span>
                   </p>
@@ -2565,7 +2557,7 @@ Report Generated via SafeSponsor AI Research Engine
                     onClick={() => handleCheckout("subscription")}
                     disabled={loadingPlan !== null}
                     className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 ${
-                      isDark ? "bg-cyan-500 text-zinc-950 hover:bg-cyan-400" : "bg-cyan-600 text-white hover:bg-cyan-700"
+                      isDark ? "bg-[var(--ink-600)] text-white hover:bg-[var(--ink-600)]" : "bg-[var(--ink-600)] text-white hover:bg-[var(--ink)]-700"
                     }`}
                   >
                     {loadingPlan === "subscription" ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get Pro $99/mo"}
@@ -2574,7 +2566,7 @@ Report Generated via SafeSponsor AI Research Engine
                     onClick={dismissIntroBanner}
                     aria-label="Dismiss intro offer"
                     className={`p-1.5 rounded-lg transition-colors ${
-                      isDark ? "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800" : "text-slate-400 hover:text-slate-700 hover:bg-slate-200"
+                      isDark ? "text-[var(--ink-600)] hover:text-[var(--paper)]-100 hover:bg-[rgba(15,27,46,0.08)]" : "text-[var(--ink-600)] hover:text-[var(--ink)]-700 hover:bg-[var(--paper-100)]"
                     }`}
                   >
                     <X className="w-4 h-4" />
@@ -2589,18 +2581,18 @@ Report Generated via SafeSponsor AI Research Engine
                 disabled={loadingPlan !== null}
                 className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 ${
                   isDark 
-                    ? 'bg-zinc-800 hover:bg-zinc-700 border-zinc-700 hover:border-zinc-600' 
-                    : 'bg-slate-50 hover:bg-slate-100 border-slate-200 hover:border-slate-300'
+                    ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 hover:border-[var(--ink-600)]' 
+                    : 'bg-white hover:bg-[var(--paper)] border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]'
                 }`}
               >
                 <div className="space-y-1">
-                  <div className={`text-2xl font-black ${isDark ? 'text-zinc-100' : 'text-slate-900'}`}>$8</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-[var(--ink)]-100' : 'text-[var(--ink)]'}`}>$8</div>
                   <h4 className="font-bold text-sm">Single Video Report</h4>
-                  <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
-                    One-time purchase. Analyze a single YouTube video or creator profile with a full 360° brand safety dossier.
+                  <p className={`text-xs ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
+                    One-time purchase. Analyze a single YouTube video or creator profile with a full web-grounded brand safety dossier.
                   </p>
                 </div>
-                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-cyan-400' : 'text-blue-900'}`}>
+                <span className={`text-xs font-bold flex items-center gap-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-blue-900'}`}>
                   Purchase Report <ChevronRight className="w-3 h-3" />
                 </span>
               </button>
@@ -2610,18 +2602,18 @@ Report Generated via SafeSponsor AI Research Engine
                 disabled={loadingPlan !== null}
                 className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 ${
                   isDark 
-                    ? 'bg-zinc-800/90 hover:bg-zinc-800 border-cyan-500/30 hover:border-cyan-500/50' 
-                    : 'bg-orange-50 hover:bg-orange-100 border-orange-200 hover:border-orange-300'
+                    ? 'bg-[rgba(15,27,46,0.08)]/90 hover:bg-[rgba(15,27,46,0.08)] border-[var(--ink-600)]/30 hover:border-[var(--ink-600)]/50' 
+                    : 'bg-[var(--ink)]-50 hover:bg-[var(--ink)]-100 border-[var(--paper)]-100 hover:border-[var(--ink-600)]'
                 }`}
               >
                 <div className="space-y-1">
-                  <div className={`text-2xl font-black ${isDark ? 'text-orange-400' : 'text-orange-600'}`}>$19</div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>$19</div>
                   <h4 className="font-bold text-sm">Channel Audit</h4>
-                  <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-slate-500'}`}>
+                  <p className={`text-xs ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     One-time purchase. Deep channel-level brand safety analysis covering audience, competitors, and content history.
                   </p>
                 </div>
-                <span className="text-xs font-bold text-orange-500 flex items-center gap-1">
+                <span className="text-xs font-bold text-[var(--ink-600)] flex items-center gap-1">
                   Purchase Channel Report <ChevronRight className="w-3 h-3" />
                 </span>
               </button>
@@ -2631,19 +2623,19 @@ Report Generated via SafeSponsor AI Research Engine
                 disabled={loadingPlan !== null}
                 className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 relative overflow-hidden ${
                   isDark 
-                    ? 'bg-orange-950/40 hover:bg-orange-950/60 border-orange-500/40 hover:border-orange-500/60' 
+                    ? 'bg-[var(--ink)]-950/40 hover:bg-[var(--ink)]-950/60 border-[var(--ink-600)]/40 hover:border-[var(--ink-600)]/60' 
                     : 'bg-blue-900 text-white hover:bg-blue-950 border-blue-800'
                 }`}
               >
-                <div className="absolute top-0 right-0 bg-orange-600 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-bl-xl">BEST VALUE</div>
+                <div className="absolute top-0 right-0 bg-[var(--ink-600)] text-white text-[9px] font-bold px-2.5 py-0.5 rounded-bl-xl">BEST VALUE</div>
                 <div className="space-y-1">
-                  <div className={`text-2xl font-black ${isDark ? 'text-orange-300' : 'text-white'}`}>$149<small className="text-sm font-medium">/mo</small></div>
+                  <div className={`text-2xl font-bold ${isDark ? 'text-[var(--ink-600)]' : 'text-white'}`}>$149<small className="text-sm font-medium">/mo</small></div>
                   <h4 className="font-bold text-sm">Unlimited Pro</h4>
-                  <p className={`text-xs ${isDark ? 'text-orange-200/60' : 'text-blue-200'}`}>
+                  <p className={`text-xs ${isDark ? 'text-[var(--paper)]-100/60' : 'text-blue-200'}`}>
                     Monthly subscription. Unlimited creator audits, batch processing, priority analysis, and full export capabilities.
                   </p>
                 </div>
-                <span className="text-xs font-bold text-orange-400 flex items-center gap-1">
+                <span className="text-xs font-bold text-[var(--ink-600)] flex items-center gap-1">
                   Subscribe Unlimited <ChevronRight className="w-3 h-3" />
                 </span>
               </button>
@@ -2652,7 +2644,7 @@ Report Generated via SafeSponsor AI Research Engine
         )}
 
         {/* Executive Dossier Results View + Saved Dossiers — lazy-loaded */}
-        <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-cyan-500" /></div>}>
+        <Suspense fallback={<div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-[var(--ink-600)]" /></div>}>
           <DossierViewer
             result={result}
             auditComplete={auditComplete}
@@ -2693,7 +2685,7 @@ Report Generated via SafeSponsor AI Research Engine
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
             <div
               className={`relative w-full max-w-md rounded-2xl border p-6 space-y-5 shadow-2xl ${
-                isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'
+                isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)]'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
@@ -2702,7 +2694,7 @@ Report Generated via SafeSponsor AI Research Engine
                 <>
                   <div>
                     <h3 className="text-lg font-bold">Before you go...</h3>
-                    <p className={`text-sm mt-1 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    <p className={`text-sm mt-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                       Help us understand why you&apos;re cancelling so we can improve.
                     </p>
                   </div>
@@ -2713,8 +2705,8 @@ Report Generated via SafeSponsor AI Research Engine
                         onClick={() => { setCancelReason(reason); setCancelStep(2); }}
                         className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium border transition-all ${
                           cancelReason === reason
-                            ? isDark ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'bg-blue-50 border-blue-300 text-blue-900'
-                            : isDark ? 'bg-zinc-800 border-zinc-700 hover:border-zinc-500 text-zinc-300' : 'bg-slate-50 border-slate-200 hover:border-slate-400 text-slate-700'
+                            ? isDark ? 'bg-[var(--ink-600)]/20 border-[var(--ink-600)]/50 text-[var(--ink-600)]' : 'bg-blue-50 border-blue-300 text-blue-900'
+                            : isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 hover:border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink-600)] text-[var(--ink)]-700'
                         }`}
                       >
                         {reason}
@@ -2724,7 +2716,7 @@ Report Generated via SafeSponsor AI Research Engine
                   <button
                     onClick={() => setCancelStep(0)}
                     className={`w-full py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                      isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      isDark ? 'bg-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
                     }`}
                   >
                     Never mind, keep subscription
@@ -2738,7 +2730,7 @@ Report Generated via SafeSponsor AI Research Engine
                   <div>
                     <h3 className="text-lg font-bold">You&apos;ll lose access to:</h3>
                   </div>
-                  <div className={`space-y-3 text-sm ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  <div className={`space-y-3 text-sm ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     <div className="flex items-start gap-3">
                       <span className="text-red-400 mt-0.5">✕</span>
                       <span>Unlimited creator brand safety audits</span>
@@ -2756,14 +2748,14 @@ Report Generated via SafeSponsor AI Research Engine
                       <span>Batch multi-URL processing</span>
                     </div>
                   </div>
-                  <div className={`p-3 rounded-xl text-xs ${isDark ? 'bg-cyan-500/10 text-cyan-300' : 'bg-blue-50 text-blue-800'}`}>
+                  <div className={`p-3 rounded-xl text-xs ${isDark ? 'bg-[var(--paper)] text-[var(--ink-600)]' : 'bg-blue-50 text-blue-800'}`}>
                     <strong>Pro tip:</strong> You can resubscribe anytime and pick up right where you left off.
                   </div>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setCancelStep(0)}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                        isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        isDark ? 'bg-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
                       }`}
                     >
                       Keep Subscription
@@ -2783,7 +2775,7 @@ Report Generated via SafeSponsor AI Research Engine
                 <>
                   <div>
                     <h3 className="text-lg font-bold">Final confirmation</h3>
-                    <p className={`text-sm mt-1 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                    <p className={`text-sm mt-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                       Type <span className="font-mono font-bold text-red-400">CANCEL</span> to confirm cancellation. This action cannot be undone.
                     </p>
                   </div>
@@ -2796,14 +2788,14 @@ Report Generated via SafeSponsor AI Research Engine
                     className={`w-full px-4 py-3 rounded-xl border text-sm font-mono outline-none transition-colors ${
                       cancelTyping === "CANCEL"
                         ? 'border-red-500 bg-red-500/10'
-                        : isDark ? 'bg-zinc-800 border-zinc-700 text-zinc-200' : 'bg-slate-50 border-slate-300 text-slate-900'
+                        : isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)]'
                     }`}
                   />
                   <div className="flex gap-3">
                     <button
                       onClick={() => { setCancelStep(0); setCancelTyping(""); }}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                        isDark ? 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        isDark ? 'bg-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
                       }`}
                     >
                       Go back
@@ -2827,13 +2819,13 @@ Report Generated via SafeSponsor AI Research Engine
             user already holds Channel Report credits. */}
         {showUpsell && userCredits !== null && (userCredits.channelCredits || 0) <= 0 && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'}`}>
+            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
               <button
                 type="button"
                 onClick={() => setShowUpsell(false)}
                 aria-label="Close upsell offer"
                 className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                  isDark ? 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+                  isDark ? 'text-[var(--ink-600)] hover:bg-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:bg-[var(--paper)] hover:text-[var(--ink-600)]'
                 }`}
               >
                 <X className="w-4 h-4" />
@@ -2843,28 +2835,28 @@ Report Generated via SafeSponsor AI Research Engine
                 <div className="text-center">
                   <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
                   <h3 className="text-xl font-bold mb-2">Channel Report unlocked</h3>
-                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     Your payment went through. The Channel Report credit will appear here in a moment.
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowUpsell(false)}
-                    className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white transition-colors"
+                    className="w-full py-3 rounded-xl font-bold text-sm bg-[var(--ink)] hover:bg-[var(--ink-600)] text-white transition-colors"
                   >
                     Done
                   </button>
                 </div>
               ) : upsellState === "redirect" ? (
                 <div className="text-center">
-                  <Zap className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                  <Zap className="w-12 h-12 text-[var(--ink-600)] mx-auto mb-4" />
                   <h3 className="text-xl font-bold mb-2">Almost there</h3>
-                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     We opened secure checkout in a new tab to finish your Channel Report purchase.
                   </p>
                   <button
                     type="button"
                     onClick={() => setShowUpsell(false)}
-                    className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white transition-colors"
+                    className="w-full py-3 rounded-xl font-bold text-sm bg-[var(--ink)] hover:bg-[var(--ink-600)] text-white transition-colors"
                   >
                     I&apos;ll complete it there
                   </button>
@@ -2872,12 +2864,12 @@ Report Generated via SafeSponsor AI Research Engine
               ) : (
                 <>
                   <h3 className="text-xl font-bold mb-1">Get the full picture</h3>
-                  <p className={`text-sm mb-4 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>
+                  <p className={`text-sm mb-4 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     You vetted one video — now audit the whole channel: multi-video toxicity scan, deep comment sentiment audit and a shareable dossier PDF.
                   </p>
-                  <div className={`flex items-baseline gap-1 mb-6 ${isDark ? 'text-zinc-300' : 'text-slate-800'}`}>
+                  <div className={`flex items-baseline gap-1 mb-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     <span className="text-4xl font-extrabold">$19</span>
-                    <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ channel audit</span>
+                    <span className={`text-sm font-semibold ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>/ channel audit</span>
                   </div>
                   {upsellState === "error" && (
                     <div className={`mb-4 p-3 rounded-xl border text-sm font-medium ${isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>
@@ -2890,8 +2882,8 @@ Report Generated via SafeSponsor AI Research Engine
                     disabled={upsellState === "charging"}
                     className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                       isDark
-                        ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white'
-                        : 'bg-orange-600 hover:bg-orange-700 text-white'
+                        ? 'bg-gradient-to-r from-ink-600 to-ink-600 text-white'
+                        : 'bg-[var(--ink-600)] hover:bg-[var(--ink)]-700 text-white'
                     } disabled:opacity-60 disabled:cursor-not-allowed`}
                   >
                     {upsellState === "charging" ? (
@@ -2910,7 +2902,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => setShowUpsell(false)}
                     className={`mt-3 w-full py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                      isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700'
+                      isDark ? 'text-[var(--ink-600)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:text-[var(--ink)]-700'
                     }`}
                   >
                     No thanks
@@ -2924,13 +2916,13 @@ Report Generated via SafeSponsor AI Research Engine
         {/* Q: bump — add 2 more for $11 after single $8 (upgrade to 3-pack) */}
         {showBump && userCredits !== null && (userCredits.videoCredits || 0) <= 1 && (userCredits.channelCredits || 0) === 0 && !userCredits.hasSubscription && (
           <div className="fixed inset-0 z-[99] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-zinc-900 border-zinc-700' : 'bg-white border-slate-200'}`}>
+            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
               <button
                 type="button"
                 onClick={() => setShowBump(false)}
                 aria-label="Close bump offer"
                 className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                  isDark ? 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'
+                  isDark ? 'text-[var(--ink-600)] hover:bg-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:bg-[var(--paper)] hover:text-[var(--ink-600)]'
                 }`}
               >
                 <X className="w-4 h-4" />
@@ -2939,31 +2931,31 @@ Report Generated via SafeSponsor AI Research Engine
                 <div className="text-center">
                   <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
                   <h3 className="text-xl font-bold mb-2">Added 2 more reports</h3>
-                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>Your extra credits will appear here in a moment.</p>
-                  <button type="button" onClick={() => setShowBump(false)} className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white">Done</button>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>Your extra credits will appear here in a moment.</p>
+                  <button type="button" onClick={() => setShowBump(false)} className="w-full py-3 rounded-xl font-bold text-sm bg-[var(--ink)] hover:bg-[var(--ink-600)] text-white">Done</button>
                 </div>
               ) : bumpState === "redirect" ? (
                 <div className="text-center">
-                  <Zap className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+                  <Zap className="w-12 h-12 text-[var(--ink-600)] mx-auto mb-4" />
                   <h3 className="text-xl font-bold mb-2">Almost there</h3>
-                  <p className={`text-sm mb-6 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>We opened checkout in a new tab to add 2 more reports.</p>
-                  <button type="button" onClick={() => setShowBump(false)} className="w-full py-3 rounded-xl font-bold text-sm bg-slate-900 hover:bg-slate-800 text-white">I&apos;ll complete it there</button>
+                  <p className={`text-sm mb-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>We opened checkout in a new tab to add 2 more reports.</p>
+                  <button type="button" onClick={() => setShowBump(false)} className="w-full py-3 rounded-xl font-bold text-sm bg-[var(--ink)] hover:bg-[var(--ink-600)] text-white">I&apos;ll complete it there</button>
                 </div>
               ) : (
                 <>
                   <h3 className="text-xl font-bold mb-1">Add 2 more reports for $11</h3>
-                  <p className={`text-sm mb-4 ${isDark ? 'text-zinc-400' : 'text-slate-600'}`}>You unlocked 1 dossier for $8 — get 2 more for just $11 more (total 3 for $19, save 21% vs $24).</p>
-                  <div className={`flex items-baseline gap-1 mb-6 ${isDark ? 'text-zinc-300' : 'text-slate-800'}`}>
+                  <p className={`text-sm mb-4 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>You unlocked 1 dossier for $8 — get 2 more for just $11 more (total 3 for $19, save 21% vs $24).</p>
+                  <div className={`flex items-baseline gap-1 mb-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     <span className="text-4xl font-extrabold">$11</span>
-                    <span className={`text-sm font-semibold ${isDark ? 'text-zinc-500' : 'text-slate-500'}`}>/ 2 more reports</span>
+                    <span className={`text-sm font-semibold ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>/ 2 more reports</span>
                   </div>
                   {bumpState === "error" && (
                     <div className={`mb-4 p-3 rounded-xl border text-sm font-medium ${isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-rose-50 border-rose-200 text-rose-700'}`}>{bumpError}</div>
                   )}
-                  <button type="button" onClick={handleBump} disabled={bumpState === "charging"} className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-gradient-to-r from-orange-600 to-orange-500 text-white' : 'bg-orange-600 hover:bg-orange-700 text-white'} disabled:opacity-60`}>
+                  <button type="button" onClick={handleBump} disabled={bumpState === "charging"} className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${isDark ? 'bg-gradient-to-r from-ink-600 to-ink-600 text-white' : 'bg-[var(--ink-600)] hover:bg-[var(--ink)]-700 text-white'} disabled:opacity-60`}>
                     {bumpState === "charging" ? <><Loader2 className="w-5 h-5 animate-spin" /> Processing…</> : <><Zap className="w-4 h-4" /> Add 2 more — $11</>}
                   </button>
-                  <button type="button" onClick={() => setShowBump(false)} className={`mt-3 w-full py-2.5 rounded-xl text-sm font-semibold ${isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-slate-500 hover:text-slate-700'}`}>No thanks</button>
+                  <button type="button" onClick={() => setShowBump(false)} className={`mt-3 w-full py-2.5 rounded-xl text-sm font-semibold ${isDark ? 'text-[var(--ink-600)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:text-[var(--ink)]-700'}`}>No thanks</button>
                 </>
               )}
             </div>
@@ -2984,7 +2976,7 @@ export default function DashboardPage() {
   
   if (!mounted) {
     return (
-      <div className="min-h-screen dark:bg-zinc-950 bg-slate-50 dark:text-zinc-200 text-slate-900 flex items-center justify-center font-sans">
+      <div className="min-h-screen dark:bg-white bg-white dark:text-[var(--paper)]-100 text-[var(--ink)] flex items-center justify-center font-sans">
         Loading SafeSponsor Research Engine...
       </div>
     );

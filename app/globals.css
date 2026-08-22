@@ -2,123 +2,124 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* === Ink Auditor Design Tokens === */
+:root {
+  /* Ink — calm auditor */
+  --ink: #0F1B2E;
+  --ink-900: #16243E;
+  --ink-800: #1E3446;
+  --ink-700: #2A4861;
+  --ink-600: #3B5F7A;
+  /* Paper */
+  --paper: #F6F2EF;
+  --paper-100: #EDE9E3;
+  --paper-200: #E6E1D9;
+  --paper-300: #D9D2C5;
+  /* Risk — single accent */
+  --risk: #E07A5F;
+  --risk-600: #C96A52;
+  --risk-300: #F0A99A;
+  --risk-50: #FDF0EC;
+  /* Line — links/citations */
+  --line: #49A9DE;
+  --line-600: #2E8BC1;
+  /* Neutrals */
+  --zinc-950: #0F1B2E;
+  --zinc-900: #1A2A44;
+  --zinc-800: #2A3A52;
+  --zinc-700: #3F4E66;
+  --zinc-500: #64748B;
+  --zinc-400: #94A3B8;
+  --slate-50: #F8FAFC;
+  --slate-200: #E2E8F0;
+  --slate-300: #CBD5E1;
+  /* Semantic scores */
+  --score-good: #059669;
+  --score-warn: #D97706;
+  --score-risk: #DC2626;
+  --score-good-bg: #ECFDF5;
+  --score-warn-bg: #FFFBEB;
+  --score-risk-bg: #FEF2F2;
+  /* RGB helpers */
+  --ink-rgb: 15 27 46;
+  --paper-rgb: 246 242 239;
+  --risk-rgb: 224 122 95;
+  --line-rgb: 73 169 222;
+  /* Motion */
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 350ms;
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(15, 27, 46, 0.06);
+  --shadow-md: 0 4px 16px rgba(15, 27, 46, 0.06), 0 1px 2px rgba(15, 27, 46, 0.04);
+  --shadow-lg: 0 8px 24px rgba(15, 27, 46, 0.08), 0 4px 12px rgba(15, 27, 46, 0.04);
+}
+.dark {
+  --paper: #0F1B2E;
+  --paper-100: #16243E;
+  --paper-200: #1E3446;
+  --paper-300: #2A3A52;
+  --ink: #F6F2EF;
+  --ink-600: #CBD5E1;
+  --ink-700: #94A3B8;
+  --slate-50: #16243E;
+  --slate-200: #2A3A52;
+  --slate-300: #3F4E66;
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
   }
 
-  /* Display typeface for headings — Space Grotesk via next/font (--font-display).
-     Research (Landdding/Framiq 2026): typography is the #1 visual differentiator. */
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-display), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Display serif for H1-H3 only — per DESIGN.md Typography Rules */
+  h1, h2, h3 {
+    font-family: var(--font-display), Georgia, serif;
+    letter-spacing: -0.02em;
+    font-weight: 400;
+  }
+  h1 { letter-spacing: -0.03em; }
+  h4, h5, h6 {
+    font-family: var(--font-sans), system-ui, sans-serif;
   }
 
-  /* CUSTOM SCROLLBAR FOR DARK MODE */
-  html.dark ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  html.dark ::-webkit-scrollbar-track {
-    background: #09090b;
-  }
-  html.dark ::-webkit-scrollbar-thumb {
-    background: #27272a;
-    border-radius: 9999px;
-    border: 2px solid #09090b;
-  }
-  html.dark ::-webkit-scrollbar-thumb:hover {
-    background: #3f3f46;
-  }
+  /* Scrollbars — ink/paper */
+  html ::-webkit-scrollbar { width: 10px; height: 10px; }
+  html ::-webkit-scrollbar-track { background: var(--paper-100); }
+  html ::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 9999px; border: 2px solid var(--paper-100); }
+  html ::-webkit-scrollbar-thumb:hover { background: var(--zinc-400); }
 
-  /* CUSTOM SCROLLBAR FOR LIGHT MODE */
-  html.light ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  html.light ::-webkit-scrollbar-track {
-    background: #f8fafc;
-  }
-  html.light ::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 9999px;
-    border: 2px solid #f8fafc;
-  }
-  html.light ::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
-  }
-
-  /* Selection styling */
-  html.dark ::selection {
-    background-color: rgba(6, 182, 212, 0.3);
-    color: #38bdf8;
-  }
-  html.light ::selection {
-    background-color: rgba(234, 88, 12, 0.2);
-    color: #1e3a8a;
-  }
+  ::selection { background-color: rgba(var(--risk-rgb) / 0.18); color: var(--ink); }
 }
 
-/* PRINT TO PDF AGENCY REPORT STYLING */
+/* L2 Reveal — IntersectionObserver driven */
+.reveal { opacity: 0; transform: translateY(12px); }
+.reveal.in { opacity: 1; transform: none; transition: opacity var(--duration-base) var(--ease-default), transform var(--duration-base) var(--ease-default); }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; }
+  .reveal.in { transition: none; }
+  * { animation-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+
+/* Focus ring */
+*:focus-visible { outline: 2px solid var(--line); outline-offset: 2px; }
+
+/* Utility aliases for Tailwind arbitraries where needed */
+.text-ink { color: var(--ink); }
+.bg-paper { background: var(--paper); }
+.bg-ink { background: var(--ink); }
+
+/* PRINT — agency report */
 @media print {
-  @page {
-    size: letter portrait;
-    margin: 12mm 15mm;
-  }
-
-  body {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
-    font-size: 10.5pt !important;
-    line-height: 1.5 !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-
-  /* Hide UI elements during print */
-  .no-print,
-  .print\:hidden,
-  header,
-  footer,
-  nav,
-  button,
-  form {
-    display: none !important;
-  }
-
-  /* Ensure printable dossier is visible and clean */
-  .printable-dossier {
-    background-color: #ffffff !important;
-    color: #0f172a !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Ensure headers, cards, and sections do not break mid-card */
-  .printable-card,
-  .printable-section {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
-    border-color: #cbd5e1 !important;
-    background-color: #f8fafc !important;
-  }
-
-  /* Ensure primary brand color contrast for PDF headers */
-  .print-header-brand {
-    color: #0284c7 !important; /* Cyan-600 / Primary Brand Accent */
-  }
-
-  .print-text-dark {
-    color: #0f172a !important;
-  }
-
-  a {
-    text-decoration: none !important;
-    color: #0284c7 !important;
-  }
+  @page { size: letter portrait; margin: 12mm 15mm; }
+  body { background: #fff !important; color: #0F1B2E !important; font-size: 10.5pt !important; line-height: 1.5 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .no-print, .print\:hidden, header, footer, nav, button, form { display: none !important; }
+  .printable-dossier { background: #fff !important; color: #0F1B2E !important; box-shadow: none !important; border: none !important; padding: 0 !important; margin: 0 !important; width: 100% !important; max-width: 100% !important; }
+  .printable-card, .printable-section { break-inside: avoid !important; border-color: #CBD5E1 !important; background: #F8FAFC !important; }
+  .print-header-brand { color: var(--ink) !important; }
+  a { text-decoration: none !important; color: var(--line-600) !important; }
 }
-
