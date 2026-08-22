@@ -446,7 +446,7 @@ function LandingContent() {
             </div>
 
             {teaser.status === 'loading' && (
-              <div className="max-w-2xl mt-6 p-4 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="max-w-2xl mt-6 p-4 rounded-[8px] border shimmer" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--risk)', borderTopColor: 'transparent' }} />
                   <p className="text-[14px] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
