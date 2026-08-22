@@ -134,6 +134,13 @@ export function Navbar() {
           {user ? (
             <div className="flex items-center gap-2">
               <Link
+                href="/marketplace"
+                className="h-10 px-4 rounded-[8px] text-[14px] font-semibold inline-flex items-center gap-2 border transition-colors hidden sm:inline-flex"
+                style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}
+              >
+                Marketplace
+              </Link>
+              <Link
                 href="/dashboard"
                 className="h-10 px-4 rounded-[8px] text-[14px] font-semibold inline-flex items-center gap-2 transition-colors"
                 style={{ background: 'var(--ink)', color: 'var(--paper)', fontFamily: 'var(--font-sans)' }}
@@ -223,6 +230,16 @@ export function Navbar() {
             ))}
           </div>
           <div className="pt-4 border-t flex flex-col gap-3" style={{ borderColor: 'var(--card-border)' }}>
+            {user && (
+              <Link
+                href="/marketplace"
+                onClick={() => setMobileMenuOpen(false)}
+                className="h-11 rounded-[8px] grid place-items-center text-[14px] font-semibold border"
+                style={{ background: 'var(--paper)', borderColor: 'var(--card-border)', color: 'var(--ink)' }}
+              >
+                Marketplace
+              </Link>
+            )}
             {user ? (
               <Link
                 href="/dashboard"
