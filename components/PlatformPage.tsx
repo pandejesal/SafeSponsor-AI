@@ -20,7 +20,7 @@ export default function PlatformPage({ platform, eyebrow, title, subtitle, bulle
       <Navbar />
       <main className="flex-1">
         <section className="max-w-4xl mx-auto px-6 pt-16 pb-12 text-center">
-          <p className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-[0.08em] uppercase border mb-6" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
+          <p className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold tracking-[0.08em] uppercase border mb-6" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)', boxShadow: 'var(--shadow-sm)' }}>
             <ShieldCheck className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} />
             {eyebrow}
           </p>
@@ -37,7 +37,7 @@ export default function PlatformPage({ platform, eyebrow, title, subtitle, bulle
 
           <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto mt-10 text-left">
             {bullets.map((b, i) => (
-              <div key={i} className="p-5 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+              <div key={i} className="p-5 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" style={{ color: 'var(--score-good)' }} />
                   <p className="text-[13px] leading-[1.5] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{b}</p>
@@ -53,7 +53,7 @@ export default function PlatformPage({ platform, eyebrow, title, subtitle, bulle
           </h2>
           <div className="space-y-3">
             {faq.map((f, i) => (
-              <details key={i} className="group rounded-[8px] border p-5" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+              <details key={i} className="group rounded-[8px] border p-5" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
                 <summary className="flex items-start gap-3 cursor-pointer list-none font-semibold text-[14px]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--risk)' }} />
                   <span>{f.q}</span>
@@ -63,7 +63,7 @@ export default function PlatformPage({ platform, eyebrow, title, subtitle, bulle
             ))}
           </div>
 
-          <div className="mt-10 p-6 rounded-[16px] border text-center" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+          <div className="mt-10 p-6 rounded-[16px] border text-center" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
             <FileText className="w-7 h-7 mx-auto mb-3" style={{ color: 'var(--ink-600)' }} />
             <h3 className="text-[18px] font-semibold mb-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Need the full {platform} dossier?</h3>
             <p className="text-[13px] leading-[1.5] mb-5 max-w-xl mx-auto" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>

@@ -12,14 +12,14 @@ export default function BlogIndex() {
     <main className="max-w-3xl mx-auto px-6 py-12" style={{ background: 'var(--paper)', color: 'var(--ink)' }}>
       <h1 className="text-[32px] leading-[1.1]" style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)' }}>Teardowns</h1>
       <p className="text-[13px] mt-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
-        Real scores from <code className="px-1 py-0.5 rounded" style={{ background: 'white', border: '1px solid rgba(15,27,46,0.08)' }}>POST /api/analyze {"{teaser:true}"}</code> — cited excerpts, 1/day at 09:00.
+        Real scores from <code className="px-1 py-0.5 rounded" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>POST /api/analyze {"{teaser:true}"}</code> — cited excerpts, 1/day at 09:00.
       </p>
       {posts.length === 0 ? (
         <p className="text-[13px] mt-8" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>No teardowns yet — the 09:00 cron will publish the first one.</p>
       ) : (
         <ul className="mt-8 space-y-4">
           {posts.map((p) => (
-            <li key={p.slug} className="border rounded-[8px] p-5 hover:border-[rgba(15,27,46,0.14)] transition" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+            <li key={p.slug} className="border rounded-[8px] p-5 hover:border-[var(--card-border)] transition" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
               <Link href={`/blog/${p.slug}`} className="text-[18px] font-semibold hover:underline" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                 {p.title}
               </Link>

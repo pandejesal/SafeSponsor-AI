@@ -201,7 +201,7 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div
           className="sm:hidden border-t px-6 py-6 space-y-5"
-          style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}
+          style={{ background: 'var(--paper)', borderColor: 'var(--card-border)' }}
         >
           <div className="flex flex-col gap-3">
             {[
@@ -222,7 +222,7 @@ export function Navbar() {
               </Link>
             ))}
           </div>
-          <div className="pt-4 border-t flex flex-col gap-3" style={{ borderColor: 'rgba(15,27,46,0.08)' }}>
+          <div className="pt-4 border-t flex flex-col gap-3" style={{ borderColor: 'var(--card-border)' }}>
             {user ? (
               <Link
                 href="/dashboard"

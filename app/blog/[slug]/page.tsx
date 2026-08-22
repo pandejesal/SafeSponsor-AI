@@ -32,7 +32,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
       {post.topRedFlags.length > 0 && (
         <ul className="mt-4 space-y-2">
           {post.topRedFlags.map((f, i) => (
-            <li key={i} className="text-[13px] bg-white border rounded-[8px] px-3 py-2" style={{ borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)', fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
+            <li key={i} className="text-[13px] bg-white border rounded-[8px] px-3 py-2" style={{ borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)', fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
               <span className="font-semibold">{f.category}</span>
               {f.description ? <span style={{ color: 'var(--ink-600)' }}> — {f.description}</span> : null}
             </li>
@@ -40,7 +40,7 @@ export default async function BlogPost({ params }: { params: Promise<{ slug: str
         </ul>
       )}
       <article className="prose max-w-none mt-6 whitespace-pre-wrap text-[14px] leading-[1.6]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{post.content}</article>
-      <div className="mt-8 p-4 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="mt-8 p-4 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
         <p className="text-[14px] font-semibold" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Run your own free check</p>
         <p className="text-[12px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
           <a className="underline" style={{ color: 'var(--line)' }} href="https://safe-sponsor-ai.vercel.app/?utm_source=content-engine&utm_medium=blog&utm_campaign=teardown">

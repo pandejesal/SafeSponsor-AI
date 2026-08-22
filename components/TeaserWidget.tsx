@@ -151,7 +151,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
   return (
     <div>
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-        <div className="p-2 rounded-[8px] border flex flex-col sm:flex-row gap-2" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-md)' }}>
+        <div className="p-2 rounded-[8px] border flex flex-col sm:flex-row gap-2" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-md)' }}>
           <div className="flex items-center gap-3 px-4 py-2 flex-1">
             <Search className="w-5 h-5 shrink-0" style={{ color: 'var(--ink-600)' }} />
             <input
@@ -179,7 +179,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
       </form>
 
       {teaser.status === 'loading' && (
-        <div className="max-w-2xl mx-auto mt-6 p-4 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="max-w-2xl mx-auto mt-6 p-4 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center gap-3">
             <div className="w-5 h-5 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--risk)', borderTopColor: 'transparent' }} />
             <p className="text-[13px] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
@@ -190,7 +190,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
       )}
 
       {teaser.status === 'done' && teaser.score !== undefined && (
-        <div className="max-w-2xl mx-auto mt-6 p-5 rounded-[8px] border text-left" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="max-w-2xl mx-auto mt-6 p-5 rounded-[8px] border text-left" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <p className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Brand Safety Score</p>
@@ -212,7 +212,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
                 </motion.span>
               </div>
             </div>
-            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
               Free preview — cited
             </span>
           </div>
@@ -222,7 +222,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
               <p className="text-[11px] font-semibold tracking-[0.08em] uppercase mb-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Top red flags</p>
               <ul className="space-y-2">
                 {teaser.flags.map((f, i) => (
-                  <li key={i} className="flex items-start gap-2 text-[13px] rounded-[8px] px-3 py-2 border" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}>
+                  <li key={i} className="flex items-start gap-2 text-[13px] rounded-[8px] px-3 py-2 border" style={{ background: 'var(--paper)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}>
                     <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" style={{ color: 'var(--risk)' }} />
                     <span>
                       <span className="font-semibold">{f.category}</span>
@@ -256,7 +256,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
               onClick={() => handleCheckout('subscription')}
               disabled={loadingPlan !== null}
               className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold inline-flex items-center justify-center gap-2 border"
-              style={{ background: 'white', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
             >
               <ShieldCheck className="w-4 h-4" />
               {loadingPlan === 'subscription' ? 'Redirecting…' : '$149/mo — Pro'}
@@ -266,7 +266,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
       )}
 
       {teaser.status === 'used' && (
-        <div className="max-w-2xl mx-auto mt-6 p-5 rounded-[8px] border text-left" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="max-w-2xl mx-auto mt-6 p-5 rounded-[8px] border text-left" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <p className="text-[13px] font-medium" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>{teaser.error || 'Free preview already used'}</p>
           <p className="text-[13px] mt-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
             Full dossier $8, or Unlimited Pro $149/mo.
@@ -283,7 +283,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
       )}
 
       {teaser.status === 'error' && (
-        <div className="max-w-2xl mx-auto mt-6 p-4 rounded-[8px] border" style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}>
+        <div className="max-w-2xl mx-auto mt-6 p-4 rounded-[8px] border" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
           <p className="text-[13px] font-medium" style={{ color: 'var(--score-risk)', fontFamily: 'var(--font-sans)' }}>{teaser.error}</p>
         </div>
       )}

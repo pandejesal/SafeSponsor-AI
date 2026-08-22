@@ -11,7 +11,7 @@ export function MethodDiagram() {
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
       className="py-14 border-y"
-      style={{ background: 'var(--paper-100)', borderColor: 'rgba(15,27,46,0.08)' }}
+      style={{ background: 'var(--paper-100)', borderColor: 'var(--card-border)' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-8">
@@ -43,7 +43,7 @@ export function MethodDiagram() {
                 viewport={{ once: true, margin: "-30px" }}
                 transition={{ duration: 0.35, delay: i * 0.07, ease: [0.4, 0, 0.2, 1] }}
                 className="flex-1 rounded-[8px] border p-4 flex flex-col gap-2"
-                style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
               >
                 <span className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>
                   {s.k}
