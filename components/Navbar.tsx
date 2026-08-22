@@ -8,6 +8,7 @@ import { useTheme } from '@/components/ThemeProvider';
 import { useAuth } from '@/components/AuthProvider';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { motion } from 'motion/react';
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
@@ -122,7 +123,12 @@ export function Navbar() {
               color: 'var(--ink-600)',
             }}
           >
-            {isDark ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+            <motion.div
+              animate={{ rotate: isDark ? 180 : 0 }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            >
+              {isDark ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+            </motion.div>
           </button>
 
           {user ? (

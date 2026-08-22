@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import { getAppCheckToken } from '@/lib/firebase';
 import { useTheme } from '@/components/ThemeProvider';
 import { AlertTriangle, ArrowRight, Lock, Search, ShieldCheck } from 'lucide-react';
+import { motion } from 'motion/react';
 
 // N2T2–N2T4 — shared teaser widget for the platform landing pages. Same
 // contract as the homepage hero (N1T3): sign-in required, one free check per
@@ -121,6 +122,28 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
         ? (isDark ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30' : 'bg-amber-50 text-amber-700 border border-amber-200')
         : (isDark ? 'bg-red-500/15 text-red-300 border border-red-500/30' : 'bg-red-50 text-red-700 border border-red-200');
 
+  const [displayScore, setDisplayScore] = useState(0);
+
+  useEffect(() => {
+    if (teaser.status === 'done' && teaser.score !== undefined) {
+      let current = 0;
+      const target = teaser.score;
+      const duration = 800;
+      const start = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        setDisplayScore(Math.round(target * eased));
+        if (progress < 1) requestAnimationFrame(animate);
+      };
+      animate();
+    } else if (teaser.status !== 'done') {
+      setDisplayScore(0);
+    }
+  }, [teaser.status, teaser.score]);
+
   const placeholder = platformHint
     ? `Paste a ${platformHint} video, channel, or profile URL...`
     : 'Paste YouTube Video URL, Channel, or Instagram Link...';
@@ -172,10 +195,21 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
             <div>
               <p className="text-[11px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Brand Safety Score</p>
               <div className="flex items-end gap-3 mt-1">
-                <span className="text-[32px] font-bold leading-none" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{teaser.score}</span>
-                <span className="text-[12px] font-semibold px-2 py-1 rounded-full border" style={{ background: teaser.score >= 80 ? 'var(--score-good-bg)' : teaser.score >= 60 ? 'var(--score-warn-bg)' : 'var(--score-risk-bg)', color: teaser.score >= 80 ? 'var(--score-good)' : teaser.score >= 60 ? 'var(--score-warn)' : 'var(--score-risk)', borderColor: teaser.score >= 80 ? 'rgba(5,150,105,0.18)' : teaser.score >= 60 ? 'rgba(217,119,6,0.18)' : 'rgba(220,38,38,0.18)', fontFamily: 'var(--font-sans)' }}>
-                  {teaser.riskLevel}
-                </span>
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                  className="text-[32px] font-bold leading-none"
+                  style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}
+                >
+                  {displayScore}
+                </motion.span>
+                <motion.span
+                  className="text-[12px] font-semibold px-2 py-1 rounded-full border"
+                  style={{ background: displayScore >= 80 ? 'var(--score-good-bg)' : displayScore >= 60 ? 'var(--score-warn-bg)' : 'var(--score-risk-bg)', color: displayScore >= 80 ? 'var(--score-good)' : displayScore >= 60 ? 'var(--score-warn)' : 'var(--score-risk)', borderColor: displayScore >= 80 ? 'rgba(5,150,105,0.18)' : displayScore >= 60 ? 'rgba(217,119,6,0.18)' : 'rgba(220,38,38,0.18)', fontFamily: 'var(--font-sans)' }}
+                >
+                  {displayScore >= 80 ? 'Low Risk' : displayScore >= 60 ? 'Medium Risk' : 'High Risk'}
+                </motion.span>
               </div>
             </div>
             <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
