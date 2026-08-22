@@ -582,8 +582,11 @@ function LandingContent() {
               { metric: 'Web-grounded', label: 'Controversy scan', cite: 'Search + transcript' },
               { metric: '~60 sec', label: 'Dossier generation', cite: 'Gemini → Groq fallback' },
             ].map((stat, idx) => (
-              <div
+              <motion.div
                 key={idx}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.38 + idx * 0.06, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
                 className="p-4 rounded-[8px] border text-center"
                 style={{ background: 'white', borderColor: 'rgba(15,27,46,0.08)', boxShadow: 'var(--shadow-sm)' }}
               >
@@ -596,7 +599,7 @@ function LandingContent() {
                 <div className="text-[11px] mt-1 font-medium tracking-[0.04em]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>
                   {stat.cite}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </motion.div>
           </div>{/* close mt-2 */}
