@@ -1,6 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { YoutubeTranscript } from "youtube-transcript";
 import { UsageLogEntry, estimateCostUsd } from "./usage";
+import { computeAudienceAnomalies } from "./anomalies";
 import { sanitizeUrl } from "./utils";
 import {
   PlatformEvidence,
@@ -545,12 +546,26 @@ export function createRealVideoFetcher(): VideoFetcher {
             } else {
               const detailsData = await detailsRes.json();
               if (detailsData.items?.length > 0) {
+                // Capture raw stats for deterministic anomaly detection
+                // (lib/anomalies.ts) alongside the human-readable summary.
+                const rawVideoStats = detailsData.items.map((v: any) => ({
+                  viewCount: parseInt(v.statistics?.viewCount || "0", 10) || 0,
+                  likeCount: v.statistics?.likeCount != null ? (parseInt(v.statistics.likeCount, 10) || 0) : null,
+                }));
+                const anomalySignals = computeAudienceAnomalies({
+                  subscriberCount: subscriberCount !== "unknown" ? (parseInt(subscriberCount, 10) || null) : null,
+                  videos: rawVideoStats,
+                });
                 const videoSummaries = detailsData.items.map((v: any) => {
                   const s = v.snippet;
                   const st = v.statistics;
                   return `• "${s.title}" (Views: ${st.viewCount || "?"}, Likes: ${st.likeCount || "?"})\n  Description: ${(s.description || "").slice(0, 500)}`;
                 }).join("\n");
                 channelMetadata += `\nRecent Videos:\n${videoSummaries}\n`;
+                if (anomalySignals.length > 0) {
+                  channelMetadata += `\n[Audience Quality Signals — computed from public stats; weigh these in your authenticity assessment]:\n` +
+                    anomalySignals.map((sig) => `- ${sig.code} (${sig.severity}): ${sig.message}`).join("\n") + "\n";
+                }
               }
             }
           } else {
