@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect, useMemo, Suspense } from 'react';
+import { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
@@ -40,79 +40,41 @@ function GlobePoints({ dark }: { dark: boolean }) {
 
   return (
     <group ref={group}>
-      {/* Points sphere */}
       <points geometry={geo}>
         <pointsMaterial
           color={ptColor}
-          size={0.04}
+          size={0.045}
           sizeAttenuation
           transparent
-          opacity={0.85}
+          opacity={0.9}
         />
       </points>
 
-      {/* Scan ring 1 */}
       <mesh ref={ring} rotation={[0.3, 0, 0]}>
-        <torusGeometry args={[1.15, 0.008, 8, 128]} />
+        <torusGeometry args={[1.15, 0.01, 8, 128]} />
         <meshBasicMaterial color="#49A9DE" transparent opacity={0.6} />
       </mesh>
 
-      {/* Scan ring 2 */}
       <mesh ref={ring2} rotation={[1.2, 0.5, 0]}>
-        <torusGeometry args={[1.1, 0.006, 8, 128]} />
+        <torusGeometry args={[1.1, 0.008, 8, 128]} />
         <meshBasicMaterial color="#49A9DE" transparent opacity={0.4} />
       </mesh>
 
-      {/* Center dot */}
       <mesh>
-        <sphereGeometry args={[0.03, 16, 16]} />
+        <sphereGeometry args={[0.04, 16, 16]} />
         <meshBasicMaterial color="#E07A5F" />
       </mesh>
     </group>
   );
 }
 
-function Scene({ dark }: { dark: boolean }) {
-  return (
-    <>
-      <ambientLight intensity={0.5} />
-      <GlobePoints dark={dark} />
-    </>
-  );
-}
-
-function CanvasFallback() {
+function FallbackLoader() {
   return null;
 }
 
 export function RadarGlobe({ isDark }: { isDark: boolean }) {
-  const [paused, setPaused] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReducedMotion(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
-  }, []);
-
-  useEffect(() => {
-    if (reducedMotion) { setPaused(true); return; }
-    const el = containerRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => setPaused(!e.isIntersecting),
-      { threshold: 0.05 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [reducedMotion]);
-
   return (
     <div
-      ref={containerRef}
       className="w-full h-[320px] rounded-[16px] overflow-hidden"
       style={{
         background: isDark
@@ -120,14 +82,14 @@ export function RadarGlobe({ isDark }: { isDark: boolean }) {
           : 'linear-gradient(135deg, #EDE9E3 0%, #F6F2EF 100%)',
       }}
     >
-      <Suspense fallback={<CanvasFallback />}>
+      <Suspense fallback={<FallbackLoader />}>
         <Canvas
-          frameloop={paused ? 'never' : 'always'}
           dpr={[1, 2]}
-          gl={{ antialias: true, alpha: false, powerPreference: 'low-power' }}
+          gl={{ antialias: true, alpha: false }}
           camera={{ position: [0, 0, 2.8], fov: 32 }}
         >
-          <Scene dark={isDark} />
+          <ambientLight intensity={0.5} />
+          <GlobePoints dark={isDark} />
         </Canvas>
       </Suspense>
     </div>
