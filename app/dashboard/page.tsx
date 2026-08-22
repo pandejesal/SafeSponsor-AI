@@ -10,6 +10,7 @@ import { TestModeBadge } from "@/components/TestModeBadge";
 import { useTheme } from "@/components/ThemeProvider";
 import { sanitizeUrl } from "@/lib/utils";
 import { ReferralCard } from "@/components/ReferralCard";
+import { motion } from "motion/react";
 import type { AnalysisResult, HistoryItem } from "./dossier-viewer";
 import {
   Search, Activity, AlertTriangle, CheckCircle2,

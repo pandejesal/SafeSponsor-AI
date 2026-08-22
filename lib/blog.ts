@@ -50,7 +50,14 @@ export function getAllPosts(): BlogPost[] {
       creatorUrl: data.creatorUrl || "",
       brandSafetyScore: Number(data.brandSafetyScore || 0),
       riskLevel: data.riskLevel || "Unknown",
-      topRedFlags: data.topRedFlags ? JSON.parse(data.topRedFlags) : [],
+      topRedFlags: (() => {
+        if (!data.topRedFlags) return [];
+        try {
+          return JSON.parse(data.topRedFlags);
+        } catch {
+          return [];
+        }
+      })(),
       publishedAt: data.publishedAt || new Date().toISOString(),
       source: (data.source as BlogPost["source"]) || "safesponsor_teaser",
       content: body,
