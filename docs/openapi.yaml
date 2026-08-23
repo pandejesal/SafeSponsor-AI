@@ -1,0 +1,223 @@
+openapi: 3.1.0
+info:
+  title: SafeSponsor AI API
+  version: 0.1.0
+  description: >
+    Draft v0 contract for the self-serve REST API (Phase 3 of
+    COMPETITIVE_ABSORPTION_STRATEGY.md). Marketplace + qualification surfaces
+    ship first; discovery/report endpoints are reserved for the Creator Graph.
+servers:
+  - url: https://safesponsor.ai/api
+security:
+  - bearerAuth: []
+paths:
+  /marketplace/collabs:
+    get:
+      summary: List collabs
+      description: Public board by default; `mine=1` returns the authenticated brand's own listings.
+      parameters:
+        - name: mine
+          in: query
+          schema: { type: string, enum: ["1"] }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collabs: { type: array, items: { $ref: "#/components/schemas/Collab" } }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      summary: Create a collab
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CollabInput" }
+      responses:
+        "201": { description: Created }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "409": { description: Open-listing cap reached }
+  /marketplace/collabs/{id}:
+    parameters:
+      - $ref: "#/components/parameters/CollabId"
+    get:
+      summary: Get a collab
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties: { collab: { $ref: "#/components/schemas/Collab" } }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      summary: Close or reopen a collab (owner only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties: { status: { type: string, enum: [open, closed] } }
+      responses:
+        "200": { description: Updated }
+        "404": { description: Not found or not owner }
+    delete:
+      summary: Delete a collab (owner only)
+      responses:
+        "200": { description: Deleted }
+        "404": { description: Not found or not owner }
+  /marketplace/collabs/{id}/apply:
+    parameters:
+      - $ref: "#/components/parameters/CollabId"
+    post:
+      summary: Apply to a collab
+      description: Public endpoint. Rate-limited per IP (5/min); one application per email per collab.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApplicationInput" }
+      responses:
+        "201": { description: Application submitted }
+        "409": { description: Closed, expired, full, or duplicate }
+        "429": { description: Rate limited }
+  /marketplace/collabs/{id}/applications:
+    parameters:
+      - $ref: "#/components/parameters/CollabId"
+    get:
+      summary: List applications for a collab (owner only)
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applications: { type: array, items: { $ref: "#/components/schemas/Application" } }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /marketplace/applications/{id}:
+    patch:
+      summary: Accept or reject an application (owner only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, pattern: "^[a-f0-9]{40}$" }
+        - name: collab
+          in: query
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties: { status: { type: string, enum: [accepted, rejected] } }
+      responses:
+        "200":
+          description: Decided. On accept, includes contactEmail.
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409": { description: Already decided }
+  /qualify:
+    post:
+      summary: Convert a campaign brief into listing fields
+      description: Gemini-powered suggestion; output is advisory and enum-sanitized.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [brief]
+              properties:
+                brief: { type: string, minLength: 20, maxLength: 4000 }
+      responses:
+        "200": { description: Suggestion generated }
+        "502": { description: Generation failed }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: FirebaseIdToken }
+  parameters:
+    CollabId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, pattern: "^[A-Za-z0-9_-]{1,64}$" }
+  schemas:
+    Collab:
+      type: object
+      properties:
+        id: { type: string }
+        brandName: { type: string }
+        title: { type: string }
+        description: { type: string }
+        niche: { type: string }
+        platforms: { type: array, items: { type: string } }
+        minFollowers: { type: integer }
+        compensation: { $ref: "#/components/schemas/Compensation" }
+        deliverables: { type: array, items: { type: string } }
+        applicationDeadline: { type: [string, "null"], format: date-time }
+        status: { type: string, enum: [open, closed] }
+        applicationCount: { type: integer }
+    CollabInput:
+      type: object
+      required: [title, description, niche, platforms, compensation, deliverables]
+      properties:
+        title: { type: string, minLength: 5, maxLength: 120 }
+        description: { type: string, minLength: 20, maxLength: 2000 }
+        niche: { type: string, enum: [gaming, beauty, fitness, tech, finance, comedy, food, travel, fashion, education, lifestyle, other] }
+        platforms: { type: array, items: { type: string, enum: [youtube, instagram, tiktok, twitch] }, minItems: 1 }
+        minFollowers: { type: integer, minimum: 0, default: 1000 }
+        compensation: { $ref: "#/components/schemas/Compensation" }
+        deliverables: { type: array, items: { type: string }, minItems: 1, maxItems: 10 }
+        deadlineDays: { type: integer, minimum: 1, maximum: 90, default: 14 }
+    Compensation:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [paid, gifted, affiliate, mixed] }
+        amount: { type: number }
+        currency: { type: string, default: USD }
+        details: { type: string }
+    ApplicationInput:
+      type: object
+      required: [creatorHandle, platform, followers, email, pitch]
+      properties:
+        creatorHandle: { type: string, minLength: 2, maxLength: 80 }
+        platform: { type: string, enum: [youtube, instagram, tiktok, twitch] }
+        followers: { type: integer, minimum: 0 }
+        email: { type: string, format: email }
+        pitch: { type: string, minLength: 30, maxLength: 1500 }
+        links: { type: array, items: { type: string, format: uri }, maxItems: 3 }
+    Application:
+      type: object
+      properties:
+        id: { type: string }
+        creatorHandle: { type: string }
+        platform: { type: string }
+        followers: { type: integer }
+        email: { type: string, description: Masked in list view }
+        pitch: { type: string }
+        links: { type: array, items: { type: string } }
+        status: { type: string, enum: [pending, accepted, rejected] }
+  responses:
+    Unauthorized:
+      description: Missing or invalid bearer token
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    BadRequest:
+      description: Validation failed
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    NotFound:
+      description: Resource not found or not owned by caller
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    Error:
+      type: object
+      properties: { error: { type: string } }
