@@ -469,32 +469,32 @@ function LandingContent() {
             </div>
             {/* Mobile / tablet evidence strip — mirrors desktop rails, visible < xl where rails are hidden */}
             <div className="xl:hidden mt-10 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto">
-              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}>
                 <div className="text-[11px] font-bold tracking-[0.07em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--score-good)' }} /> Transcript • 0 hits</div>
                 <div className="text-[13px] font-semibold leading-snug mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>No profanity in 12:34 segment — cited at 04:12</div>
                 <div className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>youtube.com/watch?v=… → transcript line 42</div>
               </div>
-              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}>
                 <div className="text-[11px] font-bold tracking-[0.07em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--score-warn)' }} /> Comments • 2 flagged / 50</div>
                 <div className="text-[13px] font-semibold leading-snug mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>“…scam promo last year?” — 38 replies</div>
                 <div className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>50 fetched via YouTube Data API v3</div>
               </div>
-              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}>
                 <div className="text-[11px] font-bold tracking-[0.07em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--line)' }} /> Web • 4 sources</div>
                 <div className="text-[13px] font-semibold leading-snug mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>No open controversies in 24-mo window</div>
                 <div className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>news + social search • cited</div>
               </div>
-              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}>
                 <div className="text-[11px] font-bold tracking-[0.07em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Channel history • 2 yrs</div>
                 <div className="text-[13px] font-semibold leading-snug mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>12 videos reviewed — pattern: consistent, no spikes</div>
                 <div className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Audience audit • no anomaly</div>
               </div>
-              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}>
                 <div className="text-[11px] font-bold tracking-[0.07em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>PII &amp; retention • 90-day cache</div>
                 <div className="text-[13px] font-semibold leading-snug mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Viewer comments scrubbed • hash-gated</div>
                 <div className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Evidence, not promises</div>
               </div>
-              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
+              <div className="rounded-[8px] border px-3.5 py-3" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}>
                 <div className="text-[11px] font-bold tracking-[0.07em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--risk)' }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--risk)' }} /> Risk radar</div>
                 <div className="text-[13px] font-semibold leading-snug mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Live score: 72 — qualified w/ conditions</div>
                 <div className="text-[11px] mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Cited • shareable • exportable</div>

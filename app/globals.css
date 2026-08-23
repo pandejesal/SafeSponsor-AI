@@ -329,23 +329,24 @@
 .rail-card {
   width: 200px;
   border-radius: 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   background: var(--card-bg);
   box-shadow: var(--shadow-md);
   padding: 12px;
   transform-style: preserve-3d;
   transition: transform 0.5s var(--ease-default), box-shadow 0.5s var(--ease-default), border-color 0.3s ease;
 }
-.hero-rail--left .rail-card:nth-child(1) { transform: rotateY(18deg) rotateX(4deg) translateZ(0); opacity: 0.95; }
-.hero-rail--left .rail-card:nth-child(2) { transform: rotateY(18deg) rotateX(4deg) translateZ(-12px) scale(0.96); opacity: 0.85; }
-.hero-rail--left .rail-card:nth-child(3) { transform: rotateY(18deg) rotateX(4deg) translateZ(-24px) scale(0.92); opacity: 0.72; }
+/* left rail has .rail-scanline as child 1, so cards are 2/3/4 */
+.hero-rail--left .rail-card:nth-child(2) { transform: rotateY(18deg) rotateX(4deg) translateZ(0); opacity: 0.95; }
+.hero-rail--left .rail-card:nth-child(3) { transform: rotateY(18deg) rotateX(4deg) translateZ(-12px) scale(0.96); opacity: 0.85; }
+.hero-rail--left .rail-card:nth-child(4) { transform: rotateY(18deg) rotateX(4deg) translateZ(-24px) scale(0.92); opacity: 0.72; }
 .hero-rail--right .rail-card:nth-child(1) { transform: rotateY(-18deg) rotateX(4deg) translateZ(0); opacity: 0.95; }
 .hero-rail--right .rail-card:nth-child(2) { transform: rotateY(-18deg) rotateX(4deg) translateZ(-12px) scale(0.96); opacity: 0.85; }
 .hero-rail--right .rail-card:nth-child(3) { transform: rotateY(-18deg) rotateX(4deg) translateZ(-24px) scale(0.92); opacity: 0.72; }
 @media (prefers-reduced-motion: no-preference) {
-  .hero-shell:hover .hero-rail--left .rail-card:nth-child(1) { transform: rotateY(12deg) rotateX(2deg) translateZ(8px); }
-  .hero-shell:hover .hero-rail--left .rail-card:nth-child(2) { transform: rotateY(12deg) rotateX(2deg) translateZ(-4px) scale(0.97); }
-  .hero-shell:hover .hero-rail--left .rail-card:nth-child(3) { transform: rotateY(12deg) rotateX(2deg) translateZ(-16px) scale(0.94); }
+  .hero-shell:hover .hero-rail--left .rail-card:nth-child(2) { transform: rotateY(12deg) rotateX(2deg) translateZ(8px); }
+  .hero-shell:hover .hero-rail--left .rail-card:nth-child(3) { transform: rotateY(12deg) rotateX(2deg) translateZ(-4px) scale(0.97); }
+  .hero-shell:hover .hero-rail--left .rail-card:nth-child(4) { transform: rotateY(12deg) rotateX(2deg) translateZ(-16px) scale(0.94); }
   .hero-shell:hover .hero-rail--right .rail-card:nth-child(1) { transform: rotateY(-12deg) rotateX(2deg) translateZ(8px); }
   .hero-shell:hover .hero-rail--right .rail-card:nth-child(2) { transform: rotateY(-12deg) rotateX(2deg) translateZ(-4px) scale(0.97); }
   .hero-shell:hover .hero-rail--right .rail-card:nth-child(3) { transform: rotateY(-12deg) rotateX(2deg) translateZ(-16px) scale(0.94); }
