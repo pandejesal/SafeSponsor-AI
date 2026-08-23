@@ -265,3 +265,22 @@ REST + GraphQL
 ---
 
 *Generated 2026-08-23 from 14-competitor deep research. Phyllo (B2B creator data API) pending re-research.*
+---
+
+## Appendix: Phyllo (researched 2026-08-24)
+
+**Category:** B2B creator-data API infrastructure (not a brand-facing tool). Launched Jan 2022, $15M raised.
+
+**Products:** Identity API, Income API (transaction-level verification), Engagement API, audience demographics, Video Intelligence, Measurement APIs across 20+ platforms. SOC 2 Type 1.
+
+**Moat:** Creator-permissioned OAuth data - verified PRIVATE data (income, identity) no scraper can match.
+
+**Pricing:** Fully custom/quote-based, reported entry ~$199/mo scaling by API call volume; no free plan or trial.
+
+**Weaknesses we exploit:**
+1. **Discovery gap** - cannot search creators who never OAuth-connected (the "empty room" problem competitors like Modash call out publicly)
+2. **Auth friction** - forced account-connection kills onboarding funnels
+3. **Custom-quote opacity** - no transparent pricing at any tier
+4. **Developer-only surface** - brands cannot just log in and get value
+
+**SafeSponsor kill shot:** Our AI dossiers + deterministic anomaly codes vet creators from PUBLIC data with zero creator-side consent friction. We absorb their "verification" story for sponsorship-risk decisions while staying self-serve and transparent. Where verified income/identity truly matters (enterprise tier later), PARTNER with Phyllo as a data supplier rather than rebuild - they are infrastructure, not competition, for brand-facing workflows.

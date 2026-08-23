@@ -29,6 +29,6 @@
 ---
 
 ## Other pending items
-- **Phyllo competitor research** — re-dispatched 2026-08-24 (batch `lanes-mt67q682`) but the lane stalled pending again on host calls; findings STILL missing from COMPETITIVE_ABSORPTION_STRATEGY.md
+- **Phyllo competitor research** — re-dispatched 2026-08-24 (batch `lanes-mt67q682`) but the lane stalled pending again on host calls; researched directly 2026-08-24 and appended as strategy-doc appendix
 - ~~Applications inbox~~ DONE 2026-08-24 — `/dashboard/collabs` (commit `3dadfbd`)
 - **Anomaly signals** feed Gemini context but aren't rendered as UI chips in dossiers
