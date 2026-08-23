@@ -16,6 +16,14 @@ const sourceSchema = z.object({
   url: z.string().max(1000),
 });
 
+// Deterministic audience-quality signals computed server-side by
+// lib/anomalies.ts and threaded through the analyze response into reportData.
+const anomalySignalSchema = z.object({
+  code: z.string().max(100),
+  severity: z.enum(["info", "warning", "critical"]),
+  message: z.string().max(2000),
+});
+
 const saveDossierSchema = z
   .object({
     id: z.string().max(200).optional(),
@@ -33,6 +41,7 @@ const saveDossierSchema = z
     brand_name: z.string().max(300).optional(),
     competitor_brands: z.array(z.unknown()).optional(),
     grounding_sources: z.array(sourceSchema).optional(),
+    anomaly_signals: z.array(anomalySignalSchema).max(20).optional(),
     is_cached: z.boolean().optional(),
     cached_at: z.string().max(40).optional(),
     data_quality: z.enum(["full", "limited"]).optional(),

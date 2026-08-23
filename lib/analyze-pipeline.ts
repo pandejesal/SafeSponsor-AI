@@ -1,7 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { YoutubeTranscript } from "youtube-transcript";
 import { UsageLogEntry, estimateCostUsd } from "./usage";
-import { computeAudienceAnomalies } from "./anomalies";
+import { AnomalySignal, computeAudienceAnomalies } from "./anomalies";
 import { sanitizeUrl } from "./utils";
 import {
   PlatformEvidence,
@@ -455,6 +455,7 @@ export interface ChannelResolveResult {
   channelMetadata: string;
   videoUrls: string[];
   channelResolveFailed: boolean;
+  anomalySignals?: AnomalySignal[];
 }
 
 export interface VideoFetcher {
@@ -479,10 +480,11 @@ export function createRealVideoFetcher(): VideoFetcher {
       let channelMetadata = "";
       let videoUrls: string[] = [];
       let channelResolveFailed = false;
+      let anomalySignals: AnomalySignal[] = [];
       if (!youtubeApiKey) {
         channelResolveFailed = true;
         console.warn(`[CHANNEL RESOLVE] No YOUTUBE_API_KEY set, cannot resolve channel handle`);
-        return { channelMetadata, videoUrls, channelResolveFailed };
+        return { channelMetadata, videoUrls, channelResolveFailed, anomalySignals };
       }
       try {
         // A /channel/<ID> URL is a raw channel ID, not a handle — query channels?id=<ID>.
@@ -552,10 +554,11 @@ export function createRealVideoFetcher(): VideoFetcher {
                   viewCount: parseInt(v.statistics?.viewCount || "0", 10) || 0,
                   likeCount: v.statistics?.likeCount != null ? (parseInt(v.statistics.likeCount, 10) || 0) : null,
                 }));
-                const anomalySignals = computeAudienceAnomalies({
+                const anomalySignalsComputed = computeAudienceAnomalies({
                   subscriberCount: subscriberCount !== "unknown" ? (parseInt(subscriberCount, 10) || null) : null,
                   videos: rawVideoStats,
                 });
+                anomalySignals = anomalySignalsComputed;
                 const videoSummaries = detailsData.items.map((v: any) => {
                   const s = v.snippet;
                   const st = v.statistics;
@@ -578,7 +581,7 @@ export function createRealVideoFetcher(): VideoFetcher {
         channelResolveFailed = true;
         console.warn(`[CHANNEL RESOLVE] YouTube API error for ${target}:`, e.message);
       }
-      return { channelMetadata, videoUrls, channelResolveFailed };
+      return { channelMetadata, videoUrls, channelResolveFailed, anomalySignals };
     },
 
     async fetchTranscript(videoId: string): Promise<string> {
@@ -656,7 +659,7 @@ export function createMockVideoFetcher(corpus?: Record<string, MockCorpusEntry>)
       const handle = handleFromTarget(target);
       const entry = corpus?.[handle];
       if (!entry) {
-        return { channelMetadata: "", videoUrls: [], channelResolveFailed: false };
+        return { channelMetadata: "", videoUrls: [], channelResolveFailed: false, anomalySignals: [] };
       }
       const id = mockVideoId(handle);
       const videoUrls = [1, 2, 3].map((i) => `https://www.youtube.com/watch?v=${id}`);
@@ -667,7 +670,7 @@ export function createMockVideoFetcher(corpus?: Record<string, MockCorpusEntry>)
         `[Channel Metadata for ${target}]:\nTitle: ${entry.channelTitle}\n` +
         `Description: ${entry.channelDescription.slice(0, 2000)}\nSubscribers: 1000000\nTotal Videos: 100\n\n` +
         `Recent Videos:\n${titles}\n`;
-      return { channelMetadata, videoUrls, channelResolveFailed: false };
+      return { channelMetadata, videoUrls, channelResolveFailed: false, anomalySignals: [] };
     },
     async fetchTranscript(videoId: string): Promise<string> {
       const entry = entryByVideoId(videoId);
@@ -753,6 +756,7 @@ export interface AnalyzePipelineOutcome {
   reportData?: Record<string, unknown>;
   report?: Record<string, unknown>;
   researchText?: string;
+  anomalySignals?: AnomalySignal[];
 }
 
 export interface TeaserScanOutcome {
@@ -854,6 +858,7 @@ export async function runAnalyzePipeline(params: AnalyzePipelineParams): Promise
   let transcriptText = "";
   let commentsText = "";
   let channelMetadata = "";
+  let anomalySignals: AnomalySignal[] = [];
   let groundingSources: { title: string; url: string }[] = [];
   const unreachableUrlsSet = new Set<string>();
 
@@ -867,6 +872,7 @@ export async function runAnalyzePipeline(params: AnalyzePipelineParams): Promise
     const resolved = await video.resolveChannel(target);
     channelResolveFailed = resolved.channelResolveFailed;
     channelMetadata = resolved.channelMetadata;
+    anomalySignals = resolved.anomalySignals || [];
     resolvedUrls = [...allUrls, ...resolved.videoUrls];
   }
 
@@ -1454,6 +1460,7 @@ CRITICAL REQUIREMENTS:
   const reportData = {
     ...result,
     grounding_sources: groundingSources,
+    anomaly_signals: anomalySignals,
     brand_name: brandName,
     competitor_brands: competitorBrands,
     target,
@@ -1470,5 +1477,5 @@ CRITICAL REQUIREMENTS:
     createdAt: new Date().toISOString(),
   };
 
-  return { ok: true, reportData, report: result, researchText };
+  return { ok: true, reportData, report: result, researchText, anomalySignals };
 }

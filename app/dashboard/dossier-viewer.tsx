@@ -46,6 +46,12 @@ export interface FinalVerdict {
   contractual_safeguards: string[];
 }
 
+export interface AnomalySignal {
+  code: string;
+  severity: "info" | "warning" | "critical";
+  message: string;
+}
+
 export interface AnalysisResult {
   id?: string;
   creator_summary: string;
@@ -66,6 +72,7 @@ export interface AnalysisResult {
   cached_at?: string;
   data_quality?: "full" | "limited";
   data_quality_note?: string | null;
+  anomaly_signals?: AnomalySignal[];
   createdAt?: string | { seconds: number; nanoseconds?: number };
   persisted?: boolean;
 }
@@ -300,6 +307,29 @@ export function DossierViewer({
               </div>
             </div>
           </div>
+
+          {/* Audience quality signals — deterministic, computed from public stats */}
+          {result.anomaly_signals && result.anomaly_signals.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
+                Audience signals
+              </span>
+              {result.anomaly_signals.map((sig, i) => (
+                <span
+                  key={`${sig.code}-${i}`}
+                  title={sig.message}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] border text-[11px] font-semibold cursor-help max-w-full"
+                  style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+                >
+                  <span
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: sig.severity === 'critical' ? '#E07A5F' : sig.severity === 'warning' ? '#D9A441' : 'var(--ink-600)' }}
+                  />
+                  <span className="truncate">{sig.code}</span>
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* 1. Creator Summary */}
           <div className="p-5 rounded-[8px] border space-y-2" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
