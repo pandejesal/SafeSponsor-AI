@@ -33,5 +33,8 @@ export async function GET(req: NextRequest) {
     { merge: true }
   );
 
-  return NextResponse.redirect(buildInstallUrl(shop, state));
+  // JSON response (not a redirect): browser navigation cannot attach the
+  // Firebase bearer header, so the client fetches this with auth, then
+  // navigates itself to installUrl.
+  return NextResponse.json({ ok: true, installUrl: buildInstallUrl(shop, state) });
 }
