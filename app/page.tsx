@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
 import { useAuth } from '@/components/AuthProvider';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -12,11 +11,7 @@ import { TestModeBadge } from '@/components/TestModeBadge';
 import { useTheme } from '@/components/ThemeProvider';
 import { motion, MotionConfig } from 'motion/react';
 
-// Dynamic import — SSR disabled for R3F WebGL
-const DynamicRadarGlobe = dynamic(
-  () => import('@/components/RadarGlobe').then((m) => m.RadarGlobe),
-  { ssr: false, loading: () => <div className="w-full h-[300px] rounded-[16px] animate-pulse" style={{ background: 'var(--paper-100)' }} /> }
-);
+
 import { 
   ShieldAlert, 
   ShieldCheck, 
@@ -315,10 +310,50 @@ function LandingContent() {
     <div className="min-h-screen pb-16 md:pb-0" style={{ background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}>
       <Navbar />
 
-        {/* HERO — Ink Auditor: calm auditor + risk radar, serif display, UGC masonry */}
-        <section id="hero" className="relative overflow-hidden pt-12 pb-16 md:pt-16 md:pb-20 border-b" style={{ background: 'linear-gradient(180deg, var(--paper) 0%, rgba(246,242,239,0.4) 100%)', borderColor: 'rgba(15,27,46,0.06)' }}>
-          {/* Subtle radial accent behind globe */}
-          <div className="absolute right-0 top-0 w-[600px] h-[600px] opacity-[0.04] pointer-events-none" style={{ background: 'radial-gradient(circle at center, var(--line) 0%, transparent 70%)' }} aria-hidden />
+        {/* HERO — Ink Auditor: editorial, calm auditor, interactive depth */}
+        <section id="hero" className="hero-shell relative pt-12 pb-16 md:pt-16 md:pb-20 border-b" style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}>
+          <div className="hero-grid-bg" aria-hidden />
+          <div className="hero-radial" aria-hidden />
+          {/* Editorial side rails — CSS 3D, interactive on hover, visible ≥ xl */}
+          <div className="hero-rail hero-rail--left" aria-hidden>
+            <div className="rail-stack">
+              <div className="rail-scanline" />
+              <div className="rail-card">
+                <div className="rail-card__kicker"><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--score-good)' }} /> Transcript • 0 hits</div>
+                <div className="rail-card__title">No profanity in 12:34 segment — cited at 04:12</div>
+                <div className="rail-card__meta">youtube.com/watch?v=… → transcript line 42</div>
+              </div>
+              <div className="rail-card">
+                <div className="rail-card__kicker"><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--score-warn)' }} /> Comments • 2 flagged / 50</div>
+                <div className="rail-card__title">“…scam promo last year?” — 38 replies</div>
+                <div className="rail-card__meta">50 fetched via YouTube Data API v3</div>
+              </div>
+              <div className="rail-card">
+                <div className="rail-card__kicker"><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--line)' }} /> Web • 4 sources</div>
+                <div className="rail-card__title">No open controversies in 24-mo window</div>
+                <div className="rail-card__meta">news + social search • cited</div>
+              </div>
+            </div>
+          </div>
+          <div className="hero-rail hero-rail--right" aria-hidden>
+            <div className="rail-stack">
+              <div className="rail-card">
+                <div className="rail-card__kicker">Channel history • 2 yrs</div>
+                <div className="rail-card__title">12 videos reviewed — pattern: consistent, no spikes</div>
+                <div className="rail-card__meta">Audience audit • no anomaly</div>
+              </div>
+              <div className="rail-card">
+                <div className="rail-card__kicker">PII &amp; retention • 90-day cache</div>
+                <div className="rail-card__title">Viewer comments scrubbed • hash-gated</div>
+                <div className="rail-card__meta">Evidence, not promises</div>
+              </div>
+              <div className="rail-card">
+                <div className="rail-card__kicker" style={{ color: 'var(--risk)' }}><span className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--risk)' }} /> Risk radar</div>
+                <div className="rail-card__title">Live score: 72 — qualified w/ conditions</div>
+                <div className="rail-card__meta">Cited • shareable • exportable</div>
+              </div>
+            </div>
+          </div>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-start">
               <div className="lg:col-span-7 text-left">
@@ -341,7 +376,7 @@ function LandingContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.06 }}
                   className="text-[40px] sm:text-[56px] lg:text-[72px] leading-[1.05] max-w-[640px] mb-4"
-                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.03em', color: 'var(--ink)', textShadow: '0 1px 2px rgba(15,27,46,0.06)' }}
+                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.03em', color: 'var(--ink)', textShadow: '0 1px 2px var(--border)' }}
                 >
                   Catch the risk
                   <br />
@@ -360,49 +395,76 @@ function LandingContent() {
                 </motion.p>
               </div>
 
-              {/* UGC Masonry — real creator proof, not lucide wallpaper */}
+              {/* Editorial dossier preview — CSS 3D stack, interactive, no WebGL */}
               <motion.div
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.14 }}
+                transition={{ delay: 0.14, duration: 0.5, ease: [0.4,0,0.2,1] }}
                 className="lg:col-span-5 hidden lg:block"
                 aria-hidden
               >
-                {/* 3D Risk Radar — WebGL globe of creator points + scanning rings */}
-                <div className="relative rounded-[16px] overflow-hidden border" style={{ background: 'rgba(246,242,239,0.5)', borderColor: 'rgba(15,27,46,0.06)' }}>
-                  <DynamicRadarGlobe isDark={isDark} />
-                </div>
-                {/* Anonymized score chips */}
-                <div className="grid grid-cols-3 gap-2 mt-3">
-                  {[
-                    { label: 'Gaming', score: 82, tone: 'good' },
-                    { label: 'Beauty', score: 64, tone: 'warn' },
-                    { label: 'Finance', score: 41, tone: 'risk' },
-                    { label: 'Fitness', score: 91, tone: 'good' },
-                    { label: 'Comedy', score: 58, tone: 'warn' },
-                    { label: 'Tech', score: 77, tone: 'good' },
-                  ].map((c) => (
-                    <div
-                      key={c.label}
-                      className="rounded-[8px] border p-2 flex items-center justify-between"
-                      style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)' }}
-                    >
-                      <span className="text-[11px] font-semibold tracking-[0.06em] uppercase" style={{ color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}>{c.label}</span>
-                      <span
-                        className="text-[12px] font-bold px-1.5 py-0.5 rounded-full border"
-                        style={{
-                          background: c.tone === 'good' ? 'var(--score-good-bg)' : c.tone === 'warn' ? 'var(--score-warn-bg)' : 'var(--score-risk-bg)',
-                          color: c.tone === 'good' ? 'var(--score-good)' : c.tone === 'warn' ? 'var(--score-warn)' : 'var(--score-risk)',
-                          borderColor: c.tone === 'good' ? 'rgba(5,150,105,0.18)' : c.tone === 'warn' ? 'rgba(217,119,6,0.18)' : 'rgba(220,38,38,0.18)',
-                        }}
-                      >
-                        {c.score}
-                      </span>
+                <div className="dossier-stack">
+                  {/* back + mid layers */}
+                  <div className="dossier-card dossier-card--back" aria-hidden>
+                    <div className="p-5">
+                      <div className="h-3 w-20 rounded" style={{ background: 'var(--paper-100)' }} />
+                      <div className="h-4 w-full rounded mt-3" style={{ background: 'var(--paper-100)' }} />
+                      <div className="h-4 w-3/4 rounded mt-2" style={{ background: 'var(--paper-100)' }} />
                     </div>
-                  ))}
+                  </div>
+                  <div className="dossier-card dossier-card--mid" aria-hidden>
+                    <div className="p-5">
+                      <div className="h-3 w-24 rounded" style={{ background: 'var(--paper-100)' }} />
+                      <div className="h-4 w-full rounded mt-3" style={{ background: 'var(--paper-100)' }} />
+                      <div className="h-4 w-2/3 rounded mt-2" style={{ background: 'var(--paper-100)' }} />
+                    </div>
+                  </div>
+                  {/* front — real dossier preview */}
+                  <div className="dossier-card dossier-card--front">
+                    <div className="px-5 pt-4 pb-3 flex items-center justify-between border-b" style={{ borderColor: 'var(--border)' }}>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full" style={{ background: 'var(--risk)' }} aria-hidden />
+                        <span className="text-[10px] font-bold tracking-[0.10em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>SafeSponsor Audit — Preview</span>
+                      </div>
+                      <span className="text-[11px] font-semibold px-2 py-1 rounded-full border" style={{ background: 'var(--score-warn-bg)', color: 'var(--score-warn)', borderColor: 'rgba(217,119,6,0.18)', fontFamily: 'var(--font-sans)' }}>72 · Qualified w/ conditions</span>
+                    </div>
+                    <div className="px-5 pt-4 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full border flex items-center justify-center text-[11px] font-bold" style={{ background: 'var(--paper-100)', borderColor: 'var(--border)', color: 'var(--ink)' }}>TC</div>
+                        <div>
+                          <div className="text-[13px] font-semibold leading-none" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>@techcreator · 1.2M</div>
+                          <div className="text-[11px] leading-none mt-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>youtube.com/watch?v=dQw4w9WgXcQ · 12:34 audited</div>
+                        </div>
+                        <span className="ml-auto text-[11px] px-2 py-1 rounded-full border hidden sm:inline-flex" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)', borderColor: 'var(--border)', background: 'var(--card-bg)' }}>90-day cache</span>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 mt-4">
+                        {[
+                          { k: 'Transcript', v: '0 hits', tone: 'good' },
+                          { k: 'Comments', v: '2 / 50', tone: 'warn' },
+                          { k: 'Web', v: 'No issues', tone: 'good' },
+                        ].map((s) => (
+                          <div key={s.k} className="rounded-[8px] border px-2.5 py-2" style={{ background: 'var(--surface-hover)', borderColor: 'var(--border)' }}>
+                            <div className="text-[10px] font-bold tracking-[0.07em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>{s.k}</div>
+                            <div className="text-[12px] font-semibold mt-0.5 flex items-center gap-1.5" style={{ color: s.tone === 'good' ? 'var(--score-good)' : 'var(--score-warn)' }}>
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.tone === 'good' ? 'var(--score-good)' : 'var(--score-warn)' }} />{s.v}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="mt-4 rounded-[8px] border p-3" style={{ background: 'var(--surface-hover)', borderColor: 'var(--border)' }}>
+                        <div className="text-[10px] font-bold tracking-[0.07em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Flagged citation — source-linked</div>
+                        <p className="text-[12px] leading-[1.5] mt-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>“…scam promo last year?” — <span style={{ color: 'var(--ink-600)' }}>38 replies · comment #14</span></p>
+                        <div className="text-[11px] mt-1.5 flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--line-600)' }}><span className="w-1 h-1 rounded-full" style={{ background: 'var(--line)' }} /> youtube.com/watch?v=…&lc=Ugz… <span style={{ color: 'var(--ink-600)' }}>· API v3, 50 fetched</span></div>
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <span className="text-[11px]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>Cited · PII-scrubbed · procurement-ready</span>
+                        <span className="text-[11px] font-semibold inline-flex items-center gap-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Open full dossier <ArrowRight className="w-3 h-3" /></span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-[11px] mt-2 text-center" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
-                  Example scores — anonymized, not real reports. Full dossiers are source-cited.
+                <p className="text-[11px] mt-3 text-center" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
+                  Example preview — anonymized. Real dossiers are source-cited.
                 </p>
               </motion.div>
             </div>
@@ -644,10 +706,10 @@ function LandingContent() {
             className="rounded-[8px] border p-6 sm:p-7 relative overflow-hidden"
             style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-md)' }}
           >
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6" style={{ borderBottom: '1px solid rgba(15,27,46,0.08)' }}>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[11px] font-semibold tracking-[0.08em] uppercase px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>Example • Anonymized</span>
+                  <span className="text-[11px] font-semibold tracking-[0.08em] uppercase px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--border)', fontFamily: 'var(--font-sans)' }}>Example • Anonymized</span>
                   <span className="text-[12px]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Gaming creator • transcript + 50 comments • web-grounded</span>
                 </div>
                 <h3 className="text-[20px] font-semibold" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Example excerpt — not a real report</h3>
@@ -680,8 +742,8 @@ function LandingContent() {
                   50 top comments • PII-scrubbed • toxicity themes extracted via Gemini. Example: authentic technical Q&A, no scam clustering.
                 </p>
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>YouTube Data API v3</span>
-                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>Top recent</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--border)', fontFamily: 'var(--font-sans)' }}>YouTube Data API v3</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--border)', fontFamily: 'var(--font-sans)' }}>Top recent</span>
                 </div>
               </div>
 
@@ -691,13 +753,13 @@ function LandingContent() {
                   <span className="text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                     <FileText className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} /> Transcript • youtube-transcript
                   </span>
-                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>4,200 words</span>
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--border)', fontFamily: 'var(--font-sans)' }}>4,200 words</span>
                 </div>
                 <p className="text-[13px] leading-[1.5]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
                   Full transcript parsed for profanity, hate, and political risk. Example: no flags in this excerpt.
                 </p>
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>PG-13 clean</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--border)', fontFamily: 'var(--font-sans)' }}>PG-13 clean</span>
                 </div>
               </div>
 
@@ -713,13 +775,13 @@ function LandingContent() {
                   60-day web search for competitor sponsorships. Example: no direct competitor deals found.
                 </p>
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>Grounded search</span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--border)', fontFamily: 'var(--font-sans)' }}>Grounded search</span>
                 </div>
               </div>
             </div>
 
             </div>
-            <div className="mt-6 pt-5 flex flex-col sm:flex-row gap-3 items-center justify-between" style={{ borderTop: '1px solid rgba(15,27,46,0.08)' }}>
+            <div className="mt-6 pt-5 flex flex-col sm:flex-row gap-3 items-center justify-between" style={{ borderTop: '1px solid var(--border)' }}>
               <p className="text-[12px]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-600)' }}>
                 Full dossier adds PR history, competitor timeline, audience toxicity themes, and contract safeguards — all footnoted.
               </p>
@@ -737,7 +799,7 @@ function LandingContent() {
       </section>
 
       {/* HOW IT WORKS — calm auditor, serif H2 */}
-      <section id="how-it-works" className="py-16 border-t" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}>
+      <section id="how-it-works" className="py-16 border-t" style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-12">
           <p className="text-[13px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--risk)' }}>
@@ -786,8 +848,8 @@ function LandingContent() {
             >
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <span className="text-[32px] leading-none" style={{ fontFamily: 'var(--font-display)', color: 'rgba(15,27,46,0.12)', fontWeight: 400 }}>{item.step}</span>
-                  <div className="w-10 h-10 rounded-[8px] border grid place-items-center" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
+                  <span className="text-[32px] leading-none" style={{ fontFamily: 'var(--font-display)', color: 'var(--ink-600)', opacity: 0.35, fontWeight: 400 }}>{item.step}</span>
+                  <div className="w-10 h-10 rounded-[8px] border grid place-items-center" style={{ background: 'var(--paper)', borderColor: 'var(--border)', color: 'var(--ink-600)' }}>
                     <item.icon className="w-5 h-5" />
                   </div>
                 </div>
@@ -825,7 +887,7 @@ function LandingContent() {
               className="p-7 rounded-[16px] border md:col-span-8"
               style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
-              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
+              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'var(--border)', color: 'var(--ink-600)' }}>
                 <Video className="w-5 h-5" />
               </div>
               <h3 className="text-[20px] font-semibold mb-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Comment audit — 50 via YouTube Data API v3</h3>
@@ -843,7 +905,7 @@ function LandingContent() {
               className="p-7 rounded-[16px] border md:col-span-4"
               style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
-              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
+              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'var(--border)', color: 'var(--ink-600)' }}>
                 <FileText className="w-5 h-5" />
               </div>
               <h3 className="text-[18px] font-semibold mb-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Transcript parser</h3>
@@ -861,7 +923,7 @@ function LandingContent() {
               className="p-7 rounded-[16px] border md:col-span-4"
               style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
-              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
+              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'var(--border)', color: 'var(--ink-600)' }}>
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <h3 className="text-[18px] font-semibold mb-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Exclusivity check</h3>
@@ -879,7 +941,7 @@ function LandingContent() {
               className="p-7 rounded-[16px] border md:col-span-8"
               style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
             >
-              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)', color: 'var(--ink-600)' }}>
+              <div className="w-10 h-10 rounded-[8px] border grid place-items-center mb-5" style={{ background: 'var(--paper)', borderColor: 'var(--border)', color: 'var(--ink-600)' }}>
                 <Lock className="w-5 h-5" />
               </div>
               <h3 className="text-[20px] font-semibold mb-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Contract safeguards, not buzzwords</h3>
@@ -901,7 +963,7 @@ function LandingContent() {
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         className="py-16 border-t"
-        style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}
+        style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mb-10">
@@ -956,15 +1018,15 @@ function LandingContent() {
                 </span>
               </div>
 
-              <div className="inline-flex items-center rounded-[8px] border p-1 mb-6 text-[12px] font-semibold" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}>
+              <div className="inline-flex items-center rounded-[8px] border p-1 mb-6 text-[12px] font-semibold" style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}>
                 <button
                   type="button"
                   onClick={() => setSinglePack('one')}
                   aria-pressed={singlePack === 'one'}
                   className="px-3 py-1 rounded-[6px] transition-colors"
                   style={{
-                    background: singlePack === 'one' ? 'white' : 'transparent',
-                    color: singlePack === 'one' ? 'var(--ink)' : 'var(--ink-600)',
+                    background: singlePack === 'one' ? '#FFFFFF' : 'transparent',
+                    color: singlePack === 'one' ? '#0F1B2E' : 'var(--ink-600)',
                     boxShadow: singlePack === 'one' ? 'var(--shadow-sm)' : 'none',
                     fontFamily: 'var(--font-sans)',
                   }}
@@ -977,8 +1039,8 @@ function LandingContent() {
                   aria-pressed={singlePack === 'three'}
                   className="px-3 py-1 rounded-[6px] transition-colors inline-flex items-center gap-1.5"
                   style={{
-                    background: singlePack === 'three' ? 'white' : 'transparent',
-                    color: singlePack === 'three' ? 'var(--ink)' : 'var(--ink-600)',
+                    background: singlePack === 'three' ? '#FFFFFF' : 'transparent',
+                    color: singlePack === 'three' ? '#0F1B2E' : 'var(--ink-600)',
                     boxShadow: singlePack === 'three' ? 'var(--shadow-sm)' : 'none',
                     fontFamily: 'var(--font-sans)',
                   }}
@@ -1052,15 +1114,15 @@ function LandingContent() {
                 For agencies and PR teams. Start with one report — upgrade when needed.
               </p>
 
-              <div className="inline-flex items-center rounded-[8px] border p-1 mb-6 text-[12px] font-semibold" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}>
+              <div className="inline-flex items-center rounded-[8px] border p-1 mb-6 text-[12px] font-semibold" style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}>
                 <button
                   type="button"
                   onClick={() => setBillingCycle('month')}
                   aria-pressed={billingCycle === 'month'}
                   className="px-3 py-1 rounded-[6px] transition-colors"
                   style={{
-                    background: billingCycle === 'month' ? 'white' : 'transparent',
-                    color: billingCycle === 'month' ? 'var(--ink)' : 'var(--ink-600)',
+                    background: billingCycle === 'month' ? '#FFFFFF' : 'transparent',
+                    color: billingCycle === 'month' ? '#0F1B2E' : 'var(--ink-600)',
                     boxShadow: billingCycle === 'month' ? 'var(--shadow-sm)' : 'none',
                     fontFamily: 'var(--font-sans)',
                   }}
@@ -1073,8 +1135,8 @@ function LandingContent() {
                   aria-pressed={billingCycle === 'year'}
                   className="px-3 py-1 rounded-[6px] transition-colors inline-flex items-center gap-1.5"
                   style={{
-                    background: billingCycle === 'year' ? 'white' : 'transparent',
-                    color: billingCycle === 'year' ? 'var(--ink)' : 'var(--ink-600)',
+                    background: billingCycle === 'year' ? '#FFFFFF' : 'transparent',
+                    color: billingCycle === 'year' ? '#0F1B2E' : 'var(--ink-600)',
                     boxShadow: billingCycle === 'year' ? 'var(--shadow-sm)' : 'none',
                     fontFamily: 'var(--font-sans)',
                   }}
@@ -1090,7 +1152,7 @@ function LandingContent() {
                   {billingCycle === 'year' ? '/ year' : '/ month'}
                 </span>
                 {billingCycle === 'year' && (
-                  <span className="ml-2 text-[11px] font-semibold px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'rgba(15,27,46,0.08)', fontFamily: 'var(--font-sans)' }}>
+                  <span className="ml-2 text-[11px] font-semibold px-2 py-1 rounded-full border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--border)', fontFamily: 'var(--font-sans)' }}>
                     2 months free
                   </span>
                 )}
@@ -1116,7 +1178,7 @@ function LandingContent() {
           {/* PLAN 4 — Enterprise (dashed, procurement) */}
           <motion.div
             className="rounded-[16px] border border-dashed p-6 flex flex-col justify-between"
-            style={{ background: 'var(--paper-100)', borderColor: 'rgba(15,27,46,0.14)' }}
+            style={{ background: 'var(--paper-100)', borderColor: 'var(--border-strong)' }}
           >
             <div>
               <h3 className="text-[18px] font-semibold mb-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>Agency / Enterprise</h3>
@@ -1179,7 +1241,7 @@ function LandingContent() {
                     Channel
                     <span className={`block text-xs font-semibold mt-0.5 ${isDark ? 'text-zinc-500' : 'text-slate-400'}`}>$19 / audit</span>
                   </th>
-                  <th className="px-4 py-4 text-center font-bold border-l" style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}>
+                  <th className="px-4 py-4 text-center font-bold border-l" style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}>
                     Unlimited Pro
                     <span className="block text-xs font-semibold mt-0.5" style={{ color: 'var(--risk)', fontFamily: 'var(--font-sans)' }}>{billingCycle === 'year' ? '$1,490 / year' : '$149 / month'}</span>
                   </th>
@@ -1195,7 +1257,7 @@ function LandingContent() {
                       <td
                         key={j}
                         className={`px-4 py-3.5 text-center border-l ${j === 2 ? 'bg-[var(--risk-50)]' : ''}`}
-                        style={{ borderColor: 'rgba(15,27,46,0.08)' } as React.CSSProperties}
+                        style={{ borderColor: 'var(--border)' } as React.CSSProperties}
                       >
                         {v === "yes" ? (
                           <Check className="w-4 h-4 mx-auto text-emerald-500" />
@@ -1222,7 +1284,7 @@ function LandingContent() {
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
         className="py-16 border-t"
-        style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.08)' }}
+        style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}
       >
         {/* FAQ - dense, 8px (L2 scroll reveal #6) */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1272,12 +1334,12 @@ function LandingContent() {
         </div>
       </motion.div>
 
-      {/* FOOTER — ink, minimal with hover transitions */}
-      <footer className="py-10 border-t text-[13px]" style={{ background: 'var(--ink)', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(246,242,239,0.72)' }}>
+      {/* FOOTER — ink, fixed dark so legible in both themes */}
+      <footer className="py-10 border-t text-[13px]" style={{ background: '#0F1B2E', borderColor: 'rgba(255,255,255,0.08)', color: 'rgba(246,242,239,0.72)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-[8px] grid place-items-center text-[12px]" style={{ background: 'var(--paper)', color: 'var(--ink)', fontFamily: 'var(--font-display)' }}>ss</div>
-            <span className="font-semibold" style={{ fontFamily: 'var(--font-display)', color: 'var(--paper)' }}>SafeSponsor</span>
+            <div className="w-8 h-8 rounded-[8px] grid place-items-center text-[12px]" style={{ background: '#F6F2EF', color: '#0F1B2E', fontFamily: 'var(--font-display)' }}>ss</div>
+            <span className="font-semibold" style={{ fontFamily: 'var(--font-display)', color: '#F6F2EF' }}>SafeSponsor</span>
             <span style={{ fontFamily: 'var(--font-sans)' }}>© {new Date().getFullYear()} All rights reserved.</span>
           </div>
 
@@ -1324,7 +1386,7 @@ function LandingContent() {
       {/* MOBILE STICKY CTA BAR (GoGoChimp: sticky pricing CTA lifts mobile
           conversion 8-15%). Hidden on md+; root div has pb-16 on mobile so
           content is never obscured. */}
-      <div className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t" style={{ background: 'rgba(246,242,239,0.92)', borderColor: 'rgba(15,27,46,0.08)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t" style={{ background: 'var(--nav-bg)', borderColor: 'var(--border)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)' }}>
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <button
             type="button"
@@ -1338,7 +1400,7 @@ function LandingContent() {
             type="button"
             onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
             className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold border btn-lift"
-            style={{ background: 'var(--card-bg)', borderColor: 'rgba(15,27,46,0.12)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
           >
             See pricing
           </button>

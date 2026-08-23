@@ -45,10 +45,10 @@ export function Navbar() {
         scrolled ? 'shadow-[var(--shadow-md)]' : ''
       }`}
       style={{
-        background: isDark ? 'rgba(15,27,46,0.88)' : 'rgba(246,242,239,0.88)',
+        background: 'var(--nav-bg)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        borderColor: scrolled ? 'rgba(15,27,46,0.10)' : 'rgba(15,27,46,0.08)',
+        borderColor: 'var(--nav-border)',
         color: 'var(--ink)',
       }}
     >
@@ -118,8 +118,8 @@ export function Navbar() {
             aria-label="Toggle theme"
             className="w-10 h-10 rounded-[8px] border flex items-center justify-center transition-colors"
             style={{
-              background: 'var(--paper)',
-              borderColor: 'rgba(15,27,46,0.10)',
+              background: 'var(--card-bg)',
+              borderColor: 'var(--border)',
               color: 'var(--ink-600)',
             }}
           >
@@ -136,7 +136,7 @@ export function Navbar() {
               <Link
                 href="/marketplace"
                 className="h-10 px-4 rounded-[8px] text-[14px] font-semibold inline-flex items-center gap-2 border transition-colors hidden sm:inline-flex"
-                style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--border)', color: 'var(--ink-600)', fontFamily: 'var(--font-sans)' }}
               >
                 Marketplace
               </Link>
@@ -152,7 +152,7 @@ export function Navbar() {
                 onClick={handleSignOut}
                 aria-label="Sign out"
                 className="w-10 h-10 rounded-[8px] border inline-flex items-center justify-center"
-                style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink-600)' }}
+                style={{ background: 'var(--card-bg)', borderColor: 'var(--border)', color: 'var(--ink-600)' }}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -173,7 +173,7 @@ export function Navbar() {
                   background: 'var(--risk)',
                   color: 'white',
                   fontFamily: 'var(--font-sans)',
-                  boxShadow: '0 1px 2px rgba(15,27,46,0.06)',
+                  boxShadow: '0 1px 2px var(--border)',
                 }}
               >
                 Get started
@@ -189,7 +189,7 @@ export function Navbar() {
             onClick={toggleTheme}
             aria-label="Toggle theme"
             className="w-9 h-9 rounded-[8px] border grid place-items-center"
-            style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink-600)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--border)', color: 'var(--ink-600)' }}
           >
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
@@ -198,7 +198,7 @@ export function Navbar() {
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileMenuOpen}
             className="w-9 h-9 rounded-[8px] border grid place-items-center"
-            style={{ background: 'var(--paper)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)' }}
+            style={{ background: 'var(--card-bg)', borderColor: 'var(--border)', color: 'var(--ink)' }}
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>

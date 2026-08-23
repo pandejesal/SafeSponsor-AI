@@ -536,7 +536,7 @@ function DashboardInner() {
         className={`flex-1 py-3 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all border hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 ${
           isDark
             ? 'bg-white text-[var(--paper)]-100 border-[var(--ink)]-700 hover:border-[var(--ink-600)]/50'
-            : 'bg-white text-[var(--ink-600)] border-[rgba(15,27,46,0.08)] hover:border-blue-500'
+            : 'bg-white text-[var(--ink-600)] border-[var(--border)] hover:border-blue-500'
         }`}
       >
         <ShieldCheck className="w-4 h-4" />
@@ -1248,7 +1248,7 @@ Report Generated via SafeSponsor AI Research Engine
             </div>
             {userCredits === null ? (
               <div className="flex items-center gap-2">
-                <div className={`h-8 w-16 rounded-lg animate-pulse ${isDark ? 'bg-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper-100)]'}`} />
+                <div className={`h-8 w-16 rounded-lg animate-pulse ${isDark ? 'bg-[var(--border)]' : 'bg-[var(--paper-100)]'}`} />
               </div>
             ) : userCredits.hasSubscription ? (
               <>
@@ -1294,7 +1294,7 @@ Report Generated via SafeSponsor AI Research Engine
                     <div className="text-xl font-bold text-[var(--ink-600)]">{userCredits.videoCredits}</div>
                     <div className="text-[10px] font-bold text-[var(--ink-600)] uppercase">Video</div>
                   </div>
-                  <div className={`w-px h-8 ${isDark ? 'bg-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper-100)]'}`} />
+                  <div className={`w-px h-8 ${isDark ? 'bg-[var(--border)]' : 'bg-[var(--paper-100)]'}`} />
                   <div className="text-center">
                     <div className="text-xl font-bold text-[var(--ink-600)]">{userCredits.channelCredits}</div>
                     <div className="text-[10px] font-bold text-[var(--ink-600)] uppercase">Channel</div>
@@ -1349,7 +1349,7 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => handleCheckout("single_3pack")}
                 disabled={loadingPlan !== null}
                 className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
-                  isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)]'
+                  isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)]'
                 }`}
               >
                 <div>
@@ -1365,7 +1365,7 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => handleCheckout("single")}
                 disabled={loadingPlan !== null}
                 className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
-                  isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)]'
+                  isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)]'
                 }`}
               >
                 <div>
@@ -1381,7 +1381,7 @@ Report Generated via SafeSponsor AI Research Engine
                 onClick={() => handleCheckout("channel")}
                 disabled={loadingPlan !== null}
                 className={`p-4 rounded-lg text-left border transition flex flex-col justify-between space-y-3 ${
-                  isDark ? 'bg-[rgba(15,27,46,0.08)]/90 hover:bg-[rgba(15,27,46,0.08)] border-[var(--ink-600)]/40' : 'bg-[var(--ink)]-50 hover:bg-[var(--ink)]-100 border-[var(--ink-600)]'
+                  isDark ? 'bg-[var(--border)]/90 hover:bg-[var(--border)] border-[var(--ink-600)]/40' : 'bg-[var(--ink)]-50 hover:bg-[var(--ink)]-100 border-[var(--ink-600)]'
                 }`}
               >
                 <div>
@@ -1416,10 +1416,10 @@ Report Generated via SafeSponsor AI Research Engine
         {/* Audit Form Section */}
         <section className={`p-6 sm:p-8 rounded-xl border relative overflow-hidden transition-colors print:hidden ${
           isDark 
-            ? 'bg-white border-[rgba(15,27,46,0.08)] ring-1 ring-ink-600/10' 
-            : 'bg-white border-[rgba(15,27,46,0.08)]'
+            ? 'bg-white border-[var(--border)] ring-1 ring-ink-600/10' 
+            : 'bg-white border-[var(--border)]'
         }`}>
-          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[rgba(15,27,46,0.08)] dark:border-[rgba(15,27,46,0.08)]">
+          <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border)] dark:border-[var(--border)]">
             <div>
               <h2 className="text-2xl font-bold flex items-center gap-2">
                 <Building2 className={`w-6 h-6 ${isDark ? 'text-[var(--ink-600)]' : 'text-blue-900'}`} />
@@ -1438,7 +1438,7 @@ Report Generated via SafeSponsor AI Research Engine
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                   auditMode === 'single'
                     ? (isDark ? 'bg-[var(--ink-600)]/20 text-[var(--ink-600)] border border-[var(--ink-600)]/40 shadow-[var(--shadow-sm)]' : 'bg-blue-900 text-white shadow-[var(--shadow-sm)]')
-                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
+                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[var(--border)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
                 }`}
               >
                 <Search className="w-3.5 h-3.5" />
@@ -1451,7 +1451,7 @@ Report Generated via SafeSponsor AI Research Engine
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 relative ${
                   auditMode === 'batch'
                     ? (isDark ? 'bg-[var(--ink-600)]/20 text-[var(--ink-600)] border border-[var(--ink-600)]/40 shadow-[var(--shadow-sm)]' : 'bg-[var(--ink-600)] text-white shadow-[var(--shadow-sm)]')
-                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
+                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[var(--border)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
                 }`}
               >
                 <ListOrdered className="w-3.5 h-3.5" />
@@ -1467,7 +1467,7 @@ Report Generated via SafeSponsor AI Research Engine
                 className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 relative ${
                   auditMode === 'free'
                     ? (isDark ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-[var(--shadow-sm)]' : 'bg-emerald-600 text-white shadow-[var(--shadow-sm)]')
-                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
+                    : (isDark ? 'bg-white text-[var(--ink-600)] border border-[var(--border)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]')
                 }`}
               >
                 <Zap className="w-3.5 h-3.5" />
@@ -1489,7 +1489,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@mrbeast", "GamerSupps", "GFuel, Prime Energy, Red Bull")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
+                      isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)] text-[var(--ink-600)]'
                     }`}
                   >
                     🎮 @MrBeast (Gaming & Energy)
@@ -1498,7 +1498,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@mkbhd", "Anker", "Belkin, Mophie, Samsung")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
+                      isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)] text-[var(--ink-600)]'
                     }`}
                   >
                     📱 @MKBHD (Consumer Tech)
@@ -1507,7 +1507,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@markrober", "KiwiCo", "LittleBits, Mel Science")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
+                      isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)] text-[var(--ink-600)]'
                     }`}
                   >
                     🔬 @MarkRober (STEM & EdTech)
@@ -1516,7 +1516,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@GrahamStephan", "Public.com", "Robinhood, Coinbase, Webull")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
+                      isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)] text-[var(--ink-600)]'
                     }`}
                   >
                     💼 @GrahamStephan (Fintech)
@@ -1525,7 +1525,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@DougDeMuro", "Cars & Bids", "Bring a Trailer, Hagerty")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
+                      isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)] text-[var(--ink-600)]'
                     }`}
                   >
                     🏎️ @DougDeMuro (Automotive)
@@ -1534,7 +1534,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@ijustine", "Canon", "Sony, Panasonic, RED")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
+                      isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)] text-[var(--ink-600)]'
                     }`}
                   >
                     📷 @iJustine (Creator Hardware)
@@ -1543,7 +1543,7 @@ Report Generated via SafeSponsor AI Research Engine
                     type="button"
                     onClick={() => applyPreset("youtube.com/@loganpaul", "PRIME", "Gatorade, Powerade, BodyArmor")}
                     className={`text-xs font-bold px-3 py-1.5 rounded-xl border transition ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]'
+                      isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-[var(--paper)] hover:bg-[var(--paper-100)] border-[var(--border)] text-[var(--ink-600)]'
                     }`}
                   >
                     🏋️ @LoganPaul (Fitness)
@@ -1567,7 +1567,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "standard"
                           ? (isDark ? 'bg-[var(--paper)] border-[var(--ink-600)] text-[var(--ink-600)] ring-1 ring-ink-600/50' : 'bg-blue-50 border-blue-900 text-blue-950 font-bold')
-                          : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
+                          : (isDark ? 'bg-white border-[var(--border)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[var(--border)] text-[var(--ink-600)]')
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center justify-between">
@@ -1583,7 +1583,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "deep_compliance"
                           ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)] ring-1 ring-ink-600/50' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
-                          : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
+                          : (isDark ? 'bg-white border-[var(--border)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[var(--border)] text-[var(--ink-600)]')
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center justify-between">
@@ -1599,7 +1599,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`p-3 rounded-lg border text-left transition flex flex-col justify-between space-y-1 ${
                         auditFocus === "exclusivity_matrix"
                           ? (isDark ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/50' : 'bg-emerald-50 border-emerald-600 text-emerald-950 font-bold')
-                          : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
+                          : (isDark ? 'bg-white border-[var(--border)] text-[var(--ink-600)] hover:border-[var(--ink)]-700' : 'bg-white border-[var(--border)] text-[var(--ink-600)]')
                       }`}
                     >
                       <div className="text-xs font-bold flex items-center justify-between">
@@ -1626,8 +1626,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. MrBeast, @creatorhandle, or YouTube/Instagram URL" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                          ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                       required
                     />
@@ -1647,8 +1647,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. Gymshark, GamerSupps, Athletic Greens" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                          ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                       required
                     />
@@ -1671,8 +1671,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. Nike, Adidas, Under Armour, Lululemon" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                          ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                     />
                   </div>
@@ -1691,8 +1691,8 @@ Report Generated via SafeSponsor AI Research Engine
                       placeholder="e.g. @realcreator, John Doe, CreatorVlogs" 
                       className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                         isDark 
-                          ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                          : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                          ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                          : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                       }`}
                     />
                   </div>
@@ -1713,8 +1713,8 @@ Report Generated via SafeSponsor AI Research Engine
                     placeholder="https://youtube.com/watch?v=...&#10;https://instagram.com/p/..." 
                     className={`w-full border rounded-xl p-3 text-sm focus:outline-none transition resize-none ${
                       isDark 
-                        ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                        : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                        ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                        : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                     }`}
                   />
                 </div>
@@ -1762,7 +1762,7 @@ Report Generated via SafeSponsor AI Research Engine
                Output is the trimmed headline verdict; the full dossier requires
                a purchase (N1T5). */
             <div className="space-y-6">
-              <div className={`p-4 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+              <div className={`p-4 rounded-xl border ${isDark ? 'bg-white border-[var(--border)]' : 'bg-white border-[var(--border)]'}`}>
                 <p className="text-sm font-bold">Free creator score preview</p>
                 <p className={`text-xs mt-1 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                   One free check per account (shared with the homepage). You get the brand safety score, risk level, and top red-flag headers — the full dossier requires a purchase.
@@ -1770,7 +1770,7 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
 
               {teaserResult.status === 'loading' ? (
-                <div className={`p-5 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+                <div className={`p-5 rounded-xl border ${isDark ? 'bg-white border-[var(--border)]' : 'bg-white border-[var(--border)]'}`}>
                   <div className="flex items-center gap-3">
                     <Loader2 className="w-5 h-5 animate-spin text-[var(--ink-600)]" />
                     <p className={`text-sm font-semibold ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
@@ -1779,7 +1779,7 @@ Report Generated via SafeSponsor AI Research Engine
                   </div>
                 </div>
               ) : teaserResult.status === 'done' && teaserResult.score !== undefined ? (
-                <div className={`p-6 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+                <div className={`p-6 rounded-xl border ${isDark ? 'bg-white border-[var(--border)]' : 'bg-white border-[var(--border)]'}`}>
                   <div className="flex items-center justify-between gap-4 flex-wrap">
                     <div>
                       <p className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>Brand Safety Score</p>
@@ -1809,7 +1809,7 @@ Report Generated via SafeSponsor AI Research Engine
                       <ul className="space-y-2">
                         {teaserResult.flags.map((f, i) => (
                           <li key={i} className={`flex items-start gap-2 text-sm rounded-lg px-3 py-2 ${
-                            isDark ? 'bg-white border border-[rgba(15,27,46,0.08)]' : 'bg-white border border-[rgba(15,27,46,0.08)]'
+                            isDark ? 'bg-white border border-[var(--border)]' : 'bg-white border border-[var(--border)]'
                           }`}>
                             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-[var(--ink-600)]" />
                             <span>
@@ -1824,12 +1824,12 @@ Report Generated via SafeSponsor AI Research Engine
                     </div>
                   )}
 
-                  <div className="mt-6 pt-5 border-t border-[rgba(15,27,46,0.08)] dark:border-[rgba(15,27,46,0.08)]">
+                  <div className="mt-6 pt-5 border-t border-[var(--border)] dark:border-[var(--border)]">
                     {renderTeaserUpsell()}
                   </div>
                 </div>
               ) : teaserResult.status === 'used' ? (
-                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-white border-[var(--border)]' : 'bg-white border-[var(--border)]'}`}>
                   <p className="font-bold text-lg">You&apos;ve already used your free check</p>
                   <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     Unlock the full dossier to see the complete safety breakdown.
@@ -1837,11 +1837,11 @@ Report Generated via SafeSponsor AI Research Engine
                   {renderTeaserUpsell()}
                 </div>
               ) : teaserResult.status === 'error' ? (
-                <div className={`p-5 rounded-xl border ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+                <div className={`p-5 rounded-xl border ${isDark ? 'bg-white border-[var(--border)]' : 'bg-white border-[var(--border)]'}`}>
                   <p className="font-bold text-red-600 dark:text-red-400">{teaserResult.error}</p>
                 </div>
               ) : userCredits?.freeTeaserUsed ? (
-                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+                <div className={`p-6 rounded-xl border text-center ${isDark ? 'bg-white border-[var(--border)]' : 'bg-white border-[var(--border)]'}`}>
                   <p className="font-bold text-lg">You&apos;ve already used your free check</p>
                   <p className={`text-sm mt-1 mb-5 ${isDark ? 'text-[var(--ink-600)]' : 'text-[var(--ink-600)]'}`}>
                     Unlock the full dossier to see the complete safety breakdown.
@@ -1863,8 +1863,8 @@ Report Generated via SafeSponsor AI Research Engine
                         placeholder="e.g. youtube.com/@creator or @handle"
                         className={`flex-1 px-4 py-3 rounded-xl border text-sm font-medium focus:outline-none focus:ring-2 transition ${
                           isDark
-                            ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder:text-[var(--ink-600)] focus:ring-emerald-500/40'
-                            : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder:text-[var(--ink-600)] focus:ring-emerald-500/30'
+                            ? 'bg-white border-[var(--border)] text-white placeholder:text-[var(--ink-600)] focus:ring-emerald-500/40'
+                            : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder:text-[var(--ink-600)] focus:ring-emerald-500/30'
                         }`}
                       />
                       <button
@@ -1910,7 +1910,7 @@ Report Generated via SafeSponsor AI Research Engine
                       type="button"
                       onClick={() => setBatchUrlsInput("")}
                       className={`text-xs font-semibold px-2.5 py-1.5 rounded-xl border transition ${
-                        isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 text-[var(--ink-600)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] border-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]'
+                        isDark ? 'bg-[var(--border)] border-[var(--ink)]-700 text-[var(--ink-600)] hover:text-[var(--paper)]-100' : 'bg-[var(--paper)] border-[var(--border)] text-[var(--ink-600)] hover:bg-[var(--paper-100)]'
                       }`}
                     >
                       Clear
@@ -1926,8 +1926,8 @@ Report Generated via SafeSponsor AI Research Engine
                 placeholder={`Paste YouTube channel handles, video links, or Instagram creator profiles here...\n\nExample:\nyoutube.com/@mrbeast\nyoutube.com/@mkbhd\nyoutube.com/@GrahamStephan\nyoutube.com/@DougDeMuro\nyoutube.com/@ijustine`}
                 className={`w-full border rounded-lg p-4 text-sm font-mono focus:outline-none transition ${
                   isDark 
-                    ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                    : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                    ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                    : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                 }`}
                 disabled={isBatchProcessing}
               />
@@ -1947,8 +1947,8 @@ Report Generated via SafeSponsor AI Research Engine
                     placeholder="e.g. GamerSupps, Gymshark, Athletic Greens" 
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                       isDark 
-                        ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                        : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                        ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                        : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                     }`}
                     required
                     disabled={isBatchProcessing}
@@ -1970,8 +1970,8 @@ Report Generated via SafeSponsor AI Research Engine
                     placeholder="e.g. GFuel, Prime Energy, Red Bull" 
                     className={`w-full border rounded-xl px-4 py-3 text-sm focus:outline-none transition ${
                       isDark 
-                        ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
-                        : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
+                        ? 'bg-white border-[var(--border)] text-white placeholder-ink-600 focus:border-[var(--ink-600)]' 
+                        : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600 focus:border-[var(--ink-600)]'
                     }`}
                     disabled={isBatchProcessing}
                   />
@@ -1994,7 +1994,7 @@ Report Generated via SafeSponsor AI Research Engine
                     className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "standard"
                         ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
-                        : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
+                        : (isDark ? 'bg-white border-[var(--border)] text-[var(--ink-600)]' : 'bg-white border-[var(--border)] text-[var(--ink-600)]')
                     }`}
                   >
                     <span className="text-xs font-bold">web-grounded Standard Audit</span>
@@ -2008,7 +2008,7 @@ Report Generated via SafeSponsor AI Research Engine
                     className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "deep_compliance"
                         ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
-                        : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
+                        : (isDark ? 'bg-white border-[var(--border)] text-[var(--ink-600)]' : 'bg-white border-[var(--border)] text-[var(--ink-600)]')
                     }`}
                   >
                     <span className="text-xs font-bold">FTC & Legal Focus</span>
@@ -2022,7 +2022,7 @@ Report Generated via SafeSponsor AI Research Engine
                     className={`p-3 rounded-lg border text-left transition flex flex-col justify-between ${
                       auditFocus === "exclusivity_matrix"
                         ? (isDark ? 'bg-[var(--ink-600)]/10 border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-[var(--ink)]-50 border-[var(--ink-600)] text-[var(--ink)]-950 font-bold')
-                        : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink-600)]')
+                        : (isDark ? 'bg-white border-[var(--border)] text-[var(--ink-600)]' : 'bg-white border-[var(--border)] text-[var(--ink-600)]')
                     }`}
                   >
                     <span className="text-xs font-bold">Exclusivity Sweep</span>
@@ -2073,7 +2073,7 @@ Report Generated via SafeSponsor AI Research Engine
 
           {/* Batch Processing Queue Live Dashboard Indicators */}
           {batchItems.length > 0 && (
-            <div className="mt-8 pt-8 border-t border-[rgba(15,27,46,0.08)] dark:border-[rgba(15,27,46,0.08)] space-y-6">
+            <div className="mt-8 pt-8 border-t border-[var(--border)] dark:border-[var(--border)] space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-bold flex items-center gap-2">
@@ -2107,7 +2107,7 @@ Report Generated via SafeSponsor AI Research Engine
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'completed'
                       ? (isDark ? 'bg-emerald-950/40 border-emerald-500/60 ring-2 ring-emerald-500/30' : 'bg-emerald-50 border-emerald-400 ring-2 ring-emerald-300')
-                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
+                      : (isDark ? 'bg-white border-[var(--border)] hover:border-[var(--ink)]-700' : 'bg-white border-[var(--border)] hover:border-[var(--border)]')
                   }`}
                 >
                   <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
@@ -2125,7 +2125,7 @@ Report Generated via SafeSponsor AI Research Engine
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'processing'
                       ? (isDark ? 'bg-blue-950/40 border-blue-500/60 ring-2 ring-blue-500/30' : 'bg-blue-50 border-blue-400 ring-2 ring-blue-300')
-                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
+                      : (isDark ? 'bg-white border-[var(--border)] hover:border-[var(--ink)]-700' : 'bg-white border-[var(--border)] hover:border-[var(--border)]')
                   }`}
                 >
                   <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
@@ -2142,8 +2142,8 @@ Report Generated via SafeSponsor AI Research Engine
                   onClick={() => setBatchFilterStatus(prev => prev === 'pending' ? 'all' : 'pending')}
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'pending'
-                      ? (isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink-600)] ring-2 ring-ink-600/30' : 'bg-[var(--paper-100)] border-[var(--ink-600)] ring-2 ring-ink-600')
-                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
+                      ? (isDark ? 'bg-[var(--border)] border-[var(--ink-600)] ring-2 ring-ink-600/30' : 'bg-[var(--paper-100)] border-[var(--ink-600)] ring-2 ring-ink-600')
+                      : (isDark ? 'bg-white border-[var(--border)] hover:border-[var(--ink)]-700' : 'bg-white border-[var(--border)] hover:border-[var(--border)]')
                   }`}
                 >
                   <div className="w-9 h-9 rounded-xl bg-[var(--ink-600)]/10 text-[var(--ink-600)] flex items-center justify-center shrink-0">
@@ -2161,7 +2161,7 @@ Report Generated via SafeSponsor AI Research Engine
                   className={`p-3 rounded-lg border text-left transition flex items-center gap-3 cursor-pointer ${
                     batchFilterStatus === 'failed'
                       ? (isDark ? 'bg-rose-950/40 border-rose-500/60 ring-2 ring-rose-500/30' : 'bg-rose-50 border-rose-400 ring-2 ring-rose-300')
-                      : (isDark ? 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]')
+                      : (isDark ? 'bg-white border-[var(--border)] hover:border-[var(--ink)]-700' : 'bg-white border-[var(--border)] hover:border-[var(--border)]')
                   }`}
                 >
                   <div className="w-9 h-9 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
@@ -2182,7 +2182,7 @@ Report Generated via SafeSponsor AI Research Engine
                     {Math.round(((batchItems.filter(i => i.status === 'completed' || i.status === 'failed').length) / batchItems.length) * 100)}%
                   </span>
                 </div>
-                <div className={`w-full h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper-100)]'}`}>
+                <div className={`w-full h-2.5 rounded-full overflow-hidden ${isDark ? 'bg-[var(--border)]' : 'bg-[var(--paper-100)]'}`}>
                   <div 
                     className="h-full bg-gradient-to-r from-ink-600 to-ink-600 transition-all duration-500 rounded-full"
                     style={{ width: `${((batchItems.filter(i => i.status === 'completed' || i.status === 'failed').length) / batchItems.length) * 100}%` }}
@@ -2191,7 +2191,7 @@ Report Generated via SafeSponsor AI Research Engine
               </div>
 
               {/* Batch Queue Controls Toolbar: Status Pills, Search Input, Sort Dropdown & Actions */}
-              <div className={`p-4 rounded-lg border space-y-3 ${isDark ? 'bg-white/60 border-[rgba(15,27,46,0.08)]' : 'bg-[var(--paper)]/80 border-[rgba(15,27,46,0.08)]'}`}>
+              <div className={`p-4 rounded-lg border space-y-3 ${isDark ? 'bg-white/60 border-[var(--border)]' : 'bg-[var(--paper)]/80 border-[var(--border)]'}`}>
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                   
                   {/* Status Filter Buttons */}
@@ -2206,7 +2206,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'all'
                           ? 'bg-[var(--ink-600)] text-white shadow-[var(--shadow-sm)]'
-                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
+                          : (isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[var(--border)]')
                       }`}
                     >
                       All ({batchItems.length})
@@ -2219,7 +2219,7 @@ Report Generated via SafeSponsor AI Research Engine
                           ? 'bg-rose-600 text-white shadow-[var(--shadow-sm)]'
                           : batchItems.some(i => i.status === 'failed')
                           ? (isDark ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30' : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100')
-                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
+                          : (isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[var(--border)]')
                       }`}
                     >
                       Failed ({batchItems.filter(i => i.status === 'failed').length})
@@ -2230,7 +2230,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'completed'
                           ? 'bg-emerald-600 text-white shadow-[var(--shadow-sm)]'
-                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
+                          : (isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[var(--border)]')
                       }`}
                     >
                       Completed ({batchItems.filter(i => i.status === 'completed').length})
@@ -2241,7 +2241,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'processing'
                           ? 'bg-blue-600 text-white shadow-[var(--shadow-sm)]'
-                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
+                          : (isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[var(--border)]')
                       }`}
                     >
                       Processing ({batchItems.filter(i => i.status === 'processing').length})
@@ -2252,7 +2252,7 @@ Report Generated via SafeSponsor AI Research Engine
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
                         batchFilterStatus === 'pending'
                           ? 'bg-[var(--ink-600)] text-white shadow-[var(--shadow-sm)]'
-                          : (isDark ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[rgba(15,27,46,0.08)]')
+                          : (isDark ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white hover:bg-[var(--paper-100)] text-[var(--ink)]-700 border border-[var(--border)]')
                       }`}
                     >
                       Queued ({batchItems.filter(i => i.status === 'pending').length})
@@ -2283,7 +2283,7 @@ Report Generated via SafeSponsor AI Research Engine
                         type="button"
                         onClick={resetBatchFilters}
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1 border ${
-                          isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)]-700 hover:bg-[var(--paper)]'
+                          isDark ? 'bg-[var(--border)] border-[var(--ink)]-700 text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-white border-[var(--border)] text-[var(--ink)]-700 hover:bg-[var(--paper)]'
                         }`}
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -2294,7 +2294,7 @@ Report Generated via SafeSponsor AI Research Engine
                 </div>
 
                 {/* Second Row: Search Input & Sort Dropdown */}
-                <div className="flex flex-col sm:flex-row items-center gap-3 pt-1 border-t border-[rgba(15,27,46,0.08)]/60 dark:border-[rgba(15,27,46,0.08)]/60">
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-1 border-t border-[var(--border)]/60 dark:border-[var(--border)]/60">
                   <div className="relative w-full sm:flex-1">
                     <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -tranink-y-1/2 text-[var(--ink-600)]" />
                     <input
@@ -2303,7 +2303,7 @@ Report Generated via SafeSponsor AI Research Engine
                       onChange={(e) => setBatchSearchQuery(e.target.value)}
                       placeholder="Search queue items by URL, error, summary, or recommendation..."
                       className={`w-full pl-9 pr-8 py-1.5 text-xs rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-ink-600 ${
-                        isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-white placeholder-ink-600' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)] placeholder-ink-600'
+                        isDark ? 'bg-white border-[var(--border)] text-white placeholder-ink-600' : 'bg-white border-[var(--border)] text-[var(--ink)] placeholder-ink-600'
                       }`}
                     />
                     {batchSearchQuery && (
@@ -2326,7 +2326,7 @@ Report Generated via SafeSponsor AI Research Engine
                       value={batchSortBy}
                       onChange={(e) => setBatchSortBy(e.target.value as any)}
                       className={`w-full sm:w-auto px-3 py-1.5 text-xs font-bold rounded-xl border transition focus:outline-none focus:ring-2 focus:ring-ink-600 ${
-                        isDark ? 'bg-white border-[rgba(15,27,46,0.08)] text-white' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)]'
+                        isDark ? 'bg-white border-[var(--border)] text-white' : 'bg-white border-[var(--border)] text-[var(--ink)]'
                       }`}
                     >
                       <option value="queue_order">Queue Order (#1, #2...)</option>
@@ -2359,7 +2359,7 @@ Report Generated via SafeSponsor AI Research Engine
               {/* Batch Queue Items List */}
               {filteredAndSortedBatchItems.length === 0 ? (
                 <div className={`p-8 rounded-lg border text-center space-y-3 ${
-                  isDark ? 'bg-white/50 border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)]'
+                  isDark ? 'bg-white/50 border-[var(--border)]' : 'bg-white border-[var(--border)]'
                 }`}>
                   <Filter className="w-8 h-8 text-[var(--ink-600)] mx-auto opacity-50" />
                   <p className="text-sm font-bold">No queue items match your active status or search filter.</p>
@@ -2393,7 +2393,7 @@ Report Generated via SafeSponsor AI Research Engine
                             ? (isDark ? 'bg-[var(--ink)]-950/20 border-[var(--ink-600)]/40 ring-1 ring-ink-600/20' : 'bg-blue-50 border-blue-300')
                             : item.status === 'failed'
                             ? (isDark ? 'bg-rose-950/10 border-rose-500/30' : 'bg-rose-50/50 border-rose-200')
-                            : (isDark ? 'bg-white/80 border-[rgba(15,27,46,0.08)]/80' : 'bg-white border-[rgba(15,27,46,0.08)]')
+                            : (isDark ? 'bg-white/80 border-[var(--border)]/80' : 'bg-white border-[var(--border)]')
                         }`}
                       >
                         <div className="space-y-1 min-w-0">
@@ -2455,7 +2455,7 @@ Report Generated via SafeSponsor AI Research Engine
                               <button
                                 onClick={() => viewBatchItemDossier(item)}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center gap-1 ${
-                                  isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] hover:bg-[var(--paper)] text-blue-900 shadow-[var(--shadow-sm)]'
+                                  isDark ? 'bg-[var(--border)] border-[var(--ink)]-700 hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white border-[var(--border)] hover:bg-[var(--paper)] text-blue-900 shadow-[var(--shadow-sm)]'
                                 }`}
                               >
                                 <FileText className="w-3.5 h-3.5" />
@@ -2465,7 +2465,7 @@ Report Generated via SafeSponsor AI Research Engine
                               <button
                                 onClick={() => downloadJsonDossier(res)}
                                 className={`p-1.5 rounded-xl border transition ${
-                                  isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] hover:bg-[var(--paper)] text-[var(--ink-600)]'
+                                  isDark ? 'bg-[var(--border)] border-[var(--ink)]-700 hover:bg-[var(--ink)]-700 text-[var(--ink-600)]' : 'bg-white border-[var(--border)] hover:bg-[var(--paper)] text-[var(--ink-600)]'
                                 }`}
                                 title="Download Individual JSON Dossier"
                               >
@@ -2520,7 +2520,7 @@ Report Generated via SafeSponsor AI Research Engine
         {/* Always-Visible Pricing & Upgrade Section */}
         {userCredits !== null && !userCredits.hasSubscription && (
           <section className={`p-6 sm:p-8 rounded-xl border space-y-5 print:hidden ${
-            isDark ? 'bg-white border-[rgba(15,27,46,0.08)]' : 'bg-white border-[rgba(15,27,46,0.08)] shadow-[var(--shadow-sm)]'
+            isDark ? 'bg-white border-[var(--border)]' : 'bg-white border-[var(--border)] shadow-[var(--shadow-sm)]'
           }`}>
             <div className="flex items-center justify-between">
               <div>
@@ -2567,7 +2567,7 @@ Report Generated via SafeSponsor AI Research Engine
                     onClick={dismissIntroBanner}
                     aria-label="Dismiss intro offer"
                     className={`p-1.5 rounded-lg transition-colors ${
-                      isDark ? "text-[var(--ink-600)] hover:text-[var(--paper)]-100 hover:bg-[rgba(15,27,46,0.08)]" : "text-[var(--ink-600)] hover:text-[var(--ink)]-700 hover:bg-[var(--paper-100)]"
+                      isDark ? "text-[var(--ink-600)] hover:text-[var(--paper)]-100 hover:bg-[var(--border)]" : "text-[var(--ink-600)] hover:text-[var(--ink)]-700 hover:bg-[var(--paper-100)]"
                     }`}
                   >
                     <X className="w-4 h-4" />
@@ -2582,8 +2582,8 @@ Report Generated via SafeSponsor AI Research Engine
                 disabled={loadingPlan !== null}
                 className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 ${
                   isDark 
-                    ? 'bg-[rgba(15,27,46,0.08)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 hover:border-[var(--ink-600)]' 
-                    : 'bg-white hover:bg-[var(--paper)] border-[rgba(15,27,46,0.08)] hover:border-[rgba(15,27,46,0.08)]'
+                    ? 'bg-[var(--border)] hover:bg-[var(--ink)]-700 border-[var(--ink)]-700 hover:border-[var(--ink-600)]' 
+                    : 'bg-white hover:bg-[var(--paper)] border-[var(--border)] hover:border-[var(--border)]'
                 }`}
               >
                 <div className="space-y-1">
@@ -2603,7 +2603,7 @@ Report Generated via SafeSponsor AI Research Engine
                 disabled={loadingPlan !== null}
                 className={`p-5 rounded-lg text-left border transition-all flex flex-col justify-between space-y-4 ${
                   isDark 
-                    ? 'bg-[rgba(15,27,46,0.08)]/90 hover:bg-[rgba(15,27,46,0.08)] border-[var(--ink-600)]/30 hover:border-[var(--ink-600)]/50' 
+                    ? 'bg-[var(--border)]/90 hover:bg-[var(--border)] border-[var(--ink-600)]/30 hover:border-[var(--ink-600)]/50' 
                     : 'bg-[var(--ink)]-50 hover:bg-[var(--ink)]-100 border-[var(--paper)]-100 hover:border-[var(--ink-600)]'
                 }`}
               >
@@ -2686,7 +2686,7 @@ Report Generated via SafeSponsor AI Research Engine
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
             <div
               className={`relative w-full max-w-md rounded-2xl border p-6 space-y-5 shadow-2xl ${
-                isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)]'
+                isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[var(--border)]'
               }`}
               onClick={(e) => e.stopPropagation()}
             >
@@ -2707,7 +2707,7 @@ Report Generated via SafeSponsor AI Research Engine
                         className={`w-full text-left px-4 py-3 rounded-xl text-sm font-medium border transition-all ${
                           cancelReason === reason
                             ? isDark ? 'bg-[var(--ink-600)]/20 border-[var(--ink-600)]/50 text-[var(--ink-600)]' : 'bg-blue-50 border-blue-300 text-blue-900'
-                            : isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 hover:border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-white border-[rgba(15,27,46,0.08)] hover:border-[var(--ink-600)] text-[var(--ink)]-700'
+                            : isDark ? 'bg-[var(--border)] border-[var(--ink)]-700 hover:border-[var(--ink-600)] text-[var(--ink-600)]' : 'bg-white border-[var(--border)] hover:border-[var(--ink-600)] text-[var(--ink)]-700'
                         }`}
                       >
                         {reason}
@@ -2717,7 +2717,7 @@ Report Generated via SafeSponsor AI Research Engine
                   <button
                     onClick={() => setCancelStep(0)}
                     className={`w-full py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                      isDark ? 'bg-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
+                      isDark ? 'bg-[var(--border)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
                     }`}
                   >
                     Never mind, keep subscription
@@ -2756,7 +2756,7 @@ Report Generated via SafeSponsor AI Research Engine
                     <button
                       onClick={() => setCancelStep(0)}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                        isDark ? 'bg-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
+                        isDark ? 'bg-[var(--border)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
                       }`}
                     >
                       Keep Subscription
@@ -2789,14 +2789,14 @@ Report Generated via SafeSponsor AI Research Engine
                     className={`w-full px-4 py-3 rounded-xl border text-sm font-mono outline-none transition-colors ${
                       cancelTyping === "CANCEL"
                         ? 'border-red-500 bg-red-500/10'
-                        : isDark ? 'bg-[rgba(15,27,46,0.08)] border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-white border-[rgba(15,27,46,0.08)] text-[var(--ink)]'
+                        : isDark ? 'bg-[var(--border)] border-[var(--ink)]-700 text-[var(--paper)]-100' : 'bg-white border-[var(--border)] text-[var(--ink)]'
                     }`}
                   />
                   <div className="flex gap-3">
                     <button
                       onClick={() => { setCancelStep(0); setCancelTyping(""); }}
                       className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
-                        isDark ? 'bg-[rgba(15,27,46,0.08)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
+                        isDark ? 'bg-[var(--border)] text-[var(--ink-600)] hover:bg-[var(--ink)]-700' : 'bg-[var(--paper)] text-[var(--ink)]-700 hover:bg-[var(--paper-100)]'
                       }`}
                     >
                       Go back
@@ -2820,13 +2820,13 @@ Report Generated via SafeSponsor AI Research Engine
             user already holds Channel Report credits. */}
         {showUpsell && userCredits !== null && (userCredits.channelCredits || 0) <= 0 && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[var(--border)]'}`}>
               <button
                 type="button"
                 onClick={() => setShowUpsell(false)}
                 aria-label="Close upsell offer"
                 className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                  isDark ? 'text-[var(--ink-600)] hover:bg-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:bg-[var(--paper)] hover:text-[var(--ink-600)]'
+                  isDark ? 'text-[var(--ink-600)] hover:bg-[var(--border)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:bg-[var(--paper)] hover:text-[var(--ink-600)]'
                 }`}
               >
                 <X className="w-4 h-4" />
@@ -2917,13 +2917,13 @@ Report Generated via SafeSponsor AI Research Engine
         {/* Q: bump — add 2 more for $11 after single $8 (upgrade to 3-pack) */}
         {showBump && userCredits !== null && (userCredits.videoCredits || 0) <= 1 && (userCredits.channelCredits || 0) === 0 && !userCredits.hasSubscription && (
           <div className="fixed inset-0 z-[99] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[rgba(15,27,46,0.08)]'}`}>
+            <div className={`relative w-full max-w-md rounded-2xl border p-8 shadow-2xl ${isDark ? 'bg-white border-[var(--ink)]-700' : 'bg-white border-[var(--border)]'}`}>
               <button
                 type="button"
                 onClick={() => setShowBump(false)}
                 aria-label="Close bump offer"
                 className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                  isDark ? 'text-[var(--ink-600)] hover:bg-[rgba(15,27,46,0.08)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:bg-[var(--paper)] hover:text-[var(--ink-600)]'
+                  isDark ? 'text-[var(--ink-600)] hover:bg-[var(--border)] hover:text-[var(--paper)]-100' : 'text-[var(--ink-600)] hover:bg-[var(--paper)] hover:text-[var(--ink-600)]'
                 }`}
               >
                 <X className="w-4 h-4" />

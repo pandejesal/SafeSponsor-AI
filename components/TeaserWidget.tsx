@@ -256,7 +256,7 @@ export default function TeaserWidget({ platformHint }: { platformHint?: string }
               onClick={() => handleCheckout('subscription')}
               disabled={loadingPlan !== null}
               className="flex-1 h-11 rounded-[8px] text-[14px] font-semibold inline-flex items-center justify-center gap-2 border"
-              style={{ background: 'var(--card-bg)', borderColor: 'rgba(15,27,46,0.10)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
+              style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', color: 'var(--ink)', fontFamily: 'var(--font-sans)' }}
             >
               <ShieldCheck className="w-4 h-4" />
               {loadingPlan === 'subscription' ? 'Redirecting…' : '$149/mo — Pro'}

@@ -229,7 +229,7 @@ export function DossierViewer({
           )}
 
           {/* Header — dense audit, 8px, cited */}
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6" style={{ borderBottom: '1px solid rgba(15,27,46,0.08)' }}>
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pb-6" style={{ borderBottom: '1px solid var(--border)' }}>
             <div className="space-y-2.5 max-w-2xl">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-[0.08em] border" style={{ background: 'var(--paper)', color: 'var(--ink-600)', borderColor: 'var(--card-border)', fontFamily: 'var(--font-sans)' }}>
@@ -252,7 +252,7 @@ export function DossierViewer({
                 style={{
                   background: saveSuccess ? 'var(--score-good-bg)' : 'white',
                   color: saveSuccess ? 'var(--score-good)' : 'var(--ink)',
-                  borderColor: saveSuccess ? 'rgba(5,150,105,0.18)' : 'rgba(15,27,46,0.10)',
+                  borderColor: saveSuccess ? 'rgba(5,150,105,0.18)' : 'var(--border-strong)',
                   fontFamily: 'var(--font-sans)',
                 }}
                 title="Save this report to your personal dossier database"
@@ -267,7 +267,7 @@ export function DossierViewer({
                 style={{
                   background: copySuccess ? 'var(--score-good-bg)' : 'white',
                   color: copySuccess ? 'var(--score-good)' : 'var(--ink)',
-                  borderColor: copySuccess ? 'rgba(5,150,105,0.18)' : 'rgba(15,27,46,0.10)',
+                  borderColor: copySuccess ? 'rgba(5,150,105,0.18)' : 'var(--border-strong)',
                   fontFamily: 'var(--font-sans)',
                 }}
                 title="Copy Executive Summary to Clipboard"
@@ -344,7 +344,7 @@ export function DossierViewer({
 
           {/* 2. Verdict — 8px audit, cited */}
           <div className="p-5 rounded-[8px] border space-y-4" style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}>
-            <div className="flex items-center justify-between pb-3" style={{ borderBottom: '1px solid rgba(15,27,46,0.08)' }}>
+            <div className="flex items-center justify-between pb-3" style={{ borderBottom: '1px solid var(--border)' }}>
               <h3 className="text-[12px] font-semibold tracking-[0.06em] uppercase flex items-center gap-2" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                 <Scale className="w-4 h-4" style={{ color: 'var(--ink-600)' }} />
                 Recommendation & safeguards
@@ -360,7 +360,7 @@ export function DossierViewer({
             </div>
 
             {result.final_verdict?.contractual_safeguards && result.final_verdict.contractual_safeguards.length > 0 && (
-              <div className="space-y-2 pt-3" style={{ borderTop: '1px solid rgba(15,27,46,0.08)' }}>
+              <div className="space-y-2 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                 <p className="text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                   <FileCheck className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} />
                   Contractual safeguards
@@ -446,7 +446,7 @@ export function DossierViewer({
                   <h4 className="text-[11px] font-semibold tracking-[0.08em] uppercase mb-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Past issues</h4>
                   <p className="text-[12px] leading-[1.6]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{result.controversy_and_pr_history.past_issues_summary}</p>
                 </div>
-                <div className="grid sm:grid-cols-2 gap-4 pt-3" style={{ borderTop: '1px solid rgba(15,27,46,0.08)' }}>
+                <div className="grid sm:grid-cols-2 gap-4 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                   <div>
                     <h4 className="text-[11px] font-semibold tracking-[0.08em] uppercase mb-1" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Crisis handling</h4>
                     <p className="text-[12px] leading-[1.5]" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>{result.controversy_and_pr_history.pr_crisis_handling}</p>
@@ -599,7 +599,7 @@ export function DossierViewer({
 
           {/* Citations — footnoted */}
           {result.grounding_sources && result.grounding_sources.length > 0 && (
-            <div className="pt-4 space-y-2" style={{ borderTop: '1px solid rgba(15,27,46,0.08)' }}>
+            <div className="pt-4 space-y-2" style={{ borderTop: '1px solid var(--border)' }}>
               <h4 className="text-[11px] font-semibold tracking-[0.08em] uppercase flex items-center gap-1.5" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>
                 <Layers className="w-3.5 h-3.5" style={{ color: 'var(--ink-600)' }} />
                 Citations — web-grounded ({result.grounding_sources.length})
@@ -670,7 +670,7 @@ export function DossierViewer({
         </div>
 
         {/* Filter tabs — 8px, semantic */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 text-[12px]" style={{ borderBottom: '1px solid rgba(15,27,46,0.08)' }}>
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 text-[12px]" style={{ borderBottom: '1px solid var(--border)' }}>
           <button
             onClick={() => onFilterStatusChange('all')}
             className="px-3 py-1.5 rounded-full font-semibold shrink-0 border"
@@ -725,7 +725,7 @@ export function DossierViewer({
             style={{
               background: filterStatus === 'cached' ? 'var(--paper)' : 'transparent',
               color: filterStatus === 'cached' ? 'var(--ink)' : 'var(--ink-600)',
-              borderColor: filterStatus === 'cached' ? 'rgba(15,27,46,0.08)' : 'transparent',
+              borderColor: filterStatus === 'cached' ? 'var(--border)' : 'transparent',
               fontFamily: 'var(--font-sans)',
             }}
           >

@@ -78,7 +78,7 @@ export default function PlatformPage({ platform, eyebrow, title, subtitle, bulle
             </Link>
           </div>
 
-          <nav className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid rgba(15,27,46,0.08)' }} aria-label="Platform checks">
+          <nav className="mt-10 pt-6 text-center" style={{ borderTop: '1px solid var(--border)' }} aria-label="Platform checks">
             <p className="text-[11px] font-semibold tracking-[0.08em] uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', color: 'var(--zinc-400)' }}>Check creators on other platforms</p>
             <div className="flex flex-wrap justify-center gap-3 text-[13px] font-medium" style={{ fontFamily: 'var(--font-sans)' }}>
               <Link href="/" className="hover:underline" style={{ color: 'var(--line)' }}>Home</Link>
