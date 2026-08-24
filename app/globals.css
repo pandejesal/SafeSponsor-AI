@@ -256,7 +256,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.32;
   background-image:
     linear-gradient(var(--border) 1px, transparent 1px),
     linear-gradient(90deg, var(--border) 1px, transparent 1px);
@@ -265,7 +265,7 @@
   -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 75%);
 }
 .dark .hero-grid-bg {
-  opacity: 0.28;
+  opacity: 0.18;
 }
 .hero-radial {
   position: absolute;

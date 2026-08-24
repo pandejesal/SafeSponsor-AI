@@ -357,30 +357,30 @@ function LandingContent() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid lg:grid-cols-12 gap-10 lg:gap-8 items-start">
               <div className="lg:col-span-7 text-left">
-                {/* Eyebrow — 13px label, no Zap, no Evidence-backed */}
+                {/* Eyebrow — inverse ink pill: unmistakably distinct from paper/card-bg */}
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
-                  style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}
+                  style={{ background: 'var(--ink)', borderColor: 'var(--ink)', boxShadow: 'var(--shadow-md)' }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full risk-dot-pulse" style={{ background: 'var(--risk)' }} aria-hidden />
-                  <span className="text-[13px] font-bold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
+                  <span className="text-[13px] font-bold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--paper)' }}>
                     Evidence-backed - PII-scrubbed - 90-day cache
                   </span>
                 </motion.div>
 
-                {/* Headline — serif display, not font-bold */}
+                {/* Headline — high-contrast: ink base + risk accent italic */}
                 <motion.h1
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.06 }}
                   className="text-[40px] sm:text-[56px] lg:text-[72px] leading-[1.05] max-w-[640px] mb-4"
-                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.03em', color: 'var(--ink)', textShadow: '0 1px 2px var(--border)' }}
+                  style={{ fontFamily: 'var(--font-display)', fontWeight: 400, letterSpacing: '-0.03em', color: 'var(--ink)', textShadow: '0 1px 0 var(--card-bg)' }}
                 >
                   Catch the risk
                   <br />
-                  <span style={{ color: 'var(--ink)', fontStyle: 'italic' }}>before your client does.</span>
+                  <span style={{ color: 'var(--risk)', fontStyle: 'italic' }}>before your client does.</span>
                 </motion.h1>
 
                 {/* Subtitle — high contrast, no wash */}
