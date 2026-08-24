@@ -383,13 +383,13 @@ function LandingContent() {
                   <span style={{ color: 'var(--risk)', fontStyle: 'italic' }}>before your client does.</span>
                 </motion.h1>
 
-                {/* Subtitle — high contrast, no wash */}
+                {/* Subtitle — requested colour change: slate-ink, not merging into card-bg */}
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.12 }}
                   className="text-[18px] leading-[1.6] max-w-[560px] mb-8 font-medium"
-                  style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}
+                  style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink-700)' }}
                 >
                   Brand safety checks for agencies. Transcripts, 50 comments via YouTube Data API v3, channel history and web-grounded controversies — scored, cited, and ready for procurement.
                 </motion.p>
