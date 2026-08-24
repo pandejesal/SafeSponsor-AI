@@ -311,7 +311,7 @@ function LandingContent() {
       <Navbar />
 
         {/* HERO — Ink Auditor: editorial, calm auditor, interactive depth */}
-        <section id="hero" className="hero-shell relative pt-12 pb-16 md:pt-16 md:pb-20 border-b" style={{ background: 'var(--paper)', borderColor: 'var(--border)' }}>
+        <section id="hero" className="hero-shell relative pt-12 pb-16 md:pt-16 md:pb-20 border-b" style={{ background: 'var(--card-bg)', borderColor: 'var(--border)' }}>
           <div className="hero-grid-bg" aria-hidden />
           <div className="hero-radial" aria-hidden />
           {/* Editorial side rails — CSS 3D, interactive on hover, visible ≥ xl */}
@@ -362,10 +362,10 @@ function LandingContent() {
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
-                  style={{ background: 'var(--card-bg)', borderColor: 'var(--card-border)', boxShadow: 'var(--shadow-sm)' }}
+                  style={{ background: 'var(--card-bg)', borderColor: 'var(--border-strong)', boxShadow: 'var(--shadow-md)' }}
                 >
                   <span className="w-1.5 h-1.5 rounded-full risk-dot-pulse" style={{ background: 'var(--risk)' }} aria-hidden />
-                  <span className="text-[13px] font-semibold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
+                  <span className="text-[13px] font-bold tracking-[0.08em] uppercase" style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}>
                     Evidence-backed - PII-scrubbed - 90-day cache
                   </span>
                 </motion.div>
@@ -383,13 +383,13 @@ function LandingContent() {
                   <span style={{ color: 'var(--ink)', fontStyle: 'italic' }}>before your client does.</span>
                 </motion.h1>
 
-                {/* Subtitle — calm auditor, source-linked */}
+                {/* Subtitle — high contrast, no wash */}
                 <motion.p
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.12 }}
-                  className="text-[18px] leading-[1.6] max-w-[560px] mb-8"
-                  style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)', opacity: 0.88 }}
+                  className="text-[18px] leading-[1.6] max-w-[560px] mb-8 font-medium"
+                  style={{ fontFamily: 'var(--font-sans)', color: 'var(--ink)' }}
                 >
                   Brand safety checks for agencies. Transcripts, 50 comments via YouTube Data API v3, channel history and web-grounded controversies — scored, cited, and ready for procurement.
                 </motion.p>
